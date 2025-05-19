@@ -18,15 +18,28 @@ class PgVectorVectorStoreConfigTest {
     private VectorStore pgVectorVectorStore;
 
     @Test
-    void pgVectorVectorStore() {
+    void pgVectorVectorStoreChineseTest() {
         List<Document> documents = List.of(
-                new Document("你好", Map.of("meta1", "meta1")),
-                new Document("my-ai-agent"),
-                new Document("小伙子比较帅气", Map.of("meta2", "meta2")));
-        // 添加文档
+                new Document("ai 是 未来的趋势啊"),
+                new Document("春天来了，万物复苏。", Map.of("category", "自然")),
+                new Document("人工智能正在改变世界。", Map.of("category", "科技")),
+                new Document("人工智能。"),
+                new Document("生活就像一盒巧克力，你永远不知道会得到什么。", Map.of("category", "哲理"))
+        );
+
+        // 添加中文文档到PGVector
         pgVectorVectorStore.add(documents);
-        // 相似度查询
-        List<Document> results = pgVectorVectorStore.similaritySearch(SearchRequest.builder().query("怎么学编程啊").topK(3).build());
-        Assertions.assertNotNull(results);
+
+        // 用中文查询相似内容
+        List<Document> results = this.pgVectorVectorStore.similaritySearch(
+                SearchRequest.builder().query("人工智能").topK(1).build()
+        );
+        for (int i = 0; i < results.size(); i++) {
+            System.out.println(results.get(i));
+        }
+        System.out.println("---------------------------------------------------------------------");
+
+        // 简单断言，确保有返回结果
+        Assertions.assertFalse(results.isEmpty(), "未检索到相似中文文档！");
     }
 }

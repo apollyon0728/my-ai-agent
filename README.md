@@ -11,7 +11,7 @@ My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代�
 - **核心服务模块**：基于 Spring Boot 的 Web 服务
 - **AI 对话模块**：集成 Spring AI 与阿里云大模型能力
 - **记忆持久化模块**：实现会话状态的本地文件持久化
-- **图像搜索服务**：独立的 MCP (Model-Controller-Provider) 服务模块
+- **图像搜索服务**：独立的 MCP 服务模块
 
 ## 核心功能
 

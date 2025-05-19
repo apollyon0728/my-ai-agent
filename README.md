@@ -2,7 +2,7 @@
 
 ## 项目介绍
 
-My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代理服务，集成了现代大模型能力，提供对话记忆、多模态交互等功能。本项目通过整合阿里云灵积大模型服务，实现了智能化的人机交互体验。
+My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代理服务，集成了现代大模型能力，提供对话记忆、多模态交互等功能。本项目通过整合阿里云灵积大模型服务，实现了智能化的人机交互体验，并支持基于 RAG（检索增强生成）的知识库问答能力。
 
 ## 系统架构
 
@@ -12,6 +12,7 @@ My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代�
 - **AI 对话模块**：集成 Spring AI 与阿里云大模型能力
 - **记忆持久化模块**：实现会话状态的本地文件持久化
 - **图像搜索服务**：独立的 MCP 服务模块
+- **知识库模块**：基于 PGVector 的向量数据库存储和检索服务
 
 ## 核心功能
 
@@ -19,6 +20,11 @@ My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代�
 - ✅ **对话记忆**：基于文件系统的会话记忆持久化，保持上下文连贯性
 - ✅ **健康检测**：提供服务状态监控接口
 - ✅ **图像搜索**：独立模块支持基于图像的搜索功能
+- ✅ **知识库问答**：
+  - 支持 Markdown 文档上传和管理
+  - 基于 RAG 技术的智能问答
+  - 使用 PGVector 进行高效的向量检索
+  - 支持文档的增删改查操作
 
 ## 技术栈
 
@@ -28,6 +34,9 @@ My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代�
   - 阿里云 DashScope SDK (2.19.1)
   - Spring AI Alibaba (1.0.0-M6.1)
   - Ollama 集成
+- **向量数据库**：
+  - PostgreSQL with pgvector 扩展
+  - Spring AI VectorStore 集成
 - **序列化工具**：Kryo
 - **构建工具**：Maven 3.9.9
 - **其他工具**：
@@ -101,6 +110,9 @@ my-ai-agent/
 - **聊天记忆存储路径**：默认为项目根目录下的 `/tmp` 文件夹
 - **模型参数**：可在应用配置中调整大模型的参数设置
 - **服务端口**：默认为 Spring Boot 标准端口 8080
+- **向量数据库配置**：
+  - PostgreSQL 连接信息
+  - pgvector 相关参数设置
 
 ## API 接口
 
@@ -111,9 +123,26 @@ GET /health
 响应: "ok"
 ```
 
-### 其他接口
+### 知识库管理接口
 
-_详细 API 文档待补充_
+```
+# 上传文档
+POST /api/knowledge/upload
+Content-Type: multipart/form-data
+
+# 获取文档列表
+GET /api/knowledge/documents
+
+# 删除文档
+DELETE /api/knowledge/documents/{documentId}
+
+# 知识库问答
+POST /api/knowledge/qa
+Content-Type: application/json
+{
+    "question": "您的问题"
+}
+```
 
 ## 高级特性
 
@@ -124,6 +153,13 @@ _详细 API 文档待补充_
 ### 图像搜索服务
 
 独立的图像搜索模块采用 Spring AI MCP 服务架构，提供多模态交互能力。
+
+### RAG 知识库问答
+
+- 基于 PGVector 的高性能向量存储
+- 支持文档的语义检索和相关性排序
+- 智能查询重写优化检索效果
+- 支持多种文档格式的处理和向量化
 
 ## 贡献指南
 

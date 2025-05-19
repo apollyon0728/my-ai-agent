@@ -7,6 +7,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
 /**
  *  PGVector 向量存储配置
  */
+
 @Configuration
 public class PgVectorVectorStoreConfig {
 
@@ -34,7 +36,7 @@ public class PgVectorVectorStoreConfig {
                 .vectorTableName("vector_store")     // 可选：默认为“vector_store”
                 .maxDocumentBatchSize(10000)         // 可选：默认为10000
                 .build();
-        // 加载文档
+        // 每次启动都会加载文档，加载一次即可
 //        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
 //        vectorStore.add(documents);
         return vectorStore;

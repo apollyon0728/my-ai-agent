@@ -80,7 +80,7 @@ class LoveAppTest {
 //        String answer =  loveApp.doChatWithMcp(message, chatId);
 //        Assertions.assertNotNull(answer);
         // 测试图片搜索 MCP
-        String message = "帮我搜索一些哄另一半开心的图片";
+        String message = "黎明图片";
         String answer =  loveApp.doChatWithMcp(message, chatId);
         Assertions.assertNotNull(answer);
     }

@@ -11,8 +11,8 @@
     <groupId>com.yupi</groupId>
     <artifactId>my-ai-agent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>yu-ai-agent</name>
-    <description>yu-ai-agent</description>
+    <name>my-ai-agent</name>
+    <description>my-ai-agent</description>
     <url/>
     <licenses>
         <license/>

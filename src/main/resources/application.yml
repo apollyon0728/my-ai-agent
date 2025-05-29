@@ -8,17 +8,18 @@ spring:
       api-key: your-api-key
       chat:
         options:
-          model: qwen-plus
+          model: qwen-turbo-latest
     ollama:
       base-url: http://localhost:11434
       chat:
         model: gemma3:1b
-    mcp:
-      client:
-        sse:
-          connections:
-            server1:
-              url: http://localhost:8127
+#    mcp:
+#      client:
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8127
+##              timeout: 60000  # 设置超时时间为 60 秒
 #        stdio:
 #          servers-configuration: classpath:mcp-servers.json
 #    vectorstore:
@@ -50,7 +51,7 @@ knife4j:
     language: zh_cn
 # searchAPI
 search-api:
-  api-key: 你的 API Key
+  api-key: xxx
 # 修改日志级别，查看 Spring AI 更多调用细节
 logging:
   level:

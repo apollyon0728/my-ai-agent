@@ -5,46 +5,62 @@ package com.yam.myaiagent.tools;
  * 日期：2025/5/29 15:11
  */
 import cn.hutool.core.io.FileUtil;
-
+import cn.hutool.json.JSONUtil;
 import com.yam.myaiagent.constant.FileConstant;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Markdown 文件生成工具
  * 用于创建格式良好的 Markdown 文档
  */
-public class MarkdownGenerationTool {
-
-    @Tool(description = "Generate a Markdown file with given content", returnDirect = false)
-    public String generateMarkdown(
-            @ToolParam(description = "Name of the file to save the generated Markdown") String fileName,
-            @ToolParam(description = "Content to be included in the Markdown file") String content) {
-        // 确保文件名以 .md 结尾
-        if (!fileName.toLowerCase().endsWith(".md")) {
-            fileName += ".md";
-        }
-
-        String fileDir = FileConstant.FILE_SAVE_DIR + "/markdown";
-        String filePath = fileDir + "/" + fileName;
-
-        try {
-            // 创建目录（如果不存在）
-            FileUtil.mkdir(fileDir);
-
-            // 格式化 Markdown 内容（可选）
-            String formattedContent = formatMarkdownContent(content);
-
-            // 将内容写入文件
-            FileUtil.writeString(formattedContent, filePath, StandardCharsets.UTF_8);
-
-            return "Markdown file generated successfully to: " + filePath;
-        } catch (Exception e) {
-            return "Error generating Markdown file: " + e.getMessage();
-        }
+public class MarkdownGenerationTool {    @Tool(description = "Generate a Markdown file with given content and return file info", returnDirect = false)
+public String generateMarkdown(
+        @ToolParam(description = "Name of the file to save the generated Markdown") String fileName,
+        @ToolParam(description = "Content to be included in the Markdown file") String content) {
+    // 确保文件名以 .md 结尾
+    if (!fileName.toLowerCase().endsWith(".md")) {
+        fileName += ".md";
     }
+
+    String fileDir = FileConstant.FILE_SAVE_DIR + "/markdown";
+    String filePath = fileDir + "/" + fileName;
+
+    try {
+        // 创建目录（如果不存在）
+        FileUtil.mkdir(fileDir);
+
+        // 格式化 Markdown 内容（可选）
+        String formattedContent = formatMarkdownContent(content);
+
+        // 将内容写入文件
+        FileUtil.writeString(formattedContent, filePath, StandardCharsets.UTF_8);
+
+        // 获取文件信息
+        File file = new File(filePath);
+        Map<String, Object> fileInfo = new HashMap<>();
+        fileInfo.put("fileName", fileName);
+        fileInfo.put("filePath", filePath);
+        fileInfo.put("size", file.length());
+        fileInfo.put("sizeFormatted", FileUtil.readableFileSize(file.length()));
+        fileInfo.put("downloadUrl", "/api/files/download/" + fileName);
+        fileInfo.put("previewUrl", "/api/files/preview/" + fileName);
+
+        return "Markdown文件生成成功！\n" +
+                "文件名: " + fileName + "\n" +
+                "文件大小: " + FileUtil.readableFileSize(file.length()) + "\n" +
+                "下载链接: /api/files/download/" + fileName + "\n" +
+                "预览链接: /api/files/preview/" + fileName + "\n" +
+                "文件详情: " + JSONUtil.toJsonStr(fileInfo);
+    } catch (Exception e) {
+        return "Error generating Markdown file: " + e.getMessage();
+    }
+}
 
     /**
      * 格式化 Markdown 内容
@@ -71,25 +87,6 @@ public class MarkdownGenerationTool {
 
         // 添加自动生成的页脚
         formatted.append("\n---\n");
-        formatted.append("*Auto-generated at: ").append(new java.util.Date()).append("*");
-
-        return formatted.toString();
-    }
-
-    /**
-     * 示例：生成标准文档结构
-     */
-    private String generateDocumentStructure(String content) {
-        return String.format(
-                "# Document Title\n\n" +
-                        "## Introduction\n\n" +
-                        "This document was auto-generated based on the provided content.\n\n" +
-                        "## Content\n\n" +
-                        "%s\n\n" +
-                        "## Conclusion\n\n" +
-                        "End of document. Generated at: %s\n",
-                content,
-                new java.util.Date()
-        );
+        formatted.append("*Auto-generated at: ").append(new java.util.Date()).append("*");        return formatted.toString();
     }
 }

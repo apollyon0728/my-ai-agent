@@ -26,29 +26,28 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 
 @Component
 @Slf4j
-public class LoveApp {
+public class UIApp {
 
     private final ChatClient chatClient;
     // 系统全局提示词
-    private static final String SYSTEM_PROMPT = "扮演深耕恋爱心理领域的专家。开场向用户表明身份，告知用户可倾诉恋爱难题。" +
-            "围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；" +
-            "恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。" +
-            "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
-    private static final String SYSTEM_PROMPT_NORMAL = "你是一个AI助手，可以帮助用户解答各种问题。";
+    private static final String SYSTEM_PROMPT = "我希望你扮演一名用户体验 / 界面（UX/UI）开发人员。" +
+            "我会提供有关应用程序、网站或其他数字产品设计的一些细节，而你的工作是想出富有创意的方法来改善其用户体验。" +
+            "这可能包括创建原型、测试不同的设计以及提供关于哪种设计效果最佳的反馈。" +
+            "我的第一个请求是‘我需要帮助为我的新移动应用设计一个直观的导航系统。’";
 
     /**
      * 初始化 ChatClient
      *
      * @param dashscopeChatModel
      */
-    public LoveApp(ChatModel dashscopeChatModel) {
+    public UIApp(ChatModel dashscopeChatModel) {
 //        // 初始化基于文件的对话记忆
 //        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
 //        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
         // 初始化基于内存的对话记忆
         ChatMemory chatMemory = new InMemoryChatMemory();
         chatClient = ChatClient.builder(dashscopeChatModel)
-                .defaultSystem(SYSTEM_PROMPT_NORMAL)
+                .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
                         new MessageChatMemoryAdvisor(chatMemory),
                         // 自定义日志 Advisor，可按需开启
@@ -102,9 +101,8 @@ public class LoveApp {
     }
 
 
-
     /**
-     * AI 恋爱报告功能（实战结构化输出）
+     * UI 设计报告功能（实战结构化输出）
      *
      * @param message
      * @param chatId
@@ -113,7 +111,7 @@ public class LoveApp {
     public LoveReport doChatWithReport(String message, String chatId) {
         LoveReport loveReport = chatClient
                 .prompt()
-                .system(SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为{用户名}的恋爱报告，内容为建议列表")
+                .system(SYSTEM_PROMPT + "每次对话后都要生成UI结果，标题为{用户名}的UI报告，内容为建议列表")
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
@@ -123,7 +121,7 @@ public class LoveApp {
         return loveReport;
     }
 
-    // AI 恋爱知识库问答功能
+    // UI 设计知识库问答功能
 
     @Resource
     private VectorStore loveAppVectorStore;
@@ -179,7 +177,7 @@ public class LoveApp {
     private ToolCallback[] allTools;
 
     /**
-     * AI 恋爱报告功能（支持调用工具）
+     * UI 设计报告功能（支持调用工具）
      *
      * @param message
      * @param chatId
@@ -207,7 +205,7 @@ public class LoveApp {
     private ToolCallbackProvider toolCallbackProvider;
 
     /**
-     * AI 恋爱报告功能（调用 MCP 服务）
+     * UI 设计报告功能（调用 MCP 服务）
      *
      * @param message
      * @param chatId

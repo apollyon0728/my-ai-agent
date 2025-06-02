@@ -23,7 +23,10 @@ public class ToolRegistration {
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
         MarkdownGenerationTool markdownGenerationTool = new MarkdownGenerationTool();
         WeatherSearchTool weatherSearchTool = new WeatherSearchTool();
+        TerminateTool terminateTool = new TerminateTool();
+        ShowFileDownloadURLTool showFileDownloadURLTool = new ShowFileDownloadURLTool();
         return ToolCallbacks.from(
+                showFileDownloadURLTool,
                 weatherSearchTool,
                 markdownGenerationTool,
                 fileOperationTool,
@@ -31,7 +34,8 @@ public class ToolRegistration {
                 webScrapingTool,
                 resourceDownloadTool,
                 terminalOperationTool,
-                pdfGenerationTool
+                pdfGenerationTool,
+                terminateTool
         );
     }
 }

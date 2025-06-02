@@ -30,6 +30,8 @@ public class KnowledgeBaseController {
     /**
      * 基于知识库进行问答
      */
+
+
     @PostMapping("/qa")
     public ResponseEntity<QAResponse> askQuestion(@RequestBody QARequest request) {
         QAResponse response = knowledgeBaseService.getAnswer(request.getQuestion());

@@ -4,6 +4,7 @@ package com.yam.myaiagent.tools;
  * 功能：
  * 日期：2025/5/29 15:11
  */
+
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONUtil;
 import com.yam.myaiagent.constant.FileConstant;
@@ -19,48 +20,52 @@ import java.util.Map;
  * Markdown 文件生成工具
  * 用于创建格式良好的 Markdown 文档
  */
-public class MarkdownGenerationTool {    @Tool(description = "Generate a Markdown file with given content and return file info", returnDirect = false)
-public String generateMarkdown(
-        @ToolParam(description = "Name of the file to save the generated Markdown") String fileName,
-        @ToolParam(description = "Content to be included in the Markdown file") String content) {
-    // 确保文件名以 .md 结尾
-    if (!fileName.toLowerCase().endsWith(".md")) {
-        fileName += ".md";
+public class MarkdownGenerationTool {
+    // 得到项目启动的ip 默认是本地
+    private static final String HOST = System.getProperty("server.host", "localhost");
+    // 得到项目启动的端口
+    private static final String PORT = System.getProperty("server.port", "8123");
+
+    @Tool(description = "Generate a Markdown file with given content and return file info", returnDirect = false)
+    public String generateMarkdown(
+            @ToolParam(description = "Name of the file to save the generated Markdown") String fileName,
+            @ToolParam(description = "Content to be included in the Markdown file") String content) {
+        // 确保文件名以 .md 结尾
+        if (!fileName.toLowerCase().endsWith(".md")) {
+            fileName += ".md";
+        }
+
+        String fileDir = FileConstant.FILE_SAVE_DIR + "/markdown";
+        String filePath = fileDir + "/" + fileName;
+
+        try {
+            // 创建目录（如果不存在）
+            FileUtil.mkdir(fileDir);
+
+            // 格式化 Markdown 内容（可选）
+            String formattedContent = formatMarkdownContent(content);
+
+            // 将内容写入文件
+            FileUtil.writeString(formattedContent, filePath, StandardCharsets.UTF_8);
+
+            // 获取文件信息
+            File file = new File(filePath);
+            Map<String, Object> fileInfo = new HashMap<>();
+            fileInfo.put("fileName", fileName);
+            fileInfo.put("filePath", filePath);
+            fileInfo.put("size", file.length());
+            fileInfo.put("sizeFormatted", FileUtil.readableFileSize(file.length()));
+            fileInfo.put("downloadUrl", "http://+"+ HOST+":" + PORT + "/api/files/markdown/" + fileName);
+
+            return "Markdown文件生成成功！\n" +
+                    "文件名: " + fileName + "\n" +
+                    "文件大小: " + FileUtil.readableFileSize(file.length()) + "\n" +
+                    "下载链接: http://" + HOST + ":" + PORT + "/api/files/markdown/" + fileName + "\n"+
+                    "文件详情: " + JSONUtil.toJsonStr(fileInfo);
+        } catch (Exception e) {
+            return "Error generating Markdown file: " + e.getMessage();
+        }
     }
-
-    String fileDir = FileConstant.FILE_SAVE_DIR + "/markdown";
-    String filePath = fileDir + "/" + fileName;
-
-    try {
-        // 创建目录（如果不存在）
-        FileUtil.mkdir(fileDir);
-
-        // 格式化 Markdown 内容（可选）
-        String formattedContent = formatMarkdownContent(content);
-
-        // 将内容写入文件
-        FileUtil.writeString(formattedContent, filePath, StandardCharsets.UTF_8);
-
-        // 获取文件信息
-        File file = new File(filePath);
-        Map<String, Object> fileInfo = new HashMap<>();
-        fileInfo.put("fileName", fileName);
-        fileInfo.put("filePath", filePath);
-        fileInfo.put("size", file.length());
-        fileInfo.put("sizeFormatted", FileUtil.readableFileSize(file.length()));
-        fileInfo.put("downloadUrl", "/api/files/download/" + fileName);
-        fileInfo.put("previewUrl", "/api/files/preview/" + fileName);
-
-        return "Markdown文件生成成功！\n" +
-                "文件名: " + fileName + "\n" +
-                "文件大小: " + FileUtil.readableFileSize(file.length()) + "\n" +
-                "下载链接: /api/files/download/" + fileName + "\n" +
-                "预览链接: /api/files/preview/" + fileName + "\n" +
-                "文件详情: " + JSONUtil.toJsonStr(fileInfo);
-    } catch (Exception e) {
-        return "Error generating Markdown file: " + e.getMessage();
-    }
-}
 
     /**
      * 格式化 Markdown 内容
@@ -87,6 +92,7 @@ public String generateMarkdown(
 
         // 添加自动生成的页脚
         formatted.append("\n---\n");
-        formatted.append("*Auto-generated at: ").append(new java.util.Date()).append("*");        return formatted.toString();
+        formatted.append("*Auto-generated at: ").append(new java.util.Date()).append("*");
+        return formatted.toString();
     }
 }

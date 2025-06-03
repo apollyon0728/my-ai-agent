@@ -127,29 +127,34 @@ public class ToolCallAgent extends ReActAgent {
             setState(AgentState.FINISHED);
         }
         
-        // 获取工具执行结果
-        String toolResults = toolResponseMessage.getResponses().stream()
+//        // 获取工具执行结果
+//        String toolResults = toolResponseMessage.getResponses().stream()
+//                .map(response -> "工具 " + response.name() + " 返回的结果：" + response.responseData())
+//                .collect(Collectors.joining("\n"));
+//
+//        // 让 AI 模型对工具执行结果进行解释和整合
+//        try {
+//            // 添加工具执行结果到消息列表
+//            getMessageList().add(new UserMessage("请对以下工具执行结果进行解释和整合：\n" + toolResults));
+//            // 调用 AI 模型进行解释
+//            Prompt explanationPrompt = new Prompt(getMessageList(), this.chatOptions);
+//            ChatResponse explanationResponse = getChatClient().prompt(explanationPrompt)
+//                    .system(getSystemPrompt())
+//                    .call()
+//                    .chatResponse();
+//            // 获取 AI 的解释结果
+//            String explanation = explanationResponse.getResult().getOutput().getText();
+//            // 记录 AI 的解释
+//            getMessageList().add(explanationResponse.getResult().getOutput());
+//            return explanation;
+//        } catch (Exception e) {
+//            log.error("AI 解释工具执行结果时出错：" + e.getMessage());
+//            return toolResults;
+//        }
+        String results = toolResponseMessage.getResponses().stream()
                 .map(response -> "工具 " + response.name() + " 返回的结果：" + response.responseData())
                 .collect(Collectors.joining("\n"));
-        
-        // 让 AI 模型对工具执行结果进行解释和整合
-        try {
-            // 添加工具执行结果到消息列表
-            getMessageList().add(new UserMessage("请对以下工具执行结果进行解释和整合：\n" + toolResults));
-            // 调用 AI 模型进行解释
-            Prompt explanationPrompt = new Prompt(getMessageList(), this.chatOptions);
-            ChatResponse explanationResponse = getChatClient().prompt(explanationPrompt)
-                    .system(getSystemPrompt())
-                    .call()
-                    .chatResponse();
-            // 获取 AI 的解释结果
-            String explanation = explanationResponse.getResult().getOutput().getText();
-            // 记录 AI 的解释
-            getMessageList().add(explanationResponse.getResult().getOutput());
-            return explanation;
-        } catch (Exception e) {
-            log.error("AI 解释工具执行结果时出错：" + e.getMessage());
-            return toolResults;
-        }
+        log.info(results);
+        return results;
     }
 }

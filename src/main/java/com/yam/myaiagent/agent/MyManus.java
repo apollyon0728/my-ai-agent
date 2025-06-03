@@ -20,7 +20,7 @@ public class MyManus extends ToolCallAgent {
 
     public MyManus(ToolCallback[] allTools, ChatModel dashscopeChatModel) {
         super(allTools);
-        this.setName("yuManus");
+        this.setName("MyManus");
         String SYSTEM_PROMPT = """
                 You are YuManus, an all-capable AI assistant, aimed at solving any task presented by the user.
                 You have various tools at your disposal that you can call upon to efficiently complete complex requests.

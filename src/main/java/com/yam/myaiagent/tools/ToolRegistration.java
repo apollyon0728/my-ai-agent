@@ -24,9 +24,9 @@ public class ToolRegistration {
         MarkdownGenerationTool markdownGenerationTool = new MarkdownGenerationTool();
         WeatherSearchTool weatherSearchTool = new WeatherSearchTool();
         TerminateTool terminateTool = new TerminateTool();
-        ShowFileDownloadURLTool showFileDownloadURLTool = new ShowFileDownloadURLTool();
+//        ShowFileDownloadURLTool showFileDownloadURLTool = new ShowFileDownloadURLTool();
         return ToolCallbacks.from(
-                showFileDownloadURLTool,
+//                showFileDownloadURLTool,
                 weatherSearchTool,
                 markdownGenerationTool,
                 fileOperationTool,

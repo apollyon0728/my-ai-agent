@@ -5,7 +5,7 @@ spring:
     active: local
   ai:
     dashscope:
-      api-key: your-api-key
+      api-key: ${ALIBABA_API_KEY:your-api-key}
       chat:
         options:
           model: qwen-turbo-latest

@@ -33,6 +33,9 @@ public class AiController {
     @Resource
     private UIApp uiApp;
 
+    @Resource
+    private JavaInterviewApp javaInterviewApp;
+
 
     @Resource
     private ToolCallback[] allTools;
@@ -115,6 +118,80 @@ public class AiController {
     public SseEmitter doChatWithManus(String message) {
         MyManus yuManus = new MyManus(allTools, dashscopeChatModel);
         return yuManus.runStream(message);
+    }
+
+    // ==================== Java面试大师相关接口 ====================
+
+    /**
+     * SSE 流式调用 Java面试大师应用
+     *
+     * @param message 面试问题或技术问题
+     * @param chatId 会话ID
+     * @return 流式响应
+     */
+    @GetMapping(value = "/java_interview/chat/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> doChatWithJavaInterviewSSE(String message, String chatId) {
+        return javaInterviewApp.doChatByStream(message, chatId);
+    }
+
+    /**
+     * Java面试基础对话
+     *
+     * @param message 面试问题
+     * @param chatId 会话ID
+     * @return 回复内容
+     */
+    @GetMapping("/java_interview/chat")
+    public String doChatWithJavaInterview(String message, String chatId) {
+        return javaInterviewApp.doChat(message, chatId);
+    }
+
+    /**
+     * 生成Java面试评估报告
+     *
+     * @param message 面试内容
+     * @param chatId 会话ID
+     * @return 面试报告
+     */
+    @GetMapping("/java_interview/report")
+    public JavaInterviewApp.JavaInterviewReport generateJavaInterviewReport(String message, String chatId) {
+        return javaInterviewApp.generateInterviewReport(message, chatId);
+    }
+
+    /**
+     * Java知识库问答
+     *
+     * @param message 技术问题
+     * @param chatId 会话ID
+     * @return 详细解答
+     */
+    @GetMapping("/java_interview/knowledge")
+    public String doChatWithJavaKnowledge(String message, String chatId) {
+        return javaInterviewApp.doChatWithJavaKnowledge(message, chatId);
+    }
+
+    /**
+     * Java面试工具调用
+     *
+     * @param message 用户消息
+     * @param chatId 会话ID
+     * @return 回复内容
+     */
+    @GetMapping("/java_interview/tools")
+    public String doChatWithJavaInterviewTools(String message, String chatId) {
+        return javaInterviewApp.doChatWithTools(message, chatId);
+    }
+
+    /**
+     * Java面试MCP服务调用
+     *
+     * @param message 用户消息
+     * @param chatId 会话ID
+     * @return 回复内容
+     */
+    @GetMapping("/java_interview/mcp")
+    public String doChatWithJavaInterviewMcp(String message, String chatId) {
+        return javaInterviewApp.doChatWithMcp(message, chatId);
     }
 
 

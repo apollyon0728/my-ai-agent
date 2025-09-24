@@ -13,8 +13,8 @@ class WebSearchToolTest {
 
     @Test
     void searchWeb() {
-        WebSearchTool webSearchTool = new WebSearchTool(searchApiKey);
-        String query = " ";
+        WebSearchTool webSearchTool = new WebSearchTool();
+        String query = "Java编程";
         String result = webSearchTool.searchWeb(query);
         Assertions.assertNotNull(result);
     }

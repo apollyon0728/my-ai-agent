@@ -25,9 +25,13 @@ public class QueryRewriter {
 
     /**
      * 执行查询重写
-     *
-     * @param prompt
-     * @return
+     * 这段代码的功能是执行查询重写：
+     * 1. 将输入的`prompt`字符串封装成`Query`对象
+     * 2. 调用`queryTransformer.transform()`方法对查询进行重写转换
+     * 3. 返回重写后的查询文本内容
+     * 主要作用是通过预定义的转换器优化或改写用户的查询语句。
+     * @param prompt 用户输入的查询
+     * @return  重写后的查询文本内容
      */
     public String doQueryRewrite(String prompt) {
         Query query = new Query(prompt);

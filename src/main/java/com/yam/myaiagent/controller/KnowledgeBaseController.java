@@ -5,23 +5,31 @@ import com.yam.myaiagent.model.QAResponse;
 import com.yam.myaiagent.service.KnowledgeBaseService;
 import jakarta.annotation.Resource;
 import org.springframework.ai.document.Document;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+/**
+ * 知识库控制器类
+ * 该类负责处理知识库相关的REST API请求，提供知识库的增删改查等操作接口。
+ * 所有接口都映射到"/api/knowledge"路径下。
+ */
 @RestController
 @RequestMapping("/api/knowledge")
 public class KnowledgeBaseController {
+
 
     @Resource
     private KnowledgeBaseService knowledgeBaseService;
 
     /**
      * 上传Markdown文档到知识库
+     * （加载新文档并添加到向量存储 postgresSQL存储向量化数据）
      */
-    @PostMapping("/upload")
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file) {
         knowledgeBaseService.uploadMarkdownDocument(file);
         return ResponseEntity.ok("文档上传成功");

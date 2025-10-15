@@ -1,0 +1,815 @@
+# GIT
+
+https://github.com/apollyon0728/my-ai-agent
+
+## 项目介绍
+
+My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代理服务，集成了现代大模型能力，提供对话记忆、多模态交互等功能。本项目通过整合阿里云灵积大模型服务，实现了智能化的人机交互体验，并支持基于 RAG（检索增强生成）的知识库问答能力。
+
+ 
+
+## 系统架构
+
+**项目采用模块化设计，主要包括：**
+
+- **核心服务模块**：基于 Spring Boot 的 Web 服务
+- **AI 对话模块**：集成 Spring AI 与阿里云大模型能力
+- **记忆持久化模块**：实现会话状态的本地文件持久化
+- **图像搜索服务**：独立的 MCP 服务模块
+- **知识库模块**：基于 PGVector 的向量数据库存储和检索服务
+- **智能代理模块**：实现 AI 自主决策和工具调用能力
+
+ 
+
+**核心功能**
+
+- ✅ **智能对话**：接入阿里云灵积模型，支持自然语言交互
+- ✅ **对话记忆**：基于文件系统的会话记忆持久化，保持上下文连贯性
+- ✅ **图像搜索**：独立模块支持基于图像的搜索功能
+- ✅ **智能代理**：
+  - 支持 AI 自主决策和任务规划
+  - 多轮对话中的工具调用能力
+  - 基于 ReAct 模式的推理和执行
+  - 灵活的工具注册和使用机制
+- ✅ **知识库问答**：
+  - 支持 Markdown 文档上传和管理
+  - 基于 RAG 技术的智能问答
+  - 使用 PGVector 进行高效的向量检索
+  - 支持文档的增删改查操作
+
+ 
+
+## 技术栈
+
+- **后端框架**：Spring Boot 3.4.x
+- **AI 框架**：Spring AI (1.0.0-M6.x)
+- **大模型接入**：
+  - 阿里云 DashScope SDK (2.19.1)
+  - Spring AI Alibaba (1.0.0-M6.1)
+  - Ollama 集成
+- **向量数据库**：
+  - PostgreSQL with pgvector 扩展
+  - Spring AI VectorStore 集成
+- **序列化工具**：Kryo
+- **构建工具**：Maven 3.9.9
+- **其他工具**：
+  - Hutool (5.8.37)
+  - Lombok
+- **运行环境**：Java 21
+
+
+
+## 快速开始
+
+**环境要求**
+
+- JDK 21+
+- Maven 3.9+
+- 阿里云账号和 API Key（用于灵积模型访问）
+
+ 
+
+**安装与运行**
+
+1. 克隆项目到本地
+
+```
+git clone https://github.com/your-username/my-ai-agent.git
+cd my-ai-agent
+```
+
+
+
+1. 配置环境变量
+
+```
+ 阿里云 API Key（必需）
+export ALIBABA_API_KEY=your_api_key_here
+```
+
+
+
+1. 构建项目
+
+```
+./mvnw clean package
+```
+
+
+
+1. 运行主应用
+
+```
+java -jar target/my-ai-agent-0.0.1-SNAPSHOT.jar
+```
+
+
+
+1. 运行图像搜索服务（可选）
+
+```
+cd my-image-search-mcp-server
+../mvnw spring-boot:run
+```
+
+
+
+**项目结构**
+
+```
+my-ai-agent/
+├── src/main/java/com/yam/myaiagent/
+│   ├── chatmemory/           对话记忆实现
+│   ├── constant/             常量定义
+│   ├── controller/           HTTP 接口控制器
+│   ├── service/              业务逻辑服务
+│   └── MyAiAgentApplication.java   应用入口
+├── my-image-search-mcp-server/     图像搜索服务模块
+├── .mvn/                    Maven 包装器配置
+├── pom.xml                  Maven 项目配置
+└── README.md                项目说明文档
+```
+
+
+
+**配置说明**
+
+主要配置项包括：
+
+- **聊天记忆存储路径**：默认为项目根目录下的 `/tmp` 文件夹
+- **模型参数**：可在应用配置中调整大模型的参数设置
+- **服务端口**：默认为 Spring Boot 标准端口 8080
+- **向量数据库配置**：
+  - PostgreSQL 连接信息
+  - pgvector 相关参数设置
+
+ 
+
+## API 接口
+
+ **健康检查**
+
+```json
+GET /health
+响应: "ok"
+```
+
+
+
+ **知识库管理接口**
+
+```json
+ 上传文档
+POST /api/knowledge/upload
+Content-Type: multipart/form-data
+
+ 获取文档列表
+GET /api/knowledge/documents
+
+ 删除文档
+DELETE /api/knowledge/documents/{documentId}
+
+ 知识库问答
+POST /api/knowledge/qa
+Content-Type: application/json
+{
+    "question": "您的问题"
+}
+```
+
+
+
+**高级特性**
+
+文件持久化对话记忆
+
+项目实现了基于 Kryo 序列化的文件持久化对话记忆机制，支持会话状态的保存与恢复，保证了对话的连贯性和上下文理解。
+
+ 智能代理系统
+
+- 基于 ReAct（Reasoning and Acting）模式的智能代理实现
+- 支持多轮对话中的自主决策和工具调用
+- 灵活的工具注册机制，支持动态扩展
+- 状态管理和执行流程控制
+- 支持流式输出和异步处理
+
+ 
+
+**图像搜索服务**
+
+独立的图像搜索模块采用 Spring AI MCP 服务架构，提供多模态交互能力。
+
+ RAG 知识库问答
+
+- 基于 PGVector 的高性能向量存储
+- 支持文档的语义检索和相关性排序
+- 智能查询重写优化检索效果
+- 支持多种文档格式的处理和向量化
+
+
+
+# 代码解读★★
+
+## 知识库服务实现类 ★★
+
+KnowledgeBaseServiceImpl
+
+```java
+/**
+ * 功能：知识库服务实现类
+ * 日期：2025/5/19 20:56
+ */
+@Service
+@Slf4j
+public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
+
+
+    @Resource
+    @Qualifier("pgVectorVectorStore")  // 或 "loveAppVectorStore"
+    private VectorStore vectorStore;
+
+    @Resource
+    private LoveAppDocumentLoader documentLoader;
+
+
+    @Resource
+    private QueryRewriter queryRewriter;
+    @Resource
+    private VectorStore pgVectorVectorStore;
+
+    private static final String MARKDOWN_DIR = "docs/markdown/";
+
+
+    private final ChatClient chatClient;
+
+    private static final String SYSTEM_PROMPT_NORMAL = "你是一个AI助手，可以帮助用户解答各种问题。";
+
+    /**
+     * 初始化 ChatClient
+     *
+     * @param dashscopeChatModel
+     */
+    public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) {
+//        // 初始化基于文件的对话记忆
+//        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
+//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+        // 初始化基于内存的对话记忆
+        ChatMemory chatMemory = new InMemoryChatMemory();
+        chatClient = ChatClient.builder(dashscopeChatModel)
+                .defaultSystem(SYSTEM_PROMPT_NORMAL)
+                .defaultAdvisors(
+                        new MessageChatMemoryAdvisor(chatMemory),
+                        // 自定义日志 Advisor，可按需开启
+                        new MyLoggerAdvisor()
+//                        // 自定义推理增强 Advisor，可按需开启
+//                       ,new ReReadingAdvisor()
+                )
+                .build();
+    }
+
+    /**
+     * 上传Markdown文档到知识库
+     * @param file
+     */
+    @Override
+    public void uploadMarkdownDocument(MultipartFile file) {
+        try {
+            // 确保目录存在
+            Path dirPath = Paths.get(MARKDOWN_DIR);
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+
+            // 保存文件
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = dirPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath);
+
+            // 加载新文档并添加到向量存储
+            List<Document> documents = documentLoader.loadMarkdownByPath(String.valueOf(filePath.toFile()));
+            addDocuments(documents);
+        } catch (IOException e) {
+            throw new RuntimeException("文档上传失败", e);
+        }
+    }
+
+    @Override
+    public void addDocuments(List<Document> documents) {
+        vectorStore.add(documents);
+    }
+
+     /**
+     * 获取问题的回答
+     *
+     * @param message 用户输入的问题消息
+     * @return QAResponse 包含回答内容的响应对象
+     */
+    @Override
+    public QAResponse getAnswer(String message) {
+        String chatId = UUID.randomUUID().toString();
+
+        // FIXME 查询重写（主要作用是通过预定义的转换器优化或改写用户的查询语句）
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+
+        // 构建聊天请求并获取响应
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                // 使用改写后的查询
+                .user(rewrittenMessage)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                // 开启日志，便于观察效果
+                .advisors(new MyLoggerAdvisor())
+                // 应用 RAG 检索增强服务（基于 PgVector 向量存储）
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .call()
+                .chatResponse();
+
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+
+        QAResponse qaResponse = new QAResponse();
+        qaResponse.setAnswer(content);
+        return qaResponse;
+    }
+
+
+    @Override
+    public List<Document> getDocumentList() {
+        // 这里需要实现文档列表的获取逻辑
+        // 可以从文件系统或数据库中获取
+        return documentLoader.loadMarkdowns();
+    }
+
+    @Override
+    public void deleteDocument(String documentId) {
+
+    }
+
+    @Override
+    public void reloadAllDocuments() {
+
+    }
+}
+```
+
+
+
+这段代码是Spring Boot应用程序中的一个服务实现类，主要负责处理与知识库相关的操作，包括上传Markdown文档、添加文档到向量存储、获取问题的回答以及获取文档列表等功能。以下是对代码的详细解读：
+
+1. **类定义和注解**
+   - `@Service`：标记这个类是一个服务类。
+   - `@Slf4j`：使用Lombok提供的日志注解，简化日志记录。
+
+2. **成员变量和构造函数**
+   - `vectorStore`：向量存储，用于存储文档的向量表示。
+   - `documentLoader`：文档加载器，用于从文件系统中读取Markdown文档。
+   - `queryRewriter`：查询重写器，用于优化或改写用户的查询语句。
+   - `pgVectorVectorStore`：另一个向量存储，用于RAG检索增强服务。
+   - `chatClient`：Chat Client，用于与大模型进行对话。
+
+   在构造函数中，通过DI（Dependency Injection）方式获取必要的依赖，并初始化ChatClient。ChatClient的初始化包括设置默认系统提示消息和添加默认的Advisor（日志Advisor和消息ChatMemoryAdvisor）。
+
+3. **上传Markdown文档**
+   - `uploadMarkdownDocument(MultipartFile file)`：接收上传的Markdown文件，保存到指定目录，并加载新文档到向量存储中。
+
+4. **添加文档到向量存储**
+   - `addDocuments(List<Document> documents)`：将给定的文档列表添加到向量存储中。
+
+5. **获取问题的回答**
+   - `getAnswer(String message)`：接收用户输入的问题消息，通过ChatClient与大模型进行对话，获取回答内容并返回。
+
+   在这个方法中，首先对用户输入的消息进行查询重写，然后构建聊天请求并获取响应。ChatClient的调用过程中，使用了改写后的查询，并指定了聊天记忆的ID和检索大小。同时，开启了日志Advisor和RAG检索增强服务（基于PgVector向量存储）。
+
+6. **获取文档列表**
+   - `getDocumentList()`：从文件系统或数据库中获取文档列表。
+
+7. **删除文档**
+   - `deleteDocument(String documentId)`：删除指定ID的文档。
+
+8. **重新加载所有文档**
+   - `reloadAllDocuments()`：重新加载所有文档到向量存储中。
+
+大模型的选择在这个例子中并没有明确指定，但可以推测是使用了一个支持RAG（Retrieval-Augmented Generation）功能的对话大模型。RAG是一种结合检索和生成的技术，能够帮助大模型更好地理解和回答问题。通过向量存储（如PgVectorVectorStore）检索相关的文档，然后将这些文档作为上下文信息提供给大模型，增强了大模型的对话能力。
+
+
+
+### getAnswer ★★
+
+```java
+/**
+ * 获取问题的回答
+ *
+ * @param message 用户输入的问题消息
+ * @return QAResponse 包含回答内容的响应对象
+ */
+@Override
+public QAResponse getAnswer(String message) {
+    String chatId = UUID.randomUUID().toString();
+
+    // FIXME 查询重写（主要作用是通过预定义的转换器优化或改写用户的查询语句）
+    String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+
+    // 构建聊天请求并获取响应
+    ChatResponse chatResponse = chatClient
+            .prompt()
+            // 使用改写后的查询
+            .user(rewrittenMessage)
+            .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                    .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+            // 开启日志，便于观察效果
+            .advisors(new MyLoggerAdvisor())
+            // 应用 RAG 检索增强服务（基于 PgVector 向量存储）
+            .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+            .call()
+            .chatResponse();
+
+    String content = chatResponse.getResult().getOutput().getText();
+    log.info("content: {}", content);
+
+    QAResponse qaResponse = new QAResponse();
+    qaResponse.setAnswer(content);
+    return qaResponse;
+}
+```
+
+
+
+这段代码是Spring Boot应用程序中的一个服务方法，用于获取用户问题的回答。下面是对这段代码的详细解读：
+
+1. **获取问题的回答方法定义**
+   - `getAnswer(String message)`：接收一个字符串参数`message`，表示用户输入的问题消息。
+
+2. **生成唯一的聊天ID**
+   - `String chatId = UUID.randomUUID().toString();`：生成一个随机的UUID作为聊天的唯一ID。
+
+3. **查询重写**
+   - `String rewrittenMessage = queryRewriter.doQueryRewrite(message);`：使用`queryRewriter`实例对用户输入的消息进行查询重写。查询重写的目的是通过预定义的转换器优化或改写用户的查询语句，以便更好地匹配知识库中的信息。
+
+4. **构建聊天请求并获取响应**
+   - `ChatResponse chatResponse = chatClient.prompt().user(rewrittenMessage).advisors(...).call().chatResponse();`：使用`chatClient`实例构建聊天请求，并获取ChatResponse对象。
+     - `.prompt()`：开始一个新的对话。
+     - `.user(rewrittenMessage)`：设置用户输入的消息。
+     - `.advisors(...)`：添加Advisor（顾问）来增强对话过程。这里添加了三个Advisor：
+       - `spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId).param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)`：设置聊天记忆的ID和检索大小。
+       - `new MyLoggerAdvisor()`：添加自定义的日志Advisor，用于日志记录。
+       - `new QuestionAnswerAdvisor(pgVectorVectorStore)`：添加RAG检索增强服务的Advisor，基于PgVector向量存储进行检索。
+     - `.call()`：执行对话请求。
+     - `.chatResponse()`：获取ChatResponse对象。
+
+5. **提取回答内容**
+   - `String content = chatResponse.getResult().getOutput().getText();`：从ChatResponse对象中提取回答内容。
+
+6. **日志记录**
+   - `log.info("content: {}", content);`：使用Slf4j日志记录回答内容。
+
+7. **构建并返回QAResponse对象**
+   - `QAResponse qaResponse = new QAResponse();`：创建一个新的QAResponse对象。
+   - `qaResponse.setAnswer(content);`：将回答内容设置到QAResponse对象中。
+   - `return qaResponse;`：返回包含回答内容的QAResponse对象。
+
+总的来说，这段代码实现了与大模型的对话，通过查询重写、聊天记忆和RAG检索增强服务来优化对话过程，并最终返回用户问题的回答。
+
+
+
+## 向量存储
+
+### 创建并配置vectorStore向量存储Bean
+
+PGVector 向量存储配置定义
+
+通过 application.yml 验证，项目有标准 spring.datasource 配置，说明 Spring Boot 会自动创建 DataSource、JdbcTemplate Bean。对于 EmbeddingModel，因 spring.ai.dashscope 配置存在，说明 Spring AI 相关 starter 也会根据配置自动注册 EmbeddingModel 类型的 Bean。两者都是通过 Spring Boot 自动装配机制生成，无需手写 Bean。
+
+还可以补充，**Spring 在调用 @Bean 方法时，会自动查找容器中类型匹配的 Bean 并注入参数。如果有多个同类型 Bean，还可以用 @Qualifier 指定。结论：这两个参数的 Bean 都由 Spring Boot 或相关 starter 自动生成并注册到容器，@Bean 方法参数只需声明类型即可自动注入，无需手动操作。**
+
+关于 `@Bean public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel)` 里的 `jdbcTemplate` 和 `dashscopeEmbeddingModel` 参数来源说明如下：
+
+1. **JdbcTemplate**
+   - 项目在 [`application.yml`](https://file+.sourcegraphstatic.com/main-resource-nonce?288809961#) 已配置了 `spring.datasource`，Spring Boot 会自动根据此配置创建 `DataSource` Bean。
+   - Spring Boot 框架检测到有 `DataSource` 后，会自动创建 `JdbcTemplate` Bean 并注册到容器中。
+   - 因此，`JdbcTemplate` 可以直接作为参数被 Spring 自动注入到 `@Bean` 方法。
+2. **EmbeddingModel dashscopeEmbeddingModel**
+   - 配置文件里的 `spring.ai.dashscope` 部分由 Spring AI 相关 starter 自动识别。
+   - Spring AI starter 会根据配置自动创建适配 DashScope 的 `EmbeddingModel` Bean（通常命名为 `dashscopeEmbeddingModel` 或类似）。
+   - 只要依赖和配置正确，这个 Bean 会自动注册到容器，也能被注入到 `@Bean` 方法参数。
+3. **Spring 的自动装配机制**
+   - Spring 调用 `@Bean` 方法时，会自动查找容器中与参数类型（和名称）匹配的 Bean 注入，无需手动提供或 new。
+   - 如果容器中有多个同类型 Bean，可以用 `@Qualifier` 注解指定注入哪个。
+
+**总结：**
+
+- 这两个参数都是通过 Spring Boot（JdbcTemplate）和 Spring AI（EmbeddingModel）自动装配生成的 Bean。
+- 你只需在 `@Bean` 方法中直接声明参数类型，Spring 会负责自动传入，无需手动 new 或调用其他方法。
+
+如果依赖和 starter 配置齐全，这一切都是自动完成的。
+
+```java
+package com.yam.myaiagent.rag;
+
+import jakarta.annotation.Resource;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
+
+import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistanceType.COSINE_DISTANCE;
+import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
+
+/**
+ *  PGVector 向量存储配置
+ */
+
+@Configuration
+public class PgVectorVectorStoreConfig {
+
+    @Resource
+    private LoveAppDocumentLoader loveAppDocumentLoader;
+
+    /**
+     * 创建并配置PgVector向量存储Bean
+     *
+     * @param jdbcTemplate 数据库操作模板，用于执行SQL语句
+     * @param dashscopeEmbeddingModel 嵌入模型，用于将文本转换为向量表示
+     * @return 配置好的向量存储实例
+     */
+    @Bean
+    public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel) {
+        // 构建PgVector存储配置
+        VectorStore vectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
+                .dimensions(1536)                    // 可选：默认为模型维度或1536
+                .distanceType(COSINE_DISTANCE)       // 可选：默认为余弦距离
+                .indexType(HNSW)                     // 可选：默认为HNSW
+                .initializeSchema(true)              // 可选：默认为false
+                .schemaName("public")                // 可选：默认为"public"
+                .vectorTableName("vector_store")     // 可选：默认为"vector_store"
+                .maxDocumentBatchSize(10000)         // 可选：默认为10000
+                .build();
+        // 每次启动都会加载文档，加载一次即可
+//        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+//        vectorStore.add(documents);
+        return vectorStore;
+    }
+
+}
+```
+
+
+
+VectorStore配置类，用于创建和配置PgVector向量存储的Bean。下面是对代码中各个参数的详细解读：
+
+1. **pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel)**：这个方法接受两个参数：
+   - `JdbcTemplate jdbcTemplate`：数据库操作模板，用于执行SQL语句。
+   - `EmbeddingModel dashscopeEmbeddingModel`：嵌入模型，用于将文本转换为向量表示。
+
+2. **PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)**：使用Builder模式创建PgVector存储的配置对象。
+
+3. **.dimensions(1536)**：设置向量的维度。这里将维度设置为1536，可能是根据特定的嵌入模型或需求来选择的。
+
+4. **.distanceType(COSINE_DISTANCE)**：设置向量之间的距离计算方法。这里使用余弦距离（COSINE_DISTANCE），是常见的文本相似度计算方法。
+
+5. **.indexType(HNSW)**：设置向量存储的索引类型。这里使用HNSW（Hierarchical Navigable Small World）索引，适合高维向量空间中的近邻搜索。
+
+6. **.initializeSchema(true)**：设置是否在启动时初始化数据库模式。这里设置为true，表示每次启动都会初始化数据库模式。
+
+7. **.schemaName("public")**：设置数据库模式的名称。这里使用默认的"public"模式。
+
+8. **.vectorTableName("vector_store")**：设置向量表的名称。这里使用默认的"vector_store"表。
+
+9. **.maxDocumentBatchSize(10000)**：设置每次批量添加文档的最大数量。这里将其设置为10000。
+
+10. **.build()**：构建并返回配置好的向量存储实例。
+
+11. **// 每次启动都会加载文档，加载一次即可**：这是一条注释，表明每次应用程序启动时都会加载文档到向量存储中。因此，实际上不需要在这里加载文档。
+
+12. **List<Document> documents = loveAppDocumentLoader.loadMarkdowns();**：这行代码是被注释掉的，原本是用来加载Markdown文档的。loveAppDocumentLoader是一个自定义的文档加载器，用于从文件系统中读取Markdown文档并将其转换为Document对象。
+
+13. **vectorStore.add(documents);**：这行代码也是被注释掉的，原本是用来将加载的文档添加到向量存储中的。
+
+总的来说，这段代码配置了一个PgVector向量存储实例，并设置了相关的参数，包括向量维度、距离计算方法、索引类型等。这些参数会影响向量存储的性能和准确性。
+
+
+
+### 如何调整和优化vector参数
+
+**[GTP4.1] 如何调整和优化vector参数? **
+
+调整和优化vector参数可以根据具体的需求和场景进行。以下是一些常见的参数调整和优化建议：
+
+1. **向量维度（dimensions）**：
+   - 如果你发现向量太稀疏或过于密集，可以尝试调整维度。较高的维度可能会捕捉更多的细节，但也可能导致计算复杂性增加和过拟合的风险。
+   - 对于大多数NLP任务，维度在100到1000之间是常见的选择。
+
+2. **距离计算方法（distanceType）**：
+   - 余弦距离（COSINE_DISTANCE）通常用于文本相似度计算，因为它可以有效地处理高维向量。
+   - 欧几里得距离（EUCLIDEAN_DISTANCE）可能更适合一些其他类型的数据，例如图像或音频特征。
+
+3. **索引类型（indexType）**：
+   - HNSW（Hierarchical Navigable Small World）索引是目前最流行的选择，适合高维向量空间中的近邻搜索。
+   - 如果你需要更快的索引构建时间，可以尝试使用FLAT（Flat）索引，但这可能会牺牲一些查询性能。
+
+4. **初始化数据库模式（initializeSchema）**：
+   - 如果你在每次启动应用程序时都想重新初始化数据库模式，可以将其设置为true。
+   - 如果你只想在第一次启动时初始化数据库模式，或者已经有了一个预先创建的模式，可以将其设置为false。
+
+5. **数据库模式名称（schemaName）和向量表名称（vectorTableName）**：
+   - 这些参数可以根据你的数据库架构进行调整。确保使用的名称与你的数据库结构相匹配。
+
+6. **批量添加文档的最大数量（maxDocumentBatchSize）**：
+   - 这个参数影响向量存储的性能。较大的批量大小可以提高添加文档的效率，但也可能增加内存消耗和等待时间。
+   - 根据你的硬件资源和文档数量，选择一个合适的批量大小。
+
+7. **使用合适的嵌入模型**：
+   - 不同的嵌入模型可能会产生不同的向量表示。选择一个适合你任务的嵌入模型非常重要。
+   - 如果你使用的是预训练的嵌入模型，确保它与你的文本数据相匹配。
+
+8. **监控和评估性能**：
+   - 在调整参数后，监控向量存储的性能和准确性。
+   - 使用一些基准测试或评估指标来衡量你的模型的效果，例如精确率、召回率或F1分数。
+
+9. **考虑使用其他向量存储库**：
+   - 如果你发现PgVector不满足你的需求，可以考虑使用其他向量存储库，例如Faiss、Annoy或Hnswlib等。
+   - 不同的向量存储库可能有不同的优缺点和适用场景。
+
+总的来说，调整和优化vector参数需要根据具体的任务和数据进行实验和评估。没有一个通用的最佳配置，需要根据实际情况进行调整。
+
+
+
+### 上传Markdown文档到知识库-向量存储
+
+加载新文档并添加到向量存储 postgresSQL存储向量化数据
+
+```java
+/**
+ * 知识库控制器类
+ * 该类负责处理知识库相关的REST API请求，提供知识库的增删改查等操作接口。
+ * 所有接口都映射到"/api/knowledge"路径下。
+ */
+@RestController
+@RequestMapping("/api/knowledge")
+public class KnowledgeBaseController {
+  	
+  /**
+   * 上传Markdown文档到知识库
+   * （加载新文档并添加到向量存储 postgresSQL存储向量化数据）
+   */
+  @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file) {
+      knowledgeBaseService.uploadMarkdownDocument(file);
+      return ResponseEntity.ok("文档上传成功");
+  }
+  
+```
+
+
+
+**上传Markdown文档到知识库，写入到向量数据库中**
+
+- vectorStore.add(documents);
+
+PgVectorVectorStoreConfig中配置了vectorStore(org.springframework.ai.vectorstore)
+
+```java
+/**
+ * 功能：知识库服务实现类
+ * 日期：2025/5/19 20:56
+ */
+@Service
+@Slf4j
+public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
+
+  /**
+  * 上传Markdown文档到知识库
+  * @param file
+  */
+  @Override
+  public void uploadMarkdownDocument(MultipartFile file) {
+    try {
+        // 确保目录存在
+        Path dirPath = Paths.get(MARKDOWN_DIR);
+        if (!Files.exists(dirPath)) {
+            Files.createDirectories(dirPath);
+        }
+
+        // 保存文件
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path filePath = dirPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath);
+
+        // 加载新文档并添加到向量存储
+        List<Document> documents = documentLoader.loadMarkdownByPath(String.valueOf(filePath.toFile()));
+        addDocuments(documents);
+    } catch (IOException e) {
+        throw new RuntimeException("文档上传失败", e);
+    }
+  }
+
+  @Override
+  public void addDocuments(List<Document> documents) {
+    vectorStore.add(documents);
+  }
+```
+
+
+
+
+
+# 相关知识点
+
+## 检索增强生成 ★★
+
+`.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))` 这一行代码在大模型对话系统中扮演了**检索增强生成**（Retrieval-Augmented Generation, RAG）的关键角色。下面从作用、原理、技术栈和相关知识点几个方面进行重点解读：
+
+
+
+**一、作用：实现检索增强生成（RAG）**
+
+ 核心目标：
+在大模型（LLM）生成回答前，**先从外部知识库**（如企业文档、FAQ、数据库等）。
+
+ 为什么需要？
+- **大模型知识有限**：LLM 的训练数据截止于某个时间点，无法获取最新或私有信息。
+- **幻觉问题**：LLM 可能“编造”答案，尤其在面对专业或特定领域问题时。
+- **提升准确性与可信度**：通过引入真实、权威的上下文，使回答更可靠。
+
+
+
+**二、技术原理：RAG 工作流程**
+
+1. **用户提问** → `message`
+2. **查询重写**（可选）→ `rewrittenMessage`（提升检索效果）
+3. **向量化查询**：将 `rewrittenMessage` 通过嵌入模型（如 text-embedding-ada-002）转换为向量
+4. **向量检索**：在 `pgVectorVectorStore`（基于 PostgreSQL + pgvector 插件的向量数据库）中查找与查询向量最相似的 Top-K 文档片段
+5. **上下文注入**：将检索到的相关文档作为上下文（context）拼接到 prompt 中
+6. **大模型生成**：LLM 基于“问题 + 检索到的上下文”生成最终回答
+
+> `QuestionAnswerAdvisor` 就是负责第 3–5 步的“顾问”（Advisor），它拦截对话流程，在调用 LLM 前动态注入检索结果。
+
+
+
+**三、关键组件解析**
+
+ 1. `QuestionAnswerAdvisor`
+- 是一个自定义的 **Spring AI Advisor**（或类似框架中的拦截器）
+- 在 prompt 构建阶段介入，执行：
+  - 向量检索
+  - 构造 RAG prompt（如：“基于以下资料回答问题：{retrieved_docs}。问题：{query}”）
+- 通常封装了与向量数据库交互的逻辑
+
+ 2. `pgVectorVectorStore`
+- 基于 **PostgreSQL** 的向量存储扩展 [pgvector](https://github.com/pgvector/pgvector)
+- 支持高效相似性搜索（如余弦相似度、内积、欧氏距离）
+- 优点：与关系型数据共存、事务支持、易于部署维护
+- 存储内容通常是：文档分块 + 嵌入向量 + 元数据（如来源、时间）
+
+
+
+**四、相关知识点扩展**
+
+| 概念                                         | 说明                                                         |
+| -- |  |
+| **Embedding**                                | 将文本转换为高维向量，语义相近的文本向量距离更近             |
+| **Chunking**                                 | 将长文档切分为小段（chunks），便于向量化和检索               |
+| **Similarity Search**                        | 在向量空间中查找最接近查询向量的 Top-K 向量                  |
+| **Prompt Engineering for RAG**               | 设计 prompt 模板，引导 LLM 优先使用检索内容作答              |
+| **HyDE**（Hypothetical Document Embeddings） | 先让 LLM 生成假设答案，再用其向量检索，提升召回率（高级技巧） |
+| **Re-ranking**                               | 对初检结果用 Cross-Encoder 等模型二次排序，提升精度          |
+
+
+
+**五、实际效果示例**
+
+**用户问**：  
+
+> “我们公司最新的请假政策是什么？”
+
+**系统行为**：
+1. 查询重写为：“查询公司最新的员工请假政策”
+2. 向量检索命中 HR 手册中“2025年员工休假制度”片段
+3. LLM 接收到上下文：
+   ```
+   相关资料：
+   - 根据《2025年员工手册》第3章，年假为15天，病假需提供医院证明...
+   问题：我们公司最新的请假政策是什么？
+   ```
+4. LLM 基于资料生成准确回答，而非“根据我的训练数据……”
+
+
+
+**六、总结**
+
+`.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))` 的本质是：
+
+> **让大模型“先查资料再回答”**，通过向量数据库实现动态知识注入，解决 LLM 的知识滞后与幻觉问题，是构建企业级智能问答系统的核心技术之一。
+
+这种模式结合了 **传统信息检索**（向量搜索） 与 **生成式 AI**（LLM） 的优势，是当前 RAG 架构的标准实践。
+
+
+
+
+

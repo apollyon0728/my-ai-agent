@@ -32,13 +32,12 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
 
 /**
- * 功能：
+ * 功能：知识库服务实现类
  * 日期：2025/5/19 20:56
  */
 @Service
 @Slf4j
 public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
-
 
     @Resource
     @Qualifier("pgVectorVectorStore")  // 或 "loveAppVectorStore"
@@ -47,9 +46,9 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     @Resource
     private LoveAppDocumentLoader documentLoader;
 
-
     @Resource
     private QueryRewriter queryRewriter;
+
     @Resource
     private VectorStore pgVectorVectorStore;
 
@@ -69,6 +68,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 //        // 初始化基于文件的对话记忆
 //        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
 //        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+
         // 初始化基于内存的对话记忆
         ChatMemory chatMemory = new InMemoryChatMemory();
         chatClient = ChatClient.builder(dashscopeChatModel)
@@ -114,11 +114,20 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         vectorStore.add(documents);
     }
 
+     /**
+     * 获取问题的回答
+     *
+     * @param message 用户输入的问题消息
+     * @return QAResponse 包含回答内容的响应对象
+     */
     @Override
     public QAResponse getAnswer(String message) {
         String chatId = UUID.randomUUID().toString();
-        // 查询重写
+
+        // FIXME 查询重写（主要作用是通过预定义的转换器优化或改写用户的查询语句）
         String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+
+        // 构建聊天请求并获取响应
         ChatResponse chatResponse = chatClient
                 .prompt()
                 // 使用改写后的查询
@@ -127,16 +136,19 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 // 开启日志，便于观察效果
                 .advisors(new MyLoggerAdvisor())
-                // 应用 RAG 检索增强服务（基于 PgVector 向量存储）
+                // FIXME 应用 RAG 检索增强服务（基于 PgVector 向量存储，知识库查询？）
                 .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .call()
                 .chatResponse();
+
         String content = chatResponse.getResult().getOutput().getText();
         log.info("content: {}", content);
+
         QAResponse qaResponse = new QAResponse();
         qaResponse.setAnswer(content);
         return qaResponse;
     }
+
 
     @Override
     public List<Document> getDocumentList() {

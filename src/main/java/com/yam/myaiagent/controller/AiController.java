@@ -1,6 +1,7 @@
 package com.yam.myaiagent.controller;
 
 import com.yam.myaiagent.agent.MyManus;
+import com.yam.myaiagent.app.JavaInterviewApp;
 import com.yam.myaiagent.app.LoveApp;
 import com.yam.myaiagent.app.UIApp;
 import jakarta.annotation.Resource;
@@ -8,7 +9,6 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -1,4 +1,9 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/AI_Test
+    username: zhengdan3
+    password:
+    driver-class-name: org.postgresql.Driver
   application:
     name: my-ai-agent
   profiles:

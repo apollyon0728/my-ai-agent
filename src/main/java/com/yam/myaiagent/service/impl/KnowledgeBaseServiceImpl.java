@@ -61,16 +61,14 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
     /**
      * 初始化 ChatClient
-     *
-     * @param dashscopeChatModel
+     * 知识库服务实现类构造函数
+     * @param dashscopeChatModel 通义千问聊天模型实例，用于构建聊天客户端
      */
     public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) {
-//        // 初始化基于文件的对话记忆
-//        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
-//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
-
         // 初始化基于内存的对话记忆
         ChatMemory chatMemory = new InMemoryChatMemory();
+
+        // 构建聊天客户端，配置系统提示词和默认顾问
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT_NORMAL)
                 .defaultAdvisors(
@@ -82,6 +80,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
                 )
                 .build();
     }
+
 
     /**
      * 上传Markdown文档到知识库

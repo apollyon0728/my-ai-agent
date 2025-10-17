@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: jdbc:postgresql://localhost:5432/AI_Test
     username: zhengdan3
@@ -14,10 +16,23 @@ spring:
       chat:
         options:
           model: qwen-turbo-latest
-    ollama:
-      base-url: http://localhost:11434
+#    deepseek:
+#      api-key: ${DEEPSEEK_API_KEY:sk-8a57a59c50ab4ffca52852e26966974e}
+#      base-url: https://api.deepseek.com/v1
+#      chat:
+#        options:
+#          model: deepseek-chat
+    openai:
+      api-key: sk-8a57a59c50ab4ffca52852e26966974e
+      base-url: https://api.deepseek.com/v1
       chat:
-        model: gemma3:1b
+        options:
+          model: deepseek-chat
+#    ollama:
+#      base-url: http://localhost:11434
+#      chat:
+#        model: gemma3:1b
+
 #    mcp:
 #      client:
 #        sse:

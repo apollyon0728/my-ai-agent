@@ -22,6 +22,13 @@ public interface KnowledgeBaseService {
     QAResponse getAnswer(String question);
 
     /**
+     * 使用向量存储进行相似性搜索并回答问题
+     * @param message 用户输入的问题
+     *                modelType 模型类型
+     */
+    QAResponse getAnswerNew(String message, String modelType);
+
+    /**
      * 获取所有文档列表
      */
     List<Document> getDocumentList();

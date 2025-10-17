@@ -1,6 +1,7 @@
 package com.yam.myaiagent.service.impl;
 
 import com.yam.myaiagent.advisor.MyLoggerAdvisor;
+import com.yam.myaiagent.agent.model.IChatModelStrategy;
 import com.yam.myaiagent.model.QAResponse;
 import com.yam.myaiagent.rag.LoveAppDocumentLoader;
 import com.yam.myaiagent.rag.QueryRewriter;
@@ -24,8 +25,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
@@ -54,16 +55,26 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
     private static final String MARKDOWN_DIR = "docs/markdown/";
 
-
     private final ChatClient chatClient;
 
     private static final String SYSTEM_PROMPT_NORMAL = "你是一个AI助手，可以帮助用户解答各种问题。";
 
     /**
+     * 新增多模型动态选择问答接口
+     * 通过 modelType 参数选择对应模型（alibaba, deepseek等），支持swagger调用
+     */
+    @Resource
+    private Map<String, IChatModelStrategy> modelStrategyMap;
+
+
+    /**
      * 初始化 ChatClient
      * 知识库服务实现类构造函数
+     *
      * @param dashscopeChatModel 通义千问聊天模型实例，用于构建聊天客户端
+     * alibabaChatModel
      */
+//    public KnowledgeBaseServiceImpl(@Qualifier("alibabaChatModel") ChatModel dashscopeChatModel) {
     public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) {
         // 初始化基于内存的对话记忆
         ChatMemory chatMemory = new InMemoryChatMemory();
@@ -84,6 +95,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
     /**
      * 上传Markdown文档到知识库
+     *
      * @param file
      */
     @Override
@@ -113,7 +125,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         vectorStore.add(documents);
     }
 
-     /**
+    /**
      * 获取问题的回答
      *
      * @param message 用户输入的问题消息
@@ -143,6 +155,46 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         String content = chatResponse.getResult().getOutput().getText();
         log.info("content: {}", content);
 
+        QAResponse qaResponse = new QAResponse();
+        qaResponse.setAnswer(content);
+        return qaResponse;
+    }
+
+
+    /**
+     * 获取问题的回答结果
+     *
+     * @param message   用户输入的问题消息
+     * @param modelType 模型类型，用于选择不同的AI模型策略
+     * @return QAResponse 包含AI回答内容的响应对象
+     */
+    @Override
+    public QAResponse getAnswerNew(String message, String modelType) {
+        // 生成唯一的对话ID
+        String chatId = UUID.randomUUID().toString();
+        // 对用户查询进行重写优化
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+
+        // 根据模型类型获取对应的策略，如果不存在则使用默认的alibaba策略
+        IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
+        ChatClient dynamicChatClient = strategy.getChatClient(); // 策略提供ChatClient
+
+        // 执行AI对话请求
+        ChatResponse chatResponse = dynamicChatClient
+                .prompt()
+                .user(rewrittenMessage)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(new MyLoggerAdvisor())
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .call()
+                .chatResponse();
+
+        // 提取AI回答的内容
+        String content = chatResponse != null ? chatResponse.getResult().getOutput().getText() : null;
+        log.info("getAnswerNew content: {}", content);
+
+        // 构造并返回响应对象
         QAResponse qaResponse = new QAResponse();
         qaResponse.setAnswer(content);
         return qaResponse;

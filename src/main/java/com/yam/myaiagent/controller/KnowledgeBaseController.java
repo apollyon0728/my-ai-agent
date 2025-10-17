@@ -45,6 +45,15 @@ public class KnowledgeBaseController {
     }
 
     /**
+     * 基于知识库进行问答
+     */
+    @PostMapping("/qaNew")
+    public ResponseEntity<QAResponse> askQuestionNew(@RequestBody QARequest request) {
+        QAResponse response = knowledgeBaseService.getAnswerNew(request.getQuestion(), request.getModelType());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 获取所有已上传的文档列表
      */
     @GetMapping("/documents")

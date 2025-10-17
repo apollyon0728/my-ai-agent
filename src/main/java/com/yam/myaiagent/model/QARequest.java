@@ -5,4 +5,6 @@ import lombok.Data;
 @Data
 public class QARequest {
     private String question;
+
+    private String modelType;
 } 

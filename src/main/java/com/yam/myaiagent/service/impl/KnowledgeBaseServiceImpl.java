@@ -74,8 +74,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
      * @param dashscopeChatModel 通义千问聊天模型实例，用于构建聊天客户端
      * alibabaChatModel
      */
-//    public KnowledgeBaseServiceImpl(@Qualifier("alibabaChatModel") ChatModel dashscopeChatModel) {
-    public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) {
+    public KnowledgeBaseServiceImpl(@Qualifier("alibabaChatModel") ChatModel dashscopeChatModel) {
         // 初始化基于内存的对话记忆
         ChatMemory chatMemory = new InMemoryChatMemory();
 

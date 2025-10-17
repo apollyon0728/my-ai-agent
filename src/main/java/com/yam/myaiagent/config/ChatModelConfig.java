@@ -1,6 +1,7 @@
 package com.yam.myaiagent.config;
 
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
+
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,17 @@ public class ChatModelConfig {
         }
         return alibabaModel;
     }
+
+//    @Bean(name = "deepSeekChatModel")
+//    @Primary
+//    public ChatModel deepSeekChatModel(DeepSeekChatModel deepSeekChatModel) {
+//        logger.info("deepSeekChatModel Bean，传入的模型类型: {}",
+//                deepSeekChatModel != null ? deepSeekChatModel.getClass().getName() : "null");
+//        if (deepSeekChatModel == null) {
+//            logger.error("DeepSeekChatModel为null，无法创建alibabaChatModel Bean");
+//        }
+//        return deepSeekChatModel;
+//    }
 
     @Bean(name = "openAIChatModel")
 //    @Primary

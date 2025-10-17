@@ -52,12 +52,14 @@ public class HttpAiInvoke {
         requestJson.set("parameters", parametersJson);
 
         // 发送HTTP POST请求到DashScope API
+        // 发送HTTP POST请求到指定URL，设置认证和内容类型头部，发送JSON格式的请求体，并获取响应结果
         String result = HttpRequest.post(url)
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
-                .body(requestJson.toString())
-                .execute()
-                .body();
+                .header("Authorization", "Bearer " + apiKey)  // 设置Bearer Token认证头部
+                .header("Content-Type", "application/json")   // 设置内容类型为JSON格式
+                .body(requestJson.toString())                 // 设置请求体内容
+                .execute()                                    // 执行HTTP请求
+                .body();                                      // 获取响应体内容
+
 
         // 输出API响应结果
         System.out.println(result);

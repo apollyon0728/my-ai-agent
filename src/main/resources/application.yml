@@ -12,19 +12,21 @@ spring:
     active: local
   ai:
     dashscope:
-      api-key: ${ALIBABA_API_KEY:your-api-key}
+      # Aliyun https://dashscope.console.aliyun.com/apiKey
+      api-key: ${ALIBABA_API_KEY:}
       chat:
         options:
           model: qwen-turbo-latest
-#    deepseek:
-#      api-key: ${DEEPSEEK_API_KEY:sk-8a57a59c50ab4ffca52852e26966974e}
-#      base-url: https://api.deepseek.com/v1
-#      chat:
-#        options:
-#          model: deepseek-chat
-    openai:
-      api-key: sk-8a57a59c50ab4ffca52852e26966974e
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
       base-url: https://api.deepseek.com/v1
+      chat:
+        options:
+          model: deepseek-chat
+    openai:
+      api-key:
+#      base-url: https://api.deepseek.com/v1
+      base-url: https://api.deepseek.com
       chat:
         options:
           model: deepseek-chat

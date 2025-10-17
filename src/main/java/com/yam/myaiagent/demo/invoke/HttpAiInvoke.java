@@ -9,11 +9,19 @@ import cn.hutool.json.JSONUtil;
  */
 public class HttpAiInvoke {
 
+    /**
+     * 主函数，用于调用阿里云DashScope API进行文本生成
+     * 该函数构建请求参数，发送HTTP POST请求到DashScope服务，并输出响应结果
+     *
+     * @param args 命令行参数数组
+     */
     public static void main(String[] args) {
         // API密钥
         String apiKey = TestApiKey.API_KEY;
 
         // 构建请求URL
+        // 阿里云DashScope文本生成API服务URL,该URL用于访问阿里云DashScope平台的文本生成服务接口，
+        // 支持调用大语言模型进行文本生成任务。
         String url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
 
         // 构建请求JSON数据
@@ -43,7 +51,7 @@ public class HttpAiInvoke {
         requestJson.set("input", messagesJson);
         requestJson.set("parameters", parametersJson);
 
-        // 发送请求
+        // 发送HTTP POST请求到DashScope API
         String result = HttpRequest.post(url)
                 .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
@@ -51,7 +59,8 @@ public class HttpAiInvoke {
                 .execute()
                 .body();
 
-        // 输出结果
+        // 输出API响应结果
         System.out.println(result);
     }
+
 }

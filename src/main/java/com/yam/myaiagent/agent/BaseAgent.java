@@ -58,10 +58,13 @@ public abstract class BaseAgent {
         if (StrUtil.isBlank(userPrompt)) {
             throw new RuntimeException("Cannot run agent with empty user prompt");
         }
+
         // 2、执行，更改状态
         this.state = AgentState.RUNNING;
+
         // 记录消息上下文
         messageList.add(new UserMessage(userPrompt));
+
         // 保存结果列表
         List<String> results = new ArrayList<>();
         try {
@@ -93,13 +96,18 @@ public abstract class BaseAgent {
 
     /**
      * 运行代理（流式输出）
+     * 异步执行一个基于用户提示的流式任务，并通过 Server-Sent Events (SSE) 实时返回执行结果。
+     * <p>
+     * 该方法会启动一个异步线程来处理任务执行逻辑，避免阻塞主线程。执行过程中每一步的结果
+     * 都会通过 SseEmitter 实时发送给客户端。任务执行完成后会自动清理资源并更新代理状态。
      *
-     * @param userPrompt 用户提示词
-     * @return 执行结果
+     * @param userPrompt 用户输入的提示词，不能为空
+     * @return SseEmitter 用于向客户端推送执行结果的 SSE 连接对象
      */
     public SseEmitter runStream(String userPrompt) {
         // 创建一个超时时间较长的 SseEmitter
         SseEmitter sseEmitter = new SseEmitter(300000L); // 5 分钟超时
+
         // 使用线程异步处理，避免阻塞主线程
         CompletableFuture.runAsync(() -> {
             // 1、基础校验
@@ -117,14 +125,17 @@ public abstract class BaseAgent {
             } catch (Exception e) {
                 sseEmitter.completeWithError(e);
             }
+
             // 2、执行，更改状态
             this.state = AgentState.RUNNING;
+
             // 记录消息上下文
             messageList.add(new UserMessage(userPrompt));
+
             // 保存结果列表
             List<String> results = new ArrayList<>();
             try {
-                // 执行循环
+                // 执行循环：最多执行 maxSteps 步，直到状态变为 FINISHED
                 for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
                     int stepNumber = i + 1;
                     currentStep = stepNumber;
@@ -165,6 +176,7 @@ public abstract class BaseAgent {
             this.cleanup();
             log.warn("SSE connection timeout");
         });
+
         // 设置完成回调
         sseEmitter.onCompletion(() -> {
             if (this.state == AgentState.RUNNING) {
@@ -175,6 +187,7 @@ public abstract class BaseAgent {
         });
         return sseEmitter;
     }
+
 
     /**
      * 定义单个步骤

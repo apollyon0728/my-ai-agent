@@ -36,13 +36,11 @@ public class AiController {
     @Resource
     private JavaInterviewApp javaInterviewApp;
 
-
     @Resource
     private ToolCallback[] allTools;
 
     @Resource
     private ChatModel dashscopeChatModel;
-
 
     /**
      * SSE 流式调用 AI 恋爱大师应用

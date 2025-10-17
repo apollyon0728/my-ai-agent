@@ -41,6 +41,11 @@ public class ToolCallAgent extends ReActAgent {
     // 禁用 Spring AI 内置的工具调用机制，自己维护选项和消息上下文
     private final ChatOptions chatOptions;
 
+    /**
+     * 构造一个工具调用代理实例
+     *
+     * @param availableTools 可用的工具回调数组，用于处理具体的工具调用请求
+     */
     public ToolCallAgent(ToolCallback[] availableTools) {
         super();
         this.availableTools = availableTools;
@@ -50,6 +55,7 @@ public class ToolCallAgent extends ReActAgent {
                 .withProxyToolCalls(true)
                 .build();
     }
+
 
     /**
      * 处理当前状态并决定下一步行动
@@ -63,6 +69,7 @@ public class ToolCallAgent extends ReActAgent {
             UserMessage userMessage = new UserMessage(getNextStepPrompt());
             getMessageList().add(userMessage);
         }
+
         // 2、调用 AI 大模型，获取工具调用结果
         List<Message> messageList = getMessageList();
         Prompt prompt = new Prompt(messageList, this.chatOptions);
@@ -74,19 +81,23 @@ public class ToolCallAgent extends ReActAgent {
                     .chatResponse();
             // 记录响应，用于等下 Act
             this.toolCallChatResponse = chatResponse;
+
             // 3、解析工具调用结果，获取要调用的工具
             // 助手消息
             AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
+
             // 获取要调用的工具列表
             List<AssistantMessage.ToolCall> toolCallList = assistantMessage.getToolCalls();
+
             // 输出提示信息
             String result = assistantMessage.getText();
-            log.info(getName() + "的思考：" + result);
-            log.info(getName() + "选择了 " + toolCallList.size() + " 个工具来使用");
+            log.info("{}的思考：{}", getName(), result);
+            log.info("{}选择了 {} 个工具来使用", getName(), toolCallList.size());
             String toolCallInfo = toolCallList.stream()
                     .map(toolCall -> String.format("工具名称：%s，参数：%s", toolCall.name(), toolCall.arguments()))
                     .collect(Collectors.joining("\n"));
             log.info(toolCallInfo);
+
             // 如果不需要调用工具，返回 false
             if (toolCallList.isEmpty()) {
                 // 只有不调用工具时，才需要手动记录助手消息
@@ -97,7 +108,7 @@ public class ToolCallAgent extends ReActAgent {
                 return true;
             }
         } catch (Exception e) {
-            log.error(getName() + "的思考过程遇到了问题：" + e.getMessage());
+            log.error("{}的思考过程遇到了问题：{}", getName(), e.getMessage());
             getMessageList().add(new AssistantMessage("处理时遇到了错误：" + e.getMessage()));
             return false;
         }
@@ -126,7 +137,7 @@ public class ToolCallAgent extends ReActAgent {
             // 任务结束，更改状态
             setState(AgentState.FINISHED);
         }
-        
+
 //        // 获取工具执行结果
 //        String toolResults = toolResponseMessage.getResponses().stream()
 //                .map(response -> "工具 " + response.name() + " 返回的结果：" + response.responseData())

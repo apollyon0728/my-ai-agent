@@ -14,8 +14,8 @@ public class ReReadingAdvisor implements CallAroundAdvisor, StreamAroundAdvisor 
 
 	/**
 	 * 执行请求前，改写 Prompt
-	 * @param advisedRequest
-	 * @return
+	 * @param advisedRequest 请求
+	 * @return 改写后的请求
 	 */
 	private AdvisedRequest before(AdvisedRequest advisedRequest) {
 

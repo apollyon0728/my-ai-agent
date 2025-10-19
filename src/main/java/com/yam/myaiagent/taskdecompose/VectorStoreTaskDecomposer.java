@@ -275,9 +275,25 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
                 }
             }
             
+            // 记录原始规则ID
+            log.info("原始规则ID: {}, 类型: {}", rule.getRuleId(), 
+                    rule.getRuleId() != null ? rule.getRuleId().getClass().getName() : "null");
+            
             // 生成规则ID
             if (rule.getRuleId() == null) {
                 rule.setRuleId(UUID.randomUUID().toString());
+                log.info("规则ID为空，生成新的UUID: {}", rule.getRuleId());
+            } else {
+                // 检查规则ID是否为有效的UUID格式
+                try {
+                    UUID.fromString(rule.getRuleId());
+                    log.info("规则ID已经是有效的UUID格式: {}", rule.getRuleId());
+                } catch (IllegalArgumentException e) {
+                    // 如果不是有效的UUID，则生成新的UUID
+                    String originalId = rule.getRuleId();
+                    rule.setRuleId(UUID.randomUUID().toString());
+                    log.info("规则ID不是有效的UUID格式，从 '{}' 替换为新生成的UUID: {}", originalId, rule.getRuleId());
+                }
             }
             
             // 将规则转换为文档
@@ -286,6 +302,8 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
                     .text(objectMapper.writeValueAsString(rule))
                     .metadata(Map.of("type", RULE_PREFIX, "name", rule.getRuleName()))
                     .build();
+            
+            log.info("创建文档，文档ID: {}", document.getId());
             
             // 添加到向量存储
             vectorStore.add(Collections.singletonList(document));

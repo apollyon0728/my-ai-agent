@@ -32,6 +32,7 @@ public class KnowledgeBaseController {
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file) {
+        // FIXME 加载新文档并添加到向量存储 postgresSQL存储向量化数据
         knowledgeBaseService.uploadMarkdownDocument(file);
         return ResponseEntity.ok("文档上传成功");
     }

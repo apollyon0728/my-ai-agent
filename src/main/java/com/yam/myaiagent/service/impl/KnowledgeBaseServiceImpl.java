@@ -54,7 +54,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
     @Resource
     private VectorStore pgVectorVectorStore;
-    
+
     @Resource
     private TaskDecomposer taskDecomposer;
 
@@ -118,12 +118,17 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
             // 加载新文档并添加到向量存储
             List<Document> documents = documentLoader.loadMarkdownByPath(String.valueOf(filePath.toFile()));
+
+            // FIXME 批量添加文档到向量存储   vectorStore.add(documents)
             addDocuments(documents);
         } catch (IOException e) {
             throw new RuntimeException("文档上传失败", e);
         }
     }
 
+    /**
+     * 批量添加文档到向量存储
+     */
     @Override
     public void addDocuments(List<Document> documents) {
         vectorStore.add(documents);
@@ -231,6 +236,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public void reloadAllDocuments() {
 
     }
+
     /**
      * 使用向量存储进行相似性搜索并回答问题，同时拆解任务
      *
@@ -242,16 +248,16 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public QAResponse getAnswerWithTaskDecomposition(String message, String modelType) {
         // 1. 获取问题的回答
         QAResponse qaResponse = getAnswerNew(message, modelType);
-        
+
         // 2. 拆解任务
         List<DecomposedTask> tasks = decomposeTask(message);
-        
+
         // 3. 设置任务列表
         qaResponse.setTasks(tasks);
-        
+
         return qaResponse;
     }
-    
+
     /**
      * 上传任务拆解规则
      *
@@ -262,7 +268,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public String uploadTaskRule(String ruleJson) {
         return taskDecomposer.uploadRule(ruleJson);
     }
-    
+
     /**
      * 获取所有任务拆解规则
      *
@@ -272,7 +278,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public List<String> getAllTaskRules() {
         return taskDecomposer.getAllRules();
     }
-    
+
     /**
      * 删除指定任务拆解规则
      *
@@ -282,7 +288,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public void deleteTaskRule(String ruleId) {
         taskDecomposer.deleteRule(ruleId);
     }
-    
+
     /**
      * 拆解任务
      *

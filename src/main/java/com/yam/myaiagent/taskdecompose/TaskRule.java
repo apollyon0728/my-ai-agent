@@ -24,8 +24,15 @@ public class TaskRule {
     
     /**
      * 规则ID
+     * 在向量数据库中使用的UUID格式ID
      */
     private String ruleId;
+    
+    /**
+     * 业务ID
+     * 用于存储业务系统中的原始ID，可以是任意格式
+     */
+    private String businessId;
     
     /**
      * 规则名称

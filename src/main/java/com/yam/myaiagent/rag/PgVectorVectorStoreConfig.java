@@ -39,7 +39,7 @@ public class PgVectorVectorStoreConfig {
                 .dimensions(1536)                    // 可选：默认为模型维度或1536
                 .distanceType(COSINE_DISTANCE)       // 可选：默认为余弦距离
                 .indexType(HNSW)                     // 可选：默认为HNSW
-                .initializeSchema(true)              // 可选：默认为false
+                .initializeSchema(false)             // 修改为false，避免每次启动都重新初始化表结构
                 .schemaName("public")                // 可选：默认为"public"
                 .vectorTableName("vector_store")     // 可选：默认为"vector_store"
                 .maxDocumentBatchSize(10000)         // 可选：默认为10000

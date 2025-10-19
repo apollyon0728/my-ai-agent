@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,8 +38,11 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     // 规则文档的前缀，用于区分普通文档和规则文档
     private static final String RULE_PREFIX = "TASK_RULE:";
     
-    // 相似度阈值，用于匹配规则
-    private static final double SIMILARITY_THRESHOLD = 0.7;
+    // 相似度阈值，用于匹配规则 - 降低阈值以提高匹配率
+    private static final double SIMILARITY_THRESHOLD = 0.6;
+    
+    // 缓存最近使用的规则ID，避免重复添加
+    private final Map<String, Long> recentRuleCache = new ConcurrentHashMap<>();
 
     /**
      * 将问题拆解为具体任务列表
@@ -48,13 +52,20 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
      */
     @Override
     public List<DecomposedTask> decompose(String question) {
-        log.info("开始拆解问题: {}", question);
+        log.info("开始拆解问题: {}, 当前线程ID: {}", question, Thread.currentThread().getId());
         
         // 1. 查询相似的规则
         List<TaskRule> matchedRules = findMatchingRules(question);
         if (matchedRules.isEmpty()) {
             log.info("未找到匹配的规则，返回空任务列表");
             return Collections.emptyList();
+        }
+        
+        // 记录找到的规则信息，便于调试
+        log.info("找到{}个匹配规则:", matchedRules.size());
+        for (int i = 0; i < matchedRules.size(); i++) {
+            TaskRule rule = matchedRules.get(i);
+            log.info("规则 #{}: ID={}, 名称={}", i+1, rule.getRuleId(), rule.getRuleName());
         }
         
         // 2. 根据规则生成任务
@@ -79,48 +90,102 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     private List<TaskRule> findMatchingRules(String question) {
         // 使用向量搜索查找相似的规则
         // 使用Builder模式创建SearchRequest对象
-        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}", question, SIMILARITY_THRESHOLD);
+        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}",
+                question, SIMILARITY_THRESHOLD, Thread.currentThread().getId());
         
-        // 尝试更简单的过滤表达式格式
-        String filterExpr = "type:TASK_RULE";
-        log.info("使用过滤表达式: {}", filterExpr);
+        // 尝试不同格式的过滤表达式
+        log.info("尝试使用不同格式的过滤表达式");
+        
+        // 方式1: 使用 metadata.type = 'TASK_RULE' 格式
+        String filterExpr1 = "metadata.type == 'TASK_RULE'";
+        log.info("尝试过滤表达式格式1: {}", filterExpr1);
         
         try {
             SearchRequest searchRequest = SearchRequest.builder()
                 .query(question)
                 .topK(5)
                 .similarityThreshold(SIMILARITY_THRESHOLD)
-                .filterExpression(filterExpr)
+                .filterExpression(filterExpr1)
                 .build();
                 
-            log.info("成功创建SearchRequest对象");
+            log.info("成功创建SearchRequest对象(格式1)");
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("查询结果: 找到{}个文档", similarDocuments.size());
+            
+            // 记录文档元数据，帮助调试
+            if (!similarDocuments.isEmpty()) {
+                Document firstDoc = similarDocuments.get(0);
+                log.info("第一个文档ID: {}, 元数据: {}", firstDoc.getId(), firstDoc.getMetadata());
+            }
             
             // 解析文档内容为TaskRule对象
-            return similarDocuments.stream()
+            List<TaskRule> rules = similarDocuments.stream()
                     .map(this::parseRuleFromDocument)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+                    
+            if (!rules.isEmpty()) {
+                log.info("使用过滤表达式格式1成功找到{}个规则", rules.size());
+                return rules;
+            }
+            
+            log.info("使用过滤表达式格式1未找到规则，尝试格式2");
         } 
         catch (Exception e) {
-            // 如果过滤表达式仍然有问题，记录错误并尝试不使用过滤器
-            log.error("过滤表达式错误: {}, 尝试不使用过滤器", e.getMessage());
-            
+            log.error("过滤表达式格式1错误: {}, 尝试格式2", e.getMessage());
+        }
+        
+        // 方式2: 使用 type = 'TASK_RULE' 格式
+        String filterExpr2 = "metadata['type'] == 'TASK_RULE'";
+        log.info("尝试过滤表达式格式2: {}", filterExpr2);
+        
+        try {
             SearchRequest searchRequest = SearchRequest.builder()
                 .query(question)
                 .topK(5)
                 .similarityThreshold(SIMILARITY_THRESHOLD)
+                .filterExpression(filterExpr2)
                 .build();
                 
-            log.info("使用无过滤器的SearchRequest");
+            log.info("成功创建SearchRequest对象(格式2)");
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
             
             // 解析文档内容为TaskRule对象
-            return similarDocuments.stream()
+            List<TaskRule> rules = similarDocuments.stream()
                     .map(this::parseRuleFromDocument)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+                    
+            if (!rules.isEmpty()) {
+                log.info("使用过滤表达式格式2成功找到{}个规则", rules.size());
+                return rules;
+            }
+            
+            log.info("使用过滤表达式格式2未找到规则，尝试不使用过滤器");
+        } 
+        catch (Exception e) {
+            log.error("过滤表达式格式2错误: {}, 尝试不使用过滤器", e.getMessage());
         }
+        
+        // 如果两种过滤表达式都失败，尝试不使用过滤器
+        log.info("尝试不使用过滤器");
+        SearchRequest searchRequest = SearchRequest.builder()
+            .query(question)
+            .topK(5)
+            .similarityThreshold(SIMILARITY_THRESHOLD)
+            .build();
+            
+        log.info("成功创建无过滤器的SearchRequest对象");
+        List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+        
+        // 解析文档内容为TaskRule对象
+        List<TaskRule> rules = similarDocuments.stream()
+                .map(this::parseRuleFromDocument)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+                
+        log.info("不使用过滤器找到{}个规则", rules.size());
+        return rules;
     }
     
     /**
@@ -276,34 +341,52 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             }
             
             // 记录原始规则ID
-            log.info("原始规则ID: {}, 类型: {}", rule.getRuleId(), 
-                    rule.getRuleId() != null ? rule.getRuleId().getClass().getName() : "null");
+            String originalId = rule.getRuleId();
+            log.info("原始规则ID: {}, 类型: {}", originalId, 
+                    originalId != null ? originalId.getClass().getName() : "null");
+            
+            // 保存原始业务ID到businessId字段
+            if (originalId != null) {
+                rule.setBusinessId(originalId);
+                log.info("设置业务ID(businessId): {}", rule.getBusinessId());
+            }
             
             // 生成规则ID
-            if (rule.getRuleId() == null) {
+            if (originalId == null) {
                 rule.setRuleId(UUID.randomUUID().toString());
                 log.info("规则ID为空，生成新的UUID: {}", rule.getRuleId());
             } else {
                 // 检查规则ID是否为有效的UUID格式
                 try {
-                    UUID.fromString(rule.getRuleId());
-                    log.info("规则ID已经是有效的UUID格式: {}", rule.getRuleId());
+                    UUID.fromString(originalId);
+                    log.info("规则ID已经是有效的UUID格式: {}", originalId);
                 } catch (IllegalArgumentException e) {
                     // 如果不是有效的UUID，则生成新的UUID
-                    String originalId = rule.getRuleId();
-                    rule.setRuleId(UUID.randomUUID().toString());
-                    log.info("规则ID不是有效的UUID格式，从 '{}' 替换为新生成的UUID: {}", originalId, rule.getRuleId());
+                    String newUuid = UUID.randomUUID().toString();
+                    log.info("规则ID不是有效的UUID格式，从 '{}' 替换为新生成的UUID: {}", originalId, newUuid);
+                    rule.setRuleId(newUuid);
                 }
+            }
+            
+            // 构建元数据，保留原始ID
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("type", "TASK_RULE");  // 使用不带前缀的类型名称
+            metadata.put("name", rule.getRuleName());
+            
+            // 使用businessId字段保存原始业务ID
+            if (rule.getBusinessId() != null) {
+                metadata.put("businessId", rule.getBusinessId());
+                log.info("保存业务ID '{}' 到元数据中", rule.getBusinessId());
             }
             
             // 将规则转换为文档
             Document document = Document.builder()
                     .id(rule.getRuleId())
                     .text(objectMapper.writeValueAsString(rule))
-                    .metadata(Map.of("type", RULE_PREFIX, "name", rule.getRuleName()))
+                    .metadata(metadata)
                     .build();
             
-            log.info("创建文档，文档ID: {}", document.getId());
+            log.info("创建文档，文档ID: {}, 元数据: {}", document.getId(), metadata);
             
             // 添加到向量存储
             vectorStore.add(Collections.singletonList(document));
@@ -323,15 +406,69 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
      */
     @Override
     public List<String> getAllRules() {
-        // 查询所有规则文档
-        // 使用Builder模式创建SearchRequest对象
-        SearchRequest searchRequest = SearchRequest.builder()
-                .query("*")
-                .topK(100)
-                .filterExpression("metadata.type:'" + RULE_PREFIX + "'")
-                .build();
+        log.info("获取所有拆解规则");
         
-        List<Document> ruleDocuments = vectorStore.similaritySearch(searchRequest);
+        // 尝试不同格式的过滤表达式
+        List<Document> ruleDocuments = new ArrayList<>();
+        boolean success = false;
+        
+        // 方式1: 使用 metadata.type = 'TASK_RULE' 格式
+        try {
+            log.info("尝试使用过滤表达式格式1: metadata.type = 'TASK_RULE'");
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query("*")
+                    .topK(100)
+                    .filterExpression("metadata.type = 'TASK_RULE'")
+                    .build();
+            
+            ruleDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("使用过滤表达式格式1成功找到{}个规则文档", ruleDocuments.size());
+            success = true;
+        } catch (Exception e) {
+            log.error("使用过滤表达式格式1失败: {}", e.getMessage());
+        }
+        
+        // 方式2: 使用 type = 'TASK_RULE' 格式
+        if (!success) {
+            try {
+                log.info("尝试使用过滤表达式格式2: type = 'TASK_RULE'");
+                SearchRequest searchRequest = SearchRequest.builder()
+                        .query("*")
+                        .topK(100)
+                        .filterExpression("type = 'TASK_RULE'")
+                        .build();
+                
+                ruleDocuments = vectorStore.similaritySearch(searchRequest);
+                log.info("使用过滤表达式格式2成功找到{}个规则文档", ruleDocuments.size());
+                success = true;
+            } catch (Exception e) {
+                log.error("使用过滤表达式格式2失败: {}", e.getMessage());
+            }
+        }
+        
+        // 如果两种过滤表达式都失败，尝试不使用过滤器
+        if (!success) {
+            log.info("尝试不使用过滤器");
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query("*")
+                    .topK(100)
+                    .build();
+            
+            ruleDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("不使用过滤器找到{}个文档", ruleDocuments.size());
+            
+            // 如果不使用过滤器，需要手动过滤出规则文档
+            ruleDocuments = ruleDocuments.stream()
+                    .filter(doc -> {
+                        Map<String, Object> metadata = doc.getMetadata();
+                        return metadata != null && 
+                               ("TASK_RULE".equals(metadata.get("type")) || 
+                                (metadata.get("type") != null && metadata.get("type").toString().contains("TASK_RULE")));
+                    })
+                    .collect(Collectors.toList());
+            
+            log.info("手动过滤后找到{}个规则文档", ruleDocuments.size());
+        }
         
         // 返回规则JSON字符串列表
         return ruleDocuments.stream()

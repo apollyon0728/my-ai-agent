@@ -72,7 +72,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
      * 知识库服务实现类构造函数
      *
      * @param dashscopeChatModel 通义千问聊天模型实例，用于构建聊天客户端
-     * alibabaChatModel
+     *                           alibabaChatModel
      */
     public KnowledgeBaseServiceImpl(@Qualifier("alibabaChatModel") ChatModel dashscopeChatModel) {
         // 初始化基于内存的对话记忆
@@ -171,14 +171,23 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public QAResponse getAnswerNew(String message, String modelType) {
         // 生成唯一的对话ID
         String chatId = UUID.randomUUID().toString();
-        // 对用户查询进行重写优化
+
+        // FIXME 对用户查询进行重写优化
         String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+        log.info("KnowledgeBaseServiceImpl对用户查询进行重写优化 getAnswerNew, 重写前: {}, doQueryRewrite重写后: {}", message, rewrittenMessage);
 
         // 根据模型类型获取对应的策略，如果不存在则使用默认的alibaba策略
         IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
         ChatClient dynamicChatClient = strategy.getChatClient(); // 策略提供ChatClient
 
         // 执行AI对话请求
+        // 构建并执行聊天请求，获取聊天响应
+        // 该代码块主要完成以下功能：
+        // 1. 设置用户消息内容
+        // 2. 配置对话内存参数，包括对话ID和历史记录检索数量
+        // 3. 添加日志记录顾问
+        // 4. 添加问答处理顾问
+        // 5. 执行调用并获取聊天响应结果
         ChatResponse chatResponse = dynamicChatClient
                 .prompt()
                 .user(rewrittenMessage)
@@ -188,6 +197,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
                 .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .call()
                 .chatResponse();
+
 
         // 提取AI回答的内容
         String content = chatResponse != null ? chatResponse.getResult().getOutput().getText() : null;

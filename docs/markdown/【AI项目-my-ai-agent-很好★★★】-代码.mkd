@@ -1,14 +1,418 @@
+# 大模型账号
+
+## DeepSeek
+
+sk-8a57a59c50ab4ffca52852e26966974e
+
+https://platform.deepseek.com/api_keys
+
+## 模型细节
+
+| 模型                                                         | deepseek-chat                                                | deepseek-reasoner              |      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------ | ---- |
+| 模型版本                                                     | DeepSeek-V3.2-Exp （非思考模式）                             | DeepSeek-V3.2-Exp （思考模式） |      |
+| 上下文长度                                                   | 128K                                                         |                                |      |
+| 输出长度                                                     | 默认 4K，最大 8K                                             | 默认 32K，最大 64K             |      |
+| 功能                                                         | [Json Output](https://api-docs.deepseek.com/zh-cn/guides/json_mode) | 支持                           | 支持 |
+| [Function Calling](https://api-docs.deepseek.com/zh-cn/guides/function_calling) | 支持                                                         | 不支持(1)                      |      |
+| [对话前缀续写（Beta）](https://api-docs.deepseek.com/zh-cn/guides/chat_prefix_completion) | 支持                                                         | 支持                           |      |
+| [FIM 补全（Beta）](https://api-docs.deepseek.com/zh-cn/guides/fim_completion) | 支持                                                         | 不支持                         |      |
+| 价格                                                         | 百万tokens输入（缓存命中）                                   | 0.2元                          |      |
+| 百万tokens输入（缓存未命中）                                 | 2元                                                          |                                |      |
+| 百万tokens输出                                               | 3元                                                          |                                |      |
+
+
+
+**用量信息**
+
+https://platform.deepseek.com/usage
+
+
+
+## 阿里云
+
+https://dashscope.console.aliyun.com/billing
+
+| [通义千问](https://help.aliyun.com/zh/dashscope/developer-reference/api-details?disableWebsiteRedirect=true) | qwen-turbo | `模型API调用时按照输入、输出token数量分别进行计费：对于中文文本来说，千问模型的1个token平均对应1.5-1.8个汉字；对于英文文本来说，1个token通常对应一个单词或词根。` | `输入0.0003元/1,000 tokens 输出0.0006元/1,000 tokens` | `开通DashScope即获赠总计 1,000,000 tokens限时免费使用额度，有效期 30 天。 2024年9月19号0点之后开通DashScope有效期为180` |
+| ------------------------------------------------------------ | ---------- | ------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------ |
+|                                                              |            |                                                              |                                                       |                                                              |
+
+
+
+
+
+PDF
+
+```yaml
+spring:
+  main:
+    allow-circular-references: true
+  profiles:
+    active: ${spring.profiles.active}
+  application:
+    name: jdlhr-ai-extract-${spring.profiles.active}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.170.223.156:3358/jdlhr_pdf?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true
+    username: hr
+    password: qwerasdf
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  ai:
+    chat:
+      client:
+        enabled: false #禁用原生ChatClient.Builder
+        observations:
+          log-prompt: true #开启日志记录，需注意敏感信息
+    openai:
+      api-key: false #springai必填项
+      base-url: false #springai必填项
+    model:
+      chat: jd #开启多model模式
+    chats:
+      - api-key: sk-wyinvzkkadhokbjqhknxyzsvvvjsgusdnibjutlnkctjkgue
+        base_url: https://api.siliconflow.cn
+        model-id: Siliconflow-Deepseek3.1
+        options:
+          completions-path: /v1/chat/completions
+          model: Pro/deepseek-ai/DeepSeek-V3.1
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: P22gd0rcA9pW0lWsMRDnmin3obJZfsTG
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-Pro-PRICE
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-Pro
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: P22gd0rcA9pW0lWsMRDnmin3obJZfsTG
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-750B-PRICE
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-750B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-750B-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-750B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-T1-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-T1
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-Pro-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-Pro
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-10B-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-10B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-470B-preview-0103-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-470B-preview-0103
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-750B
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-750B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+          extra_body:
+            chat_template_kwargs:
+              enable_thinking: false
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-T1
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-T1
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-Pro
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-Pro
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-10B
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-10B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-470B-preview-0103
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-470B-preview-0103
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 'NONE'
+        base_url: http://inference-internal.yanxi-cap.jd.com/inference/service-bcf4faliof
+        model-id: llm
+        options:
+          completions-path: /v1/chat/completions
+          model: llm
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 'NONE'
+        base_url: http://inference-internal.yanxi-cap.jd.com/inference/service-sgdh3ifzck
+        model-id: qwen2-72b
+        options:
+          completions-path: /v1/chat/completions
+          model: qwen2-72b
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 26cc4102-26c9-4055-a527-47de0a9e3730
+        base_url: http://gpt-proxy.jd.com
+        model-id: DeepSeek-V3-0324-jdcloud-iaas
+        options:
+          completions-path: /v1/chat/completions
+          model: DeepSeek-V3-0324-jdcloud-iaas
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+mybatis-plus:
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml  #指定sql映射文件
+  global-config:
+    db-config:
+      logic-delete-field: is_deleted # 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
+      logic-delete-value: 1 # 逻辑已删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    com.jd.jdlhr.pdf: INFO
+    org.springframework.ai.chat.client.advisor: DEBUG
+    #cn.aradin.easy.http: DEBUG
+aradin:
+  swagger:
+    base-package: com.jd.jdlhr.pdf.adapter.controller
+    ant-path:
+    title: PDF服务
+    description:
+    version: 1.0.0
+    enable: true
+    auth: false
+    contact-name: liuda17
+    contact-email: liuda17@jd.com
+    contact-url:
+    license:
+    license-url:
+    use-default-status: false
+
+ump:
+  jvm:
+    key: ${spring.application.name}.jvm.key
+
+jsf:
+  provider:
+    alias: ${spring.application.name}
+jme:
+  appKey: 0crYnMAOryq8mFFW1cnj
+  appSecret: T0xnqKpq65SiuQYrZBQL
+  openTeamId: 0960e2db2ef94636fc9b88316252338e
+
+server:
+  servlet:
+    jsp:
+      class-name: com.jd.security.tomcat.JDJspServlet
+      init-parameters:
+        enableJsp: false
+        xpoweredBy: false
+        springboot: true
+
+```
+
+
+
+
+
+
+
 # GIT
 
 https://github.com/apollyon0728/my-ai-agent
 
 
-
-DeepSeek
-
-sk-8a57a59c50ab4ffca52852e26966974e
-
-https://platform.deepseek.com/api_keys
 
 ## 项目介绍
 
@@ -216,9 +620,15 @@ Content-Type: application/json
 
 
 
+## swagger
+
+http://dev.jdl.com:8123/api/swagger-ui/index.html
+
+
+
 # 代码解读★★
 
-## [知识库服务实现类] ★★
+## [知识库服务实现类] ★★★
 
 KnowledgeBaseServiceImpl
 
@@ -399,6 +809,59 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
    - `reloadAllDocuments()`：重新加载所有文档到向量存储中。
 
 大模型的选择在这个例子中并没有明确指定，但可以推测是使用了一个支持RAG（Retrieval-Augmented Generation）功能的对话大模型。RAG是一种结合检索和生成的技术，能够帮助大模型更好地理解和回答问题。通过向量存储（如PgVectorVectorStore）检索相关的文档，然后将这些文档作为上下文信息提供给大模型，增强了大模型的对话能力。
+
+
+
+### 用户查询进行重写优化
+
+```java
+package com.yam.myaiagent.rag;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.rag.Query;
+import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
+import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
+import org.springframework.stereotype.Component;
+
+/**
+ * 查询重写器
+ */
+@Component
+public class QueryRewriter {
+
+    private final QueryTransformer queryTransformer;
+
+    public QueryRewriter(ChatModel dashscopeChatModel) {
+        ChatClient.Builder builder = ChatClient.builder(dashscopeChatModel);
+        // 创建查询重写转换器
+        queryTransformer = RewriteQueryTransformer.builder()
+                .chatClientBuilder(builder)
+                .build();
+    }
+
+    /**
+     * 执行查询重写
+     * 这段代码的功能是执行查询重写：
+     * 1. 将输入的`prompt`字符串封装成`Query`对象
+     * 2. 调用`queryTransformer.transform()`方法对查询进行重写转换
+     * 3. 返回重写后的查询文本内容
+     * 主要作用是通过预定义的转换器优化或改写用户的查询语句。
+     * @param prompt 用户输入的查询
+     * @return  重写后的查询文本内容
+     */
+    public String doQueryRewrite(String prompt) {
+        Query query = new Query(prompt);
+        // 执行查询重写
+        Query transformedQuery = queryTransformer.transform(query);
+        // 输出重写后的查询
+        return transformedQuery.text();
+    }
+}
+
+```
+
+
 
 
 
@@ -917,6 +1380,519 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     vectorStore.add(documents);
   }
 ```
+
+
+
+
+
+# [代码生成]★★
+
+/Users/zhengdan3/workSpaces/work-AI-DEMO/my-ai-agent
+
+## 上传Markdown文档到知识库
+
+将该文档内容上传【大模型】-优化后的提问模板.mkd，写到了向量数据库中
+
+```java
+/**
+ * 知识库控制器类
+ * 该类负责处理知识库相关的REST API请求，提供知识库的增删改查等操作接口。
+ * 所有接口都映射到"/api/knowledge"路径下。
+ */
+@RestController
+@RequestMapping("/api/knowledge")
+public class KnowledgeBaseController {
+
+
+    @Resource
+    private KnowledgeBaseService knowledgeBaseService;
+
+    /**
+     * 上传Markdown文档到知识库
+     * （加载新文档并添加到向量存储 postgresSQL存储向量化数据）
+     */
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file) {
+        knowledgeBaseService.uploadMarkdownDocument(file);
+        return ResponseEntity.ok("文档上传成功");
+    }
+```
+
+
+
+**使用向量数据库PostgreSQL存储该文档**
+
+![image-20251019142645214](/Users/zhengdan3/我的文件/【Stu笔记】/【【大模型】】/ai-images/image-20251019142645214.png)
+
+
+
+**KnowledgeBaseServiceImpl对用户查询进行重写优化 getAnswerNew, 重写前: 建表, doQueryRewrite重写后: 创建表结构**
+2025-10-19T14:15:54.422+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.yam.myaiagent.advisor.MyLoggerAdvisor  : AI Request: 创建表结构
+
+Context information is below, surrounded by ---------------------
+
+
+
+**[通义千问] ：为什么提问“建表”生成了若干代码，调用了 @PostMapping("/qaNew")**
+
+```java
+ /**
+   * 基于知识库进行问答
+   */
+  @PostMapping("/qaNew")
+  public ResponseEntity<QAResponse> askQuestionNew(@RequestBody QARequest request) {
+      QAResponse response = knowledgeBaseService.getAnswerNew(request.getQuestion(), request.getModelType());
+      return ResponseEntity.ok(response);
+  }
+
+```
+
+
+
+**的功能，加上之前上传过【大模型】-优化后的提问模板.mkd 到向量数据库中，然后问题时输入建表，然后给我生成了java代码，包括controller，表结构，实体类的，如何实现的以及背后原理?**
+
+
+
+<img src="/Users/zhengdan3/我的文件/【Stu笔记】/【【大模型】】/ai-images/image-20251019152512484.png" alt="image-20251019152512484" style="zoom: 33%;" />
+
+
+
+**现在我已经收集了足够的信息来回答用户的问题。让我总结一下基于知识库进行问答的功能实现原理和背后的技术：**
+
+My：提问时只输入“建表”，然后给我生成了java代码，包括controller，表结构，实体类的原理，其中一点是“【大模型】-优化后的提问模板.mkd”描述了要生成的内容，如上图所示。
+
+
+
+1. 系统架构：
+   - 使用了Spring AI框架和RAG（检索增强生成）技术
+   - **使用PostgreSQL作为向量数据库存储文档向量**
+   - 使用大模型（如阿里云的通义千问）进行查询重写和回答生成
+2. 工作流程：
+   - 用户上传文档（如"【大模型】-优化后的提问模板.mkd"）到系统
+   - 文档被处理并存储到向量数据库中
+   - 用户提问时（如"建表"），系统进行以下处理： a. 查询重写：将"建表"重写为"创建表结构" b. 向量检索：从向量数据库中检索相关内容 c. 大模型生成：将检索到的内容和用户问题一起发送给大模型，生成回答
+3. 关键组件：
+   - KnowledgeBaseController：处理HTTP请求
+   - KnowledgeBaseService：业务逻辑接口
+   - KnowledgeBaseServiceImpl：实现业务逻辑
+   - QueryRewriter：查询重写组件
+   - 向量存储：存储文档向量
+   - ChatClient：与大模型交互
+4. 生成Java代码的过程：
+   - 用户输入"建表"
+   - 系统重写为"创建表结构"
+   - 系统从向量数据库中检索到"【大模型】-优化后的提问模板.mkd"中的相关内容
+   - 大模型基于检索到的内容（包含表结构定义和代码生成要求）生成完整的Java代码，包括实体类、Controller、Service和Mapper
+
+
+
+
+
+## 基于知识库的问答功能实现原理
+
+您提到的功能是通过RAG（检索增强生成）技术实现的，整个流程如下：
+
+## 1. 核心工作流程
+
+1. **文档上传与向量化**
+   - 通过`uploadMarkdownDocument`方法将"【大模型】-优化后的提问模板.mkd"上传到系统
+   - 文档被处理并存储到PostgreSQL向量数据库中
+2. **问答处理流程**
+   - 用户输入"建表"作为问题
+   - 系统通过`QueryRewriter`将查询重写为"创建表结构"
+   - 使用`QuestionAnswerAdvisor`从向量数据库中检索相关内容
+   - 将检索到的内容与用户问题一起发送给大模型生成回答
+
+## 2. 关键技术组件
+
+- **Controller层**：`KnowledgeBaseController`处理HTTP请求，调用`askQuestionNew`方法
+- **Service层**：`KnowledgeBaseServiceImpl`实现业务逻辑，包含`getAnswerNew`方法
+- **查询重写**：`QueryRewriter`使用大模型优化用户查询
+- **向量检索**：`pgVectorVectorStore`从PostgreSQL中检索相关文档
+- **大模型调用**：通过`ChatClient`和`IChatModelStrategy`动态选择并调用不同的大模型
+
+## 3. 代码生成原理
+
+当用户输入"建表"时：
+
+1. 查询被重写为"创建表结构"
+2. 系统从向量数据库中检索到提问模板文档中的表结构定义和代码生成要求
+3. 大模型根据检索到的内容（包含MySQL表结构和生成要求）生成完整的Java代码
+4. 生成的代码包括实体类、Controller、Service接口及实现、Mapper接口及XML文件
+
+## 4. 技术亮点
+
+- **多模型支持**：通过`modelStrategyMap`支持不同大模型（alibaba、deepseek等）
+- **查询优化**：使用`RewriteQueryTransformer`提高检索质量
+- **上下文增强**：通过`QuestionAnswerAdvisor`将检索到的文档内容作为上下文提供给大模型
+- **内存对话**：使用`MessageChatMemoryAdvisor`维护对话历史
+
+这种实现方式结合了向量检索和大模型生成能力，使系统能够基于已有知识库生成高质量的代码，而不仅仅依赖大模型的预训练知识。
+
+
+
+
+
+### {question_answer_context}
+
+Given the context and provided history information and not prior knowledge,
+reply to the user comment. If the answer is not in the context, inform
+the user that you can't answer the question.
+
+2025-10-19T14:16:47.758+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.yam.myaiagent.advisor.MyLoggerAdvisor  : AI Response: 根据提供的MySQL表结构，我将为您生成对应的Java后端代码结构（实体类、Controller、Service、MyBatis Mapper接口及XML文件）。以下是代码实现：
+
+1. 实体类 (Entity)
+
+```java
+package com.example.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+import java.util.Date;
+
+@Data
+@TableName("biz_package_material_detail")
+public class BizPackageMaterialDetail {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    
+    private String packageCode;
+    
+    private String sku;
+    
+    private Integer quantityRatio;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createUser;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createName;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateUser;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateName;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+    
+    @TableLogic
+    private Integer isDelete;
+    
+    @Version
+    private Integer sysVersion;
+    
+    private Date ts;
+}
+```
+
+2. Controller
+
+```java
+package com.example.controller;
+
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.web.bind.annotation.*;
+import javax.annotation.Resource;
+import java.util.List;
+
+@RestController
+@RequestMapping("/package-material-detail")
+public class BizPackageMaterialDetailController {
+
+    @Resource
+    private IBizPackageMaterialDetailService service;
+
+    @PostMapping
+    public boolean save(@RequestBody BizPackageMaterialDetail entity) {
+        return service.save(entity);
+    }
+
+    @PutMapping
+    public boolean update(@RequestBody BizPackageMaterialDetail entity) {
+        return service.updateById(entity);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean delete(@PathVariable Long id) {
+        return service.removeById(id);
+    }
+
+    @GetMapping("/{id}")
+    public BizPackageMaterialDetail getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    @GetMapping("/list")
+    public List<BizPackageMaterialDetail> list() {
+        return service.list();
+    }
+}
+```
+
+3. Service接口及实现
+
+接口:
+
+```java
+package com.example.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface IBizPackageMaterialDetailService extends IService<BizPackageMaterialDetail> {
+}
+```
+
+实现类:
+
+```java
+package com.example.service.impl;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.mapper.BizPackageMaterialDetailMapper;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BizPackageMaterialDetailServiceImpl 
+    extends ServiceImpl<BizPackageMaterialDetailMapper, BizPackageMaterialDetail> 
+    implements IBizPackageMaterialDetailService {
+}
+```
+
+4. Mapper接口
+
+```java
+package com.example.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMaterialDetail> {
+}
+```
+
+5. MyBatis XML映射文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.BizPackageMaterialDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.entity.BizPackageMaterialDetail">
+        <id column="id" property="id" />
+        <result column="package_code" property="packageCode" />
+        <result column="sku" property="sku" />
+        <result column="quantity_ratio" property="quantityRatio" />
+        <result column="create_user" property="createUser" />
+        <result column="create_name" property="createName" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_name" property="updateName" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_delete" property="isDelete" />
+        <result column="sys_version" property="sysVersion" />
+        <result column="ts" property="ts" />
+    </resultMap>
+
+</mapper>
+```
+
+注意事项：
+
+1. 使用了Lombok简化代码
+2. 使用MyBatis-Plus注解简化CRUD操作
+3. 自动填充字段使用了MyBatis-Plus的字段填充功能
+4. 软删除使用@TableLogic注解
+5. 乐观锁使用@Version注解
+6. 表名和字段名映射使用MyBatis-Plus的默认策略（下划线转驼峰）
+
+如需调整任何部分或有其他需求，请告知。
+2025-10-19T14:16:47.759+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.y.m.s.impl.KnowledgeBaseServiceImpl    : getAnswerNew content: 根据提供的MySQL表结构，我将为您生成对应的Java后端代码结构（实体类、Controller、Service、MyBatis Mapper接口及XML文件）。以下是代码实现：
+
+1. 实体类 (Entity)
+
+```java
+package com.example.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+import java.util.Date;
+
+@Data
+@TableName("biz_package_material_detail")
+public class BizPackageMaterialDetail {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    
+    private String packageCode;
+    
+    private String sku;
+    
+    private Integer quantityRatio;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createUser;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createName;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateUser;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateName;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+    
+    @TableLogic
+    private Integer isDelete;
+    
+    @Version
+    private Integer sysVersion;
+    
+    private Date ts;
+}
+```
+
+2. Controller
+
+```java
+package com.example.controller;
+
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.web.bind.annotation.*;
+import javax.annotation.Resource;
+import java.util.List;
+
+@RestController
+@RequestMapping("/package-material-detail")
+public class BizPackageMaterialDetailController {
+
+    @Resource
+    private IBizPackageMaterialDetailService service;
+
+    @PostMapping
+    public boolean save(@RequestBody BizPackageMaterialDetail entity) {
+        return service.save(entity);
+    }
+
+    @PutMapping
+    public boolean update(@RequestBody BizPackageMaterialDetail entity) {
+        return service.updateById(entity);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean delete(@PathVariable Long id) {
+        return service.removeById(id);
+    }
+
+    @GetMapping("/{id}")
+    public BizPackageMaterialDetail getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    @GetMapping("/list")
+    public List<BizPackageMaterialDetail> list() {
+        return service.list();
+    }
+}
+```
+
+3. Service接口及实现
+
+接口:
+
+```java
+package com.example.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface IBizPackageMaterialDetailService extends IService<BizPackageMaterialDetail> {
+}
+```
+
+实现类:
+
+```java
+package com.example.service.impl;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.mapper.BizPackageMaterialDetailMapper;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BizPackageMaterialDetailServiceImpl 
+    extends ServiceImpl<BizPackageMaterialDetailMapper, BizPackageMaterialDetail> 
+    implements IBizPackageMaterialDetailService {
+}
+```
+
+4. Mapper接口
+
+```java
+package com.example.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMaterialDetail> {
+}
+```
+
+5. MyBatis XML映射文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.BizPackageMaterialDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.entity.BizPackageMaterialDetail">
+        <id column="id" property="id" />
+        <result column="package_code" property="packageCode" />
+        <result column="sku" property="sku" />
+        <result column="quantity_ratio" property="quantityRatio" />
+        <result column="create_user" property="createUser" />
+        <result column="create_name" property="createName" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_name" property="updateName" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_delete" property="isDelete" />
+        <result column="sys_version" property="sysVersion" />
+        <result column="ts" property="ts" />
+    </resultMap>
+
+</mapper>
+```
+
+注意事项：
+
+1. 使用了Lombok简化代码
+2. 使用MyBatis-Plus注解简化CRUD操作
+3. 自动填充字段使用了MyBatis-Plus的字段填充功能
+4. 软删除使用@TableLogic注解
+5. 乐观锁使用@Version注解
+6. 表名和字段名映射使用MyBatis-Plus的默认策略（下划线转驼峰）
+
+如需调整任何部分或有其他需求，请告知。
+
+
 
 
 

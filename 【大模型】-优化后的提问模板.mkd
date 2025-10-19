@@ -1,0 +1,489 @@
+# [优化后的提问模板]
+
+**我上面的提问 ，有更好prompt方式吗**
+
+
+
+以下是更优化的提问方式，结构更清晰、需求更明确，便于快速生成所需内容：
+
+---
+
+### **优化后的提问模板：**
+
+**需求背景：**  
+我需要根据以下 MySQL 表结构生成 Java 后端代码（实体类、Controller、Service、MyBatis Mapper 接口及 XML 文件）。请按照以下要求生成代码：
+
+---
+
+### **1. 表结构定义**  
+
+```sql
+CREATE TABLE `biz_package_material_detail` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `package_code` VARCHAR(50) NOT NULL COMMENT '包装编码',
+  `sku` varchar(50) NOT NULL COMMENT '商品SKU',
+  `quantity_ratio` int(11) COMMENT '数量配比',
+  `create_user` varchar(64) DEFAULT '' COMMENT '创建人',
+  `create_name` varchar(64) DEFAULT '' COMMENT '创建人名称',
+  `create_time` datetime(3) DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_user` varchar(64) DEFAULT '' COMMENT '更新人',
+  `update_name` varchar(64) DEFAULT '' COMMENT '更新人名称',
+  `update_time` datetime(3) DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_delete` tinyint(4) NOT NULL DEFAULT '0' COMMENT '删除标识',
+  `sys_version` int(11) NOT NULL DEFAULT '0' COMMENT '版本号',
+  `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '时间戳',
+  PRIMARY KEY (`id`),
+  KEY `idx_packageDetail_packageCode` (`package_code`),
+  KEY `idx_packageDetail_sku` (`sku`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='包装耗材售卖配置-详情表';
+```
+
+---
+
+### **2. 生成要求：**  
+
+1. **实体类（Java Bean）**  
+   - 字段类型需与数据库字段严格对应（如 `datetime` 对应 `LocalDateTime`，`tinyint` 对应 `Integer`）。  
+   - 字段需添加 `@Column` 注解（如 `@Column(name = "package_code")`）。  
+   - 包名：`com.example.entity`。  
+
+2. **Controller 层**  
+   - 提供基础 CRUD 接口（增删改查）。  
+   - 接口路径：`/api/packageMaterialDetail`。  
+   - 使用 `@RestController`、`@RequestMapping` 等注解。  
+
+3. **Service 层**  
+   - 分接口（`BizPackageMaterialDetailService`）和实现类（`BizPackageMaterialDetailServiceImpl`）。  
+   - 方法需包含 `save`、`update`、`deleteById`、`getById`、`listAll`。  
+
+4. **MyBatis Mapper 层**  
+   - Mapper 接口（`BizPackageMaterialDetailMapper`）需定义方法：  
+     - `insert`、`update`、`deleteById`、`selectById`、`selectAll`。  
+   - XML 文件需包含对应的 SQL 语句，使用 `#{}` 占位符。  
+   - 软删除逻辑：查询时默认过滤 `is_delete = 0`。  
+   - 版本号 `sys_version` 需在更新时自动递增。  
+
+5. **其他要求**  
+   - 时间字段 `ts` 在 MySQL 中自动更新，无需显式赋值。  
+   - 不需要生成 Maven 依赖或数据库配置。  
+
+---
+
+### **3. 输出格式：**  
+
+- **实体类**：完整代码（含包名、注释）。  
+- **Controller**：完整代码（含包名、注释）。  
+- **Service 接口和实现类**：分文件代码。  
+- **Mapper 接口和 XML 文件**：接口定义 + XML SQL 语句。  
+
+---
+
+### **优化说明：**
+
+1. **结构化分层**：将需求拆分为表结构、生成要求、输出格式，逻辑清晰。  
+2. **明确细节**：  
+   - 字段类型映射（如 `tinyint` 对应 `Integer`）。  
+   - 特殊逻辑（软删除、版本号、时间戳自动更新）。  
+3. **减少歧义**：  
+   - 指定包名、接口路径等细节。  
+   - 明确不需要生成的部分（如 Maven 依赖）。  
+4. **提高效率**：  
+   - 使用分点描述，便于回答者逐项处理。  
+   - 明确 SQL 与代码的对应关系（如 `@Column` 注解）。  
+
+通过这种方式提问，可以确保生成的代码更符合实际需求，减少返工和沟通成本。
+
+
+
+# my-ai-agent项目
+
+/Users/zhengdan3/workSpaces/work-AI-DEMO/my-ai-agent
+
+使用 向量数据库PostgreSQL存储该文档
+
+![image-20251019142645214](./ai-images/image-20251019142645214.png)
+
+
+
+KnowledgeBaseServiceImpl对用户查询进行重写优化 getAnswerNew, 重写前: 建表, doQueryRewrite重写后: 创建表结构
+2025-10-19T14:15:54.422+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.yam.myaiagent.advisor.MyLoggerAdvisor  : AI Request: 创建表结构
+
+Context information is below, surrounded by ---------------------
+
+---------------------
+{question_answer_context}
+---------------------
+
+Given the context and provided history information and not prior knowledge,
+reply to the user comment. If the answer is not in the context, inform
+the user that you can't answer the question.
+
+2025-10-19T14:16:47.758+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.yam.myaiagent.advisor.MyLoggerAdvisor  : AI Response: 根据提供的MySQL表结构，我将为您生成对应的Java后端代码结构（实体类、Controller、Service、MyBatis Mapper接口及XML文件）。以下是代码实现：
+
+1. 实体类 (Entity)
+
+```java
+package com.example.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+import java.util.Date;
+
+@Data
+@TableName("biz_package_material_detail")
+public class BizPackageMaterialDetail {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    
+    private String packageCode;
+    
+    private String sku;
+    
+    private Integer quantityRatio;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createUser;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createName;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateUser;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateName;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+    
+    @TableLogic
+    private Integer isDelete;
+    
+    @Version
+    private Integer sysVersion;
+    
+    private Date ts;
+}
+```
+
+2. Controller
+
+```java
+package com.example.controller;
+
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.web.bind.annotation.*;
+import javax.annotation.Resource;
+import java.util.List;
+
+@RestController
+@RequestMapping("/package-material-detail")
+public class BizPackageMaterialDetailController {
+
+    @Resource
+    private IBizPackageMaterialDetailService service;
+
+    @PostMapping
+    public boolean save(@RequestBody BizPackageMaterialDetail entity) {
+        return service.save(entity);
+    }
+
+    @PutMapping
+    public boolean update(@RequestBody BizPackageMaterialDetail entity) {
+        return service.updateById(entity);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean delete(@PathVariable Long id) {
+        return service.removeById(id);
+    }
+
+    @GetMapping("/{id}")
+    public BizPackageMaterialDetail getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    @GetMapping("/list")
+    public List<BizPackageMaterialDetail> list() {
+        return service.list();
+    }
+}
+```
+
+3. Service接口及实现
+
+接口:
+```java
+package com.example.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface IBizPackageMaterialDetailService extends IService<BizPackageMaterialDetail> {
+}
+```
+
+实现类:
+```java
+package com.example.service.impl;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.mapper.BizPackageMaterialDetailMapper;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BizPackageMaterialDetailServiceImpl 
+    extends ServiceImpl<BizPackageMaterialDetailMapper, BizPackageMaterialDetail> 
+    implements IBizPackageMaterialDetailService {
+}
+```
+
+4. Mapper接口
+
+```java
+package com.example.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMaterialDetail> {
+}
+```
+
+5. MyBatis XML映射文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.BizPackageMaterialDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.entity.BizPackageMaterialDetail">
+        <id column="id" property="id" />
+        <result column="package_code" property="packageCode" />
+        <result column="sku" property="sku" />
+        <result column="quantity_ratio" property="quantityRatio" />
+        <result column="create_user" property="createUser" />
+        <result column="create_name" property="createName" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_name" property="updateName" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_delete" property="isDelete" />
+        <result column="sys_version" property="sysVersion" />
+        <result column="ts" property="ts" />
+    </resultMap>
+
+</mapper>
+```
+
+注意事项：
+1. 使用了Lombok简化代码
+2. 使用MyBatis-Plus注解简化CRUD操作
+3. 自动填充字段使用了MyBatis-Plus的字段填充功能
+4. 软删除使用@TableLogic注解
+5. 乐观锁使用@Version注解
+6. 表名和字段名映射使用MyBatis-Plus的默认策略（下划线转驼峰）
+
+如需调整任何部分或有其他需求，请告知。
+2025-10-19T14:16:47.759+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.y.m.s.impl.KnowledgeBaseServiceImpl    : getAnswerNew content: 根据提供的MySQL表结构，我将为您生成对应的Java后端代码结构（实体类、Controller、Service、MyBatis Mapper接口及XML文件）。以下是代码实现：
+
+1. 实体类 (Entity)
+
+```java
+package com.example.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+import java.util.Date;
+
+@Data
+@TableName("biz_package_material_detail")
+public class BizPackageMaterialDetail {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    
+    private String packageCode;
+    
+    private String sku;
+    
+    private Integer quantityRatio;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createUser;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private String createName;
+    
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateUser;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String updateName;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+    
+    @TableLogic
+    private Integer isDelete;
+    
+    @Version
+    private Integer sysVersion;
+    
+    private Date ts;
+}
+```
+
+2. Controller
+
+```java
+package com.example.controller;
+
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.web.bind.annotation.*;
+import javax.annotation.Resource;
+import java.util.List;
+
+@RestController
+@RequestMapping("/package-material-detail")
+public class BizPackageMaterialDetailController {
+
+    @Resource
+    private IBizPackageMaterialDetailService service;
+
+    @PostMapping
+    public boolean save(@RequestBody BizPackageMaterialDetail entity) {
+        return service.save(entity);
+    }
+
+    @PutMapping
+    public boolean update(@RequestBody BizPackageMaterialDetail entity) {
+        return service.updateById(entity);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean delete(@PathVariable Long id) {
+        return service.removeById(id);
+    }
+
+    @GetMapping("/{id}")
+    public BizPackageMaterialDetail getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    @GetMapping("/list")
+    public List<BizPackageMaterialDetail> list() {
+        return service.list();
+    }
+}
+```
+
+3. Service接口及实现
+
+接口:
+```java
+package com.example.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface IBizPackageMaterialDetailService extends IService<BizPackageMaterialDetail> {
+}
+```
+
+实现类:
+```java
+package com.example.service.impl;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.entity.BizPackageMaterialDetail;
+import com.example.mapper.BizPackageMaterialDetailMapper;
+import com.example.service.IBizPackageMaterialDetailService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BizPackageMaterialDetailServiceImpl 
+    extends ServiceImpl<BizPackageMaterialDetailMapper, BizPackageMaterialDetail> 
+    implements IBizPackageMaterialDetailService {
+}
+```
+
+4. Mapper接口
+
+```java
+package com.example.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.entity.BizPackageMaterialDetail;
+
+public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMaterialDetail> {
+}
+```
+
+5. MyBatis XML映射文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.BizPackageMaterialDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.entity.BizPackageMaterialDetail">
+        <id column="id" property="id" />
+        <result column="package_code" property="packageCode" />
+        <result column="sku" property="sku" />
+        <result column="quantity_ratio" property="quantityRatio" />
+        <result column="create_user" property="createUser" />
+        <result column="create_name" property="createName" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_name" property="updateName" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_delete" property="isDelete" />
+        <result column="sys_version" property="sysVersion" />
+        <result column="ts" property="ts" />
+    </resultMap>
+
+</mapper>
+```
+
+注意事项：
+1. 使用了Lombok简化代码
+2. 使用MyBatis-Plus注解简化CRUD操作
+3. 自动填充字段使用了MyBatis-Plus的字段填充功能
+4. 软删除使用@TableLogic注解
+5. 乐观锁使用@Version注解
+6. 表名和字段名映射使用MyBatis-Plus的默认策略（下划线转驼峰）
+
+如需调整任何部分或有其他需求，请告知。
+
+
+
+
+
+
+
+# [相关文档]
+
+AI生成测试用例实践分享
+
+http://jagile.jd.com/shendeng/article/detail/37060?forumId=99&jdme_router=jdme://web/202206081297?url%3Dhttp%3A%2F%2Fsd.jd.com%2Farticle%2F37060
+
+
+
+
+
+
+
+
+
+
+

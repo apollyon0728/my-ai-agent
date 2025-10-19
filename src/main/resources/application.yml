@@ -2,7 +2,8 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/AI_Test
+#    url: jdbc:postgresql://localhost:5432/AI_Test
+    url: jdbc:postgresql://localhost:5433/AI_Test
     username: zhengdan3
     password:
     driver-class-name: org.postgresql.Driver
@@ -29,7 +30,10 @@ spring:
       base-url: https://api.deepseek.com
       chat:
         options:
-          model: deepseek-chat
+#          model: deepseek-chat
+          model: DeepSeek-V3-0324-jdcloud-iaas
+#          model: Pro/deepseek-ai/DeepSeek-V3.1
+
 #    ollama:
 #      base-url: http://localhost:11434
 #      chat:

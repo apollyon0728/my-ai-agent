@@ -50,9 +50,28 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
      * @param question 用户输入的问题
      * @return 拆解后的任务列表
      */
+    /**
+     * 获取向量存储中的文档数量
+     * 用于调试和监控向量存储状态
+     */
+    private long getVectorStoreDocumentCount() {
+        try {
+            SearchRequest countRequest = SearchRequest.builder()
+                .query("*")
+                .topK(1000)  // 设置一个较大的值
+                .build();
+            List<Document> allDocs = vectorStore.similaritySearch(countRequest);
+            return allDocs.size();
+        } catch (Exception e) {
+            log.error("获取向量存储文档数量失败: {}", e.getMessage());
+            return -1;
+        }
+    }
+
     @Override
     public List<DecomposedTask> decompose(String question) {
-        log.info("开始拆解问题: {}, 当前线程ID: {}", question, Thread.currentThread().getId());
+        log.info("开始拆解问题: {}, 当前线程ID: {}, 当前向量存储文档数量: {}",
+                question, Thread.currentThread().getId(), getVectorStoreDocumentCount());
         
         // 1. 查询相似的规则
         List<TaskRule> matchedRules = findMatchingRules(question);
@@ -90,8 +109,8 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     private List<TaskRule> findMatchingRules(String question) {
         // 使用向量搜索查找相似的规则
         // 使用Builder模式创建SearchRequest对象
-        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}",
-                question, SIMILARITY_THRESHOLD, Thread.currentThread().getId());
+        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}, 当前向量存储文档数量: {}",
+                question, SIMILARITY_THRESHOLD, Thread.currentThread().getId(), getVectorStoreDocumentCount());
         
         // 尝试不同格式的过滤表达式
         log.info("尝试使用不同格式的过滤表达式");
@@ -110,7 +129,8 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
                 
             log.info("成功创建SearchRequest对象(格式1)");
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
-            log.info("查询结果: 找到{}个文档", similarDocuments.size());
+            log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+                    similarDocuments.size(), getVectorStoreDocumentCount());
             
             // 记录文档元数据，帮助调试
             if (!similarDocuments.isEmpty()) {
@@ -149,6 +169,8 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
                 
             log.info("成功创建SearchRequest对象(格式2)");
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+                    similarDocuments.size(), getVectorStoreDocumentCount());
             
             // 解析文档内容为TaskRule对象
             List<TaskRule> rules = similarDocuments.stream()
@@ -177,6 +199,8 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             
         log.info("成功创建无过滤器的SearchRequest对象");
         List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+        log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+                similarDocuments.size(), getVectorStoreDocumentCount());
         
         // 解析文档内容为TaskRule对象
         List<TaskRule> rules = similarDocuments.stream()

@@ -297,6 +297,9 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
      */
     @Override
     public List<DecomposedTask> decomposeTask(String question) {
-        return taskDecomposer.decompose(question);
+        log.info("KnowledgeBaseServiceImpl.decomposeTask开始执行, 参数: {}", question);
+        List<DecomposedTask> tasks = taskDecomposer.decompose(question);
+        log.info("KnowledgeBaseServiceImpl.decomposeTask执行完成, 生成任务数量: {}", tasks.size());
+        return tasks;
     }
 }

@@ -29,6 +29,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     private VectorStore vectorStore;
 
     @Resource
+    @Qualifier("dashscopeEmbeddingModel")
     private EmbeddingModel embeddingModel;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -78,20 +79,48 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     private List<TaskRule> findMatchingRules(String question) {
         // 使用向量搜索查找相似的规则
         // 使用Builder模式创建SearchRequest对象
-        SearchRequest searchRequest = SearchRequest.builder()
+        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}", question, SIMILARITY_THRESHOLD);
+        
+        // 尝试更简单的过滤表达式格式
+        String filterExpr = "type:TASK_RULE";
+        log.info("使用过滤表达式: {}", filterExpr);
+        
+        try {
+            SearchRequest searchRequest = SearchRequest.builder()
                 .query(question)
                 .topK(5)
                 .similarityThreshold(SIMILARITY_THRESHOLD)
-                .filterExpression("metadata.type:'" + RULE_PREFIX + "'")
+                .filterExpression(filterExpr)
                 .build();
-        
-        List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
-        
-        // 解析文档内容为TaskRule对象
-        return similarDocuments.stream()
-                .map(this::parseRuleFromDocument)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                
+            log.info("成功创建SearchRequest对象");
+            List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            
+            // 解析文档内容为TaskRule对象
+            return similarDocuments.stream()
+                    .map(this::parseRuleFromDocument)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } 
+        catch (Exception e) {
+            // 如果过滤表达式仍然有问题，记录错误并尝试不使用过滤器
+            log.error("过滤表达式错误: {}, 尝试不使用过滤器", e.getMessage());
+            
+            SearchRequest searchRequest = SearchRequest.builder()
+                .query(question)
+                .topK(5)
+                .similarityThreshold(SIMILARITY_THRESHOLD)
+                .build();
+                
+            log.info("使用无过滤器的SearchRequest");
+            List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            
+            // 解析文档内容为TaskRule对象
+            return similarDocuments.stream()
+                    .map(this::parseRuleFromDocument)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
     }
     
     /**
@@ -231,8 +260,20 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     @Override
     public String uploadRule(String ruleJson) {
         try {
+            log.info("开始上传规则，规则JSON: {}", ruleJson);
+            
             // 解析规则JSON
             TaskRule rule = objectMapper.readValue(ruleJson, TaskRule.class);
+            
+            // 处理matchPatterns字段
+            if (rule.getMatchPatterns() != null && !rule.getMatchPatterns().isEmpty()) {
+                log.info("检测到matchPatterns字段，值为: {}", rule.getMatchPatterns());
+                // 如果matchPattern为空，使用matchPatterns的第一个元素
+                if (rule.getMatchPattern() == null && !rule.getMatchPatterns().isEmpty()) {
+                    rule.setMatchPattern(rule.getMatchPatterns().get(0));
+                    log.info("将matchPatterns的第一个元素设置为matchPattern: {}", rule.getMatchPattern());
+                }
+            }
             
             // 生成规则ID
             if (rule.getRuleId() == null) {

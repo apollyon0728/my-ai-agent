@@ -1973,6 +1973,142 @@ public class ToolRegistration {
 
 
 
+## [任务拆解]★★
+
+```java
+/**
+ * 拆解任务
+ * @param request 包含问题的请求
+ * @return 拆解后的任务列表
+ */
+@PostMapping("/decomposeTask")
+public ResponseEntity<List<DecomposedTask>> decomposeTask(@RequestBody QARequest request) {
+    List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
+    return ResponseEntity.ok(tasks);
+}
+```
+
+
+
+基于我查看的代码文件，我现在对系统的任务拆解功能有了全面的了解。现在我可以回答用户的问题，提供一个调用`decomposeTask`接口的例子，并解释是否需要先上传数据到向量库。
+
+关键发现：
+
+1. `decomposeTask`接口位于`KnowledgeBaseController`中，接收一个包含问题的`QARequest`对象，返回拆解后的任务列表
+2. 底层实现是通过`VectorStoreTaskDecomposer`类，它使用向量存储来匹配规则并生成任务
+3. 系统使用向量数据库存储任务拆解规则，通过语义相似度匹配来找到适合的规则
+4. 规则需要预先上传到向量库中，才能被系统用于任务拆解
+5. 规则的格式是JSON，包含匹配模式、任务模板等信息
+
+根据我对代码的分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
+
+
+
+**是否需要先上传数据到向量库**
+
+**是的，需要先上传任务拆解规则到向量库**。从代码实现来看，`VectorStoreTaskDecomposer`类使用向量存储来匹配规则并生成任务。当调用`decomposeTask`方法时，系统会在向量库中查找与问题语义相似的规则，然后根据这些规则生成具体任务。如果向量库中没有相关规则，将返回空的任务列表。
+
+上传规则的步骤：
+
+1. 准备规则JSON文件（参考`performance-reward-rule.json`的格式）
+
+2. 调用`/api/knowledge/taskRule`接口上传规则
+
+   
+
+**调用`decomposeTask`接口的示例**
+
+请求示例
+
+```http
+POST /api/knowledge/decomposeTask
+Content-Type: application/json
+
+{
+  "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
+}
+```
+
+响应示例
+
+```json
+[
+  {
+    "taskId": "task-001",
+    "description": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+    "taskType": "SQL_QUERY",
+    "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in (JD, TB) GROUP BY run_status_ext1, business_day, source order by business_day",
+    "parameters": {
+      "source": "JD, TB"
+    },
+    "priority": 1,
+    "dependencies": []
+  }
+]
+```
+
+
+
+**完整调用流程**
+
+1. **上传任务规则**（如果尚未上传）：
+
+   ```json
+   POST /api/knowledge/taskRule
+   Content-Type: application/json
+   
+   {
+     "ruleName": "绩效奖励成本项数据波动分析规则",
+     "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
+     "matchPatterns": [
+       "绩效奖励.*波动",
+       "绩效奖励.*数据.*分析",
+       "performance.*reward.*data"
+     ],
+     "taskTemplates": [
+       {
+         "taskType": "SQL_QUERY",
+         "priority": 1,
+         "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+         "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in ({{source}}) GROUP BY run_status_ext1, business_day, source order by business_day",
+         "parameterMappings": {
+           "source": "source\\s+in\\s+\\(([^\\)]+)\\)"
+         },
+         "dependencyIndices": []
+       }
+     ]
+   }
+   ```
+
+2. **调用任务拆解接口**：
+
+   ```http
+   POST /api/knowledge/decomposeTask
+   Content-Type: application/json
+   
+   {
+     "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
+   }
+   ```
+
+3. **获取拆解后的任务列表**，然后可以根据任务列表进行后续处理。
+
+### 工作原理
+
+1. 系统将规则存储在向量数据库中
+2. 当收到问题时，系统使用向量搜索找到相似度高于阈值的规则
+3. 根据匹配的规则，系统从问题中提取参数（使用正则表达式）
+4. 系统生成具体任务，包括任务描述、查询模板、参数等
+5. 返回拆解后的任务列表
+
+这种方式允许系统根据预定义的规则模板，将自然语言问题转换为结构化的任务，便于后续执行和处理。
+
+根据代码分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
+
+
+
+
+
 # 相关知识点
 
 ## 检索增强生成 ★★

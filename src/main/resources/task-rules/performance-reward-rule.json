@@ -1,0 +1,33 @@
+{
+  "ruleId": "performance-reward-rule-001",
+  "ruleName": "绩效奖励成本项数据波动分析规则",
+  "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
+  "matchPatterns": [
+    "绩效奖励.*波动",
+    "绩效奖励.*数据.*分析",
+    "performance.*reward.*data"
+  ],
+  "taskTemplates": [
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 1,
+      "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+      "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in ({{source}}) GROUP BY run_status_ext1, business_day, source order by business_day",
+      "parameterMappings": {
+        "source": "source\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 2,
+      "descriptionTemplate": "查询指定用户的信息，使用前一天的业务日期",
+      "queryTemplate": "select * from user_info where erp = '{{erp}}' and business_day = '{{business_day}}'",
+      "parameterMappings": {
+        "erp": "erp\\s*=\\s*['\"]([^'\"]+)['\"]",
+        "business_day": "business_day\\s*=\\s*['\"]([^'\"]+)['\"]"
+      },
+      "dependencyIndices": [0]
+    }
+  ]
+}

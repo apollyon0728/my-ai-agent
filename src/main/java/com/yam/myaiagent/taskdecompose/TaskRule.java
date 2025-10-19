@@ -1,9 +1,11 @@
 package com.yam.myaiagent.taskdecompose;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,8 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Slf4j
 public class TaskRule {
     
     /**
@@ -38,6 +42,12 @@ public class TaskRule {
      * 可以是关键词、正则表达式或语义描述
      */
     private String matchPattern;
+    
+    /**
+     * 匹配模式列表
+     * 用于存储多个匹配模式
+     */
+    private List<String> matchPatterns;
     
     /**
      * 匹配类型

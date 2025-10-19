@@ -6,6 +6,8 @@ import com.yam.myaiagent.model.QAResponse;
 import com.yam.myaiagent.rag.LoveAppDocumentLoader;
 import com.yam.myaiagent.rag.QueryRewriter;
 import com.yam.myaiagent.service.KnowledgeBaseService;
+import com.yam.myaiagent.taskdecompose.DecomposedTask;
+import com.yam.myaiagent.taskdecompose.TaskDecomposer;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -52,6 +54,9 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
     @Resource
     private VectorStore pgVectorVectorStore;
+    
+    @Resource
+    private TaskDecomposer taskDecomposer;
 
     private static final String MARKDOWN_DIR = "docs/markdown/";
 
@@ -225,5 +230,67 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     @Override
     public void reloadAllDocuments() {
 
+    }
+    /**
+     * 使用向量存储进行相似性搜索并回答问题，同时拆解任务
+     *
+     * @param message   用户输入的问题
+     * @param modelType 模型类型
+     * @return 包含回答和拆解任务的响应
+     */
+    @Override
+    public QAResponse getAnswerWithTaskDecomposition(String message, String modelType) {
+        // 1. 获取问题的回答
+        QAResponse qaResponse = getAnswerNew(message, modelType);
+        
+        // 2. 拆解任务
+        List<DecomposedTask> tasks = decomposeTask(message);
+        
+        // 3. 设置任务列表
+        qaResponse.setTasks(tasks);
+        
+        return qaResponse;
+    }
+    
+    /**
+     * 上传任务拆解规则
+     *
+     * @param ruleJson 规则JSON字符串
+     * @return 上传成功的规则ID
+     */
+    @Override
+    public String uploadTaskRule(String ruleJson) {
+        return taskDecomposer.uploadRule(ruleJson);
+    }
+    
+    /**
+     * 获取所有任务拆解规则
+     *
+     * @return 所有规则的列表
+     */
+    @Override
+    public List<String> getAllTaskRules() {
+        return taskDecomposer.getAllRules();
+    }
+    
+    /**
+     * 删除指定任务拆解规则
+     *
+     * @param ruleId 规则ID
+     */
+    @Override
+    public void deleteTaskRule(String ruleId) {
+        taskDecomposer.deleteRule(ruleId);
+    }
+    
+    /**
+     * 拆解任务
+     *
+     * @param question 用户问题
+     * @return 拆解后的任务列表
+     */
+    @Override
+    public List<DecomposedTask> decomposeTask(String question) {
+        return taskDecomposer.decompose(question);
     }
 }

@@ -3,6 +3,7 @@ package com.yam.myaiagent.controller;
 import com.yam.myaiagent.model.QARequest;
 import com.yam.myaiagent.model.QAResponse;
 import com.yam.myaiagent.service.KnowledgeBaseService;
+import com.yam.myaiagent.taskdecompose.DecomposedTask;
 import jakarta.annotation.Resource;
 import org.springframework.ai.document.Document;
 import org.springframework.http.MediaType;
@@ -52,6 +53,16 @@ public class KnowledgeBaseController {
         QAResponse response = knowledgeBaseService.getAnswerNew(request.getQuestion(), request.getModelType());
         return ResponseEntity.ok(response);
     }
+    
+    /**
+     * 基于知识库进行问答并拆解任务
+     * 该接口在回答问题的同时，会将用户问题拆解为具体任务列表
+     */
+    @PostMapping("/qaWithTaskDecomposition")
+    public ResponseEntity<QAResponse> askQuestionWithTaskDecomposition(@RequestBody QARequest request) {
+        QAResponse response = knowledgeBaseService.getAnswerWithTaskDecomposition(request.getQuestion(), request.getModelType());
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * 获取所有已上传的文档列表
@@ -79,4 +90,50 @@ public class KnowledgeBaseController {
         knowledgeBaseService.reloadAllDocuments();
         return ResponseEntity.ok("文档重新加载成功");
     }
-} 
+    /**
+     * 任务拆解相关接口
+     */
+    
+    /**
+     * 上传任务拆解规则
+     * @param ruleJson 规则JSON字符串
+     * @return 上传成功的规则ID
+     */
+    @PostMapping("/taskRule")
+    public ResponseEntity<String> uploadTaskRule(@RequestBody String ruleJson) {
+        String ruleId = knowledgeBaseService.uploadTaskRule(ruleJson);
+        return ResponseEntity.ok(ruleId);
+    }
+    
+    /**
+     * 获取所有任务拆解规则
+     * @return 所有规则的列表
+     */
+    @GetMapping("/taskRules")
+    public ResponseEntity<List<String>> getAllTaskRules() {
+        List<String> rules = knowledgeBaseService.getAllTaskRules();
+        return ResponseEntity.ok(rules);
+    }
+    
+    /**
+     * 删除指定任务拆解规则
+     * @param ruleId 规则ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/taskRule/{ruleId}")
+    public ResponseEntity<String> deleteTaskRule(@PathVariable String ruleId) {
+        knowledgeBaseService.deleteTaskRule(ruleId);
+        return ResponseEntity.ok("规则删除成功");
+    }
+    
+    /**
+     * 拆解任务
+     * @param request 包含问题的请求
+     * @return 拆解后的任务列表
+     */
+    @PostMapping("/decomposeTask")
+    public ResponseEntity<List<DecomposedTask>> decomposeTask(@RequestBody QARequest request) {
+        List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
+        return ResponseEntity.ok(tasks);
+    }
+}

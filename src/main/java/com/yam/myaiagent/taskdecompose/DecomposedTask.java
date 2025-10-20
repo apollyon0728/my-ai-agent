@@ -156,4 +156,30 @@ public class DecomposedTask {
          */
         SKIPPED
     }
+    
+    /**
+     * 获取任务类型的名称
+     * 静态方法，用于获取任务类型的名称
+     *
+     * @param taskType 任务类型
+     * @return 任务类型的名称
+     */
+    public static String getTaskTypeName(TaskType taskType) {
+        switch (taskType) {
+            case SQL_QUERY:
+                return "SQL查询";
+            case API_CALL:
+                return "API调用";
+            case TEXT_GENERATION:
+                return "文本生成";
+            case DATA_ANALYSIS:
+                return "数据分析";
+            case MCP_TOOL:
+                return "MCP工具调用";
+            case FUNCTION_CALL:
+                return "Function Call工具调用";
+            default:
+                return "未知类型";
+        }
+    }
 }

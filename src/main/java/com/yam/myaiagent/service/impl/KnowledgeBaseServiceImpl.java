@@ -9,6 +9,7 @@ import com.yam.myaiagent.service.KnowledgeBaseService;
 import com.yam.myaiagent.taskdecompose.DecomposedTask;
 import com.yam.myaiagent.taskdecompose.TaskDecomposer;
 import com.yam.myaiagent.taskexecutor.CompositeTaskExecutor;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -20,6 +21,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,9 +30,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
@@ -59,8 +64,20 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     @Resource
     private TaskDecomposer taskDecomposer;
     
-    @Resource
+    // 修改注入方式，使用@Autowired和@Qualifier组合
+    @Autowired
+    @Qualifier("compositeTaskExecutor")
     private CompositeTaskExecutor taskExecutor;
+    
+    // 添加日志记录注入情况
+    @PostConstruct
+    public void init() {
+        log.info("KnowledgeBaseServiceImpl初始化");
+        log.info("taskExecutor注入状态: {}", taskExecutor != null ? "成功" : "失败");
+        if (taskExecutor != null) {
+            log.info("注入的taskExecutor类型: {}", taskExecutor.getClass().getName());
+        }
+    }
 
     private static final String MARKDOWN_DIR = "docs/markdown/";
 
@@ -330,6 +347,10 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     
     /**
      * 拆解并执行任务，然后汇总结果
+     * 该方法实现了完整的智能问答处理流程：
+     * 1. 任务拆解 - 将复杂问题拆解为多个子任务
+     * 2. 任务执行 - 根据任务类型选择合适的执行器（MCP或Function Call）
+     * 3. 结果汇总 - 将所有任务的执行结果汇总，生成最终回答
      *
      * @param question 用户问题
      * @param modelType 模型类型
@@ -339,41 +360,73 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public QAResponse decomposeAndExecuteTasks(String question, String modelType) {
         log.info("KnowledgeBaseServiceImpl.decomposeAndExecuteTasks开始执行, 问题: {}, 模型类型: {}", question, modelType);
         
-        // 1. 拆解任务
+        // 1. 拆解任务 - 使用knowledgeBaseService.decomposeTask拆解任务
+        log.info("步骤1: 任务拆解 - 将复杂问题拆解为多个子任务");
         List<DecomposedTask> tasks = decomposeTask(question);
         if (tasks.isEmpty()) {
             log.warn("任务拆解结果为空，直接使用普通问答");
             return getAnswerNew(question, modelType);
         }
         
-        // 2. 执行任务
+        // 记录任务类型分布
+        Map<DecomposedTask.TaskType, Long> taskTypeCount = tasks.stream()
+                .collect(Collectors.groupingBy(task -> task.getTaskType(), Collectors.counting()));
+        log.info("任务类型分布: {}", taskTypeCount);
+        
+        // 2. 执行任务 - 根据任务类型选择合适的执行器（MCP或Function Call）
+        log.info("步骤2: 任务执行 - 根据任务类型选择合适的执行器（MCP或Function Call）");
         List<DecomposedTask> executedTasks = executeTasks(tasks);
         
-        // 3. 汇总结果
+        // 统计执行结果
+        long completedCount = executedTasks.stream()
+                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED).count();
+        long failedCount = executedTasks.stream()
+                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.FAILED).count();
+        long skippedCount = executedTasks.stream()
+                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.SKIPPED).count();
+        log.info("任务执行结果统计: 成功={}, 失败={}, 跳过={}", completedCount, failedCount, skippedCount);
+        
+        // 3. 汇总结果 - 将所有任务的执行结果汇总，生成最终回答
+        log.info("步骤3: 结果汇总 - 将所有任务的执行结果汇总，生成最终回答");
+        
         // 构建汇总提示词
         StringBuilder summaryPrompt = new StringBuilder();
         summaryPrompt.append("用户问题：").append(question).append("\n\n");
         summaryPrompt.append("任务执行结果：\n");
         
-        for (DecomposedTask task : executedTasks) {
-            summaryPrompt.append("- 任务：").append(task.getDescription()).append("\n");
-            summaryPrompt.append("  状态：").append(task.getStatus()).append("\n");
-            
-            if (task.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED) {
-                summaryPrompt.append("  结果：").append(task.getResult()).append("\n");
-            } else if (task.getStatus() == DecomposedTask.ExecutionStatus.FAILED) {
-                summaryPrompt.append("  错误：").append(task.getErrorMessage()).append("\n");
-            }
-            summaryPrompt.append("\n");
+        // 按任务类型分组展示结果
+        Map<DecomposedTask.TaskType, List<DecomposedTask>> tasksByType = executedTasks.stream()
+                .collect(Collectors.groupingBy(task -> task.getTaskType()));
+        
+        // 先展示MCP工具调用结果
+        if (tasksByType.containsKey(DecomposedTask.TaskType.MCP_TOOL)) {
+            summaryPrompt.append("\n## MCP工具调用结果\n");
+            appendTaskResults(summaryPrompt, tasksByType.get(DecomposedTask.TaskType.MCP_TOOL));
         }
         
-        summaryPrompt.append("请根据以上任务执行结果，综合分析并回答用户的问题。");
+        // 再展示Function Call工具调用结果
+        if (tasksByType.containsKey(DecomposedTask.TaskType.FUNCTION_CALL)) {
+            summaryPrompt.append("\n## Function Call工具调用结果\n");
+            appendTaskResults(summaryPrompt, tasksByType.get(DecomposedTask.TaskType.FUNCTION_CALL));
+        }
+        
+        // 展示其他类型任务结果
+        for (Map.Entry<DecomposedTask.TaskType, List<DecomposedTask>> entry : tasksByType.entrySet()) {
+            if (entry.getKey() != DecomposedTask.TaskType.MCP_TOOL &&
+                entry.getKey() != DecomposedTask.TaskType.FUNCTION_CALL) {
+                summaryPrompt.append("\n## ").append(entry.getKey()).append("结果\n");
+                appendTaskResults(summaryPrompt, entry.getValue());
+            }
+        }
+        
+        summaryPrompt.append("\n请根据以上任务执行结果，综合分析并回答用户的问题。提供详细、准确的回答，并引用相关任务的结果作为支持。");
         
         // 4. 使用模型生成最终回答
         String chatId = UUID.randomUUID().toString();
         IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
         ChatClient dynamicChatClient = strategy.getChatClient();
         
+        log.info("使用{}模型生成最终回答", modelType);
         ChatResponse chatResponse = dynamicChatClient
                 .prompt()
                 .user(summaryPrompt.toString())
@@ -384,7 +437,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
                 .chatResponse();
         
         String content = chatResponse != null ? chatResponse.getResult().getOutput().getText() : null;
-        log.info("汇总分析结果: {}", content);
+        log.info("汇总分析结果生成完成，长度: {}", content != null ? content.length() : 0);
         
         // 5. 构建响应
         QAResponse qaResponse = new QAResponse();
@@ -392,5 +445,121 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         qaResponse.setTasks(executedTasks);
         
         return qaResponse;
+    }
+    
+    /**
+     * 将任务结果添加到汇总提示词中
+     *
+     * @param summaryPrompt 汇总提示词构建器
+     * @param tasks 任务列表
+     */
+    private void appendTaskResults(StringBuilder summaryPrompt, List<DecomposedTask> tasks) {
+        for (DecomposedTask task : tasks) {
+            summaryPrompt.append("- 任务：").append(task.getDescription()).append("\n");
+            summaryPrompt.append("  ID：").append(task.getTaskId()).append("\n");
+            summaryPrompt.append("  状态：").append(task.getStatus()).append("\n");
+            
+            if (task.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED) {
+                summaryPrompt.append("  结果：").append(task.getResult()).append("\n");
+                if (task.getExecutionTimeMillis() > 0) {
+                    summaryPrompt.append("  执行时间：").append(task.getExecutionTimeMillis()).append("ms\n");
+                }
+            } else if (task.getStatus() == DecomposedTask.ExecutionStatus.FAILED) {
+                summaryPrompt.append("  错误：").append(task.getErrorMessage()).append("\n");
+            } else if (task.getStatus() == DecomposedTask.ExecutionStatus.SKIPPED) {
+                summaryPrompt.append("  原因：").append(task.getErrorMessage()).append("\n");
+            }
+            summaryPrompt.append("\n");
+        }
+    }
+    
+    /**
+     * 将任务转换为Document对象，用于向量存储
+     *
+     * @param tasks 任务列表
+     * @param question 原始问题
+     * @return Document列表
+     */
+    private List<Document> convertTasksToDocuments(List<DecomposedTask> tasks, String question) {
+        List<Document> documents = new ArrayList<>();
+        
+        // 为每个任务创建一个Document
+        for (DecomposedTask task : tasks) {
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("taskId", task.getTaskId());
+            metadata.put("taskType", task.getTaskType().name());
+            metadata.put("originalQuestion", question);
+            metadata.put("timestamp", System.currentTimeMillis());
+            metadata.put("status", task.getStatus().name());
+            
+            // 构建文档内容
+            StringBuilder content = new StringBuilder();
+            content.append("任务描述: ").append(task.getDescription()).append("\n");
+            content.append("任务类型: ").append(task.getTaskType()).append("\n");
+            content.append("执行状态: ").append(task.getStatus()).append("\n");
+            
+            if (task.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED) {
+                content.append("执行结果: ").append(task.getResult()).append("\n");
+                content.append("执行时间: ").append(task.getExecutionTimeMillis()).append("ms\n");
+            } else if (task.getStatus() == DecomposedTask.ExecutionStatus.FAILED) {
+                content.append("错误信息: ").append(task.getErrorMessage()).append("\n");
+            }
+            
+            // 创建Document对象
+            Document document = new Document(content.toString(), metadata);
+            documents.add(document);
+        }
+        
+        // 创建一个汇总Document
+        Map<String, Object> summaryMetadata = new HashMap<>();
+        summaryMetadata.put("type", "task_summary");
+        summaryMetadata.put("originalQuestion", question);
+        summaryMetadata.put("timestamp", System.currentTimeMillis());
+        summaryMetadata.put("taskCount", tasks.size());
+        
+        StringBuilder summaryContent = new StringBuilder();
+        summaryContent.append("原始问题: ").append(question).append("\n\n");
+        summaryContent.append("任务拆解汇总:\n");
+        
+        for (DecomposedTask task : tasks) {
+            summaryContent.append("- ").append(task.getDescription()).append(" (").append(task.getStatus()).append(")\n");
+        }
+        
+        Document summaryDocument = new Document(summaryContent.toString(), summaryMetadata);
+        documents.add(summaryDocument);
+        
+        return documents;
+    }
+    
+    /**
+     * 将任务拆解结果存入向量数据库
+     *
+     * @param tasks 任务列表
+     * @param question 原始问题
+     * @return 是否成功存储
+     */
+    @Override
+    public boolean saveTasksToVectorStore(List<DecomposedTask> tasks, String question) {
+        if (tasks == null || tasks.isEmpty()) {
+            log.warn("任务列表为空，无法存入向量数据库");
+            return false;
+        }
+        
+        try {
+            log.info("开始将任务拆解结果存入向量数据库，任务数量: {}", tasks.size());
+            
+            // 将任务转换为Document对象
+            List<Document> documents = convertTasksToDocuments(tasks, question);
+            log.info("任务转换为Document对象完成，文档数量: {}", documents.size());
+            
+            // 将Document对象添加到向量存储
+            vectorStore.add(documents);
+            log.info("任务拆解结果成功存入向量数据库");
+            
+            return true;
+        } catch (Exception e) {
+            log.error("将任务拆解结果存入向量数据库失败", e);
+            return false;
+        }
     }
 }

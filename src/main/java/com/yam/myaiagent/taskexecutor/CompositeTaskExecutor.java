@@ -1,6 +1,7 @@
 package com.yam.myaiagent.taskexecutor;
 
 import com.yam.myaiagent.taskdecompose.DecomposedTask;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,9 +13,16 @@ import java.util.Map;
  * 组合任务执行器
  * 根据任务类型选择合适的执行器来执行任务
  */
-@Service
+@Service("compositeTaskExecutor")
 @Slf4j
 public class CompositeTaskExecutor extends AbstractTaskExecutor {
+
+    @PostConstruct
+    public void init() {
+        log.info("CompositeTaskExecutor初始化");
+        log.info("Bean名称: compositeTaskExecutor");
+        log.info("Bean类型: {}", this.getClass().getName());
+    }
 
     // 任务类型到执行器的映射
     private final Map<DecomposedTask.TaskType, TaskExecutor> executorMap = new HashMap<>();

@@ -93,4 +93,13 @@ public interface KnowledgeBaseService {
      * @return 包含回答和执行结果的响应
      */
     QAResponse decomposeAndExecuteTasks(String question, String modelType);
+    
+    /**
+     * 将任务拆解结果存入向量数据库
+     *
+     * @param tasks 任务列表
+     * @param question 原始问题
+     * @return 是否成功存储
+     */
+    boolean saveTasksToVectorStore(List<DecomposedTask> tasks, String question);
 }

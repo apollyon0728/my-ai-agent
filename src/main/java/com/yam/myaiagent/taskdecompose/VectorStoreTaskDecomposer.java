@@ -109,8 +109,9 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     private List<TaskRule> findMatchingRules(String question) {
         // 使用向量搜索查找相似的规则
         // 使用Builder模式创建SearchRequest对象
-        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}, 当前向量存储文档数量: {}",
-                question, SIMILARITY_THRESHOLD, Thread.currentThread().getId(), getVectorStoreDocumentCount());
+        long initialDocCount = getVectorStoreDocumentCount();
+        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}, 查询前向量存储文档数量: {}",
+                question, SIMILARITY_THRESHOLD, Thread.currentThread().getId(), initialDocCount);
         
         // 尝试不同格式的过滤表达式
         log.info("尝试使用不同格式的过滤表达式");
@@ -129,7 +130,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
                 
             log.info("成功创建SearchRequest对象(格式1)");
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
-            log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+            log.info("格式1-查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
                     similarDocuments.size(), getVectorStoreDocumentCount());
             
             // 记录文档元数据，帮助调试
@@ -169,7 +170,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
                 
             log.info("成功创建SearchRequest对象(格式2)");
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
-            log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+            log.info("格式2-查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
                     similarDocuments.size(), getVectorStoreDocumentCount());
             
             // 解析文档内容为TaskRule对象

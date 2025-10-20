@@ -239,12 +239,13 @@ public class JavaInterviewApp {
 
     /**
      * Java面试功能（调用MCP服务）
-     *
-     * @param message 用户消息
-     * @param chatId 会话ID
-     * @return 回复内容
+     * 与MCP服务进行聊天交互，获取Java技术面试相关的回答
+     * @param message 用户发送的聊天消息内容
+     * @param chatId 聊天会话ID，用于标识不同的对话上下文
+     * @return MCP服务返回的聊天响应内容
      */
     public String doChatWithMcp(String message, String chatId) {
+        // 构建聊天请求，设置系统提示词、用户消息和相关配置参数
         ChatResponse chatResponse = chatClient
                 .prompt()
                 .system(SYSTEM_PROMPT + """
@@ -263,8 +264,11 @@ public class JavaInterviewApp {
                 .tools(toolCallbackProvider)
                 .call()
                 .chatResponse();
+
+        // 提取并记录聊天响应结果
         String content = chatResponse.getResult().getOutput().getText();
         log.info("Java面试MCP服务调用结果: {}", content);
         return content;
+
     }
 }

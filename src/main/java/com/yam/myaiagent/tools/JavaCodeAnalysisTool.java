@@ -9,7 +9,7 @@ import org.springframework.ai.tool.annotation.ToolParam;
 /**
  * Java代码分析工具
  * 用于分析Java代码质量、性能和最佳实践
- * 
+ *
  * @author cocoyu
  * @date 2024-09-24
  */
@@ -17,6 +17,12 @@ public class JavaCodeAnalysisTool {
 
     private final String FILE_DIR = FileConstant.FILE_SAVE_DIR + "/java-analysis";
 
+    /**
+     * 分析Java代码质量，检查常见问题和性能优化建议
+     *
+     * @param javaCode 要分析的Java代码
+     * @return 代码分析报告字符串，包含语法、性能、最佳实践、安全性和代码风格等方面的检查结果
+     */
     @Tool(description = "分析Java代码质量，检查常见问题和性能优化建议")
     public String analyzeJavaCode(@ToolParam(description = "要分析的Java代码") String javaCode) {
         try {
@@ -27,27 +33,27 @@ public class JavaCodeAnalysisTool {
             StringBuilder analysis = new StringBuilder();
             analysis.append("=== Java代码分析报告 ===\n\n");
 
-            // 1. 基础语法检查
+            // 基础语法检查
             analysis.append("【基础语法检查】\n");
             checkBasicSyntax(javaCode, analysis);
             analysis.append("\n");
 
-            // 2. 性能分析
+            // 性能分析
             analysis.append("【性能分析】\n");
             checkPerformance(javaCode, analysis);
             analysis.append("\n");
 
-            // 3. 最佳实践检查
+            // 最佳实践检查
             analysis.append("【最佳实践检查】\n");
             checkBestPractices(javaCode, analysis);
             analysis.append("\n");
 
-            // 4. 安全性检查
+            // 安全性检查
             analysis.append("【安全性检查】\n");
             checkSecurity(javaCode, analysis);
             analysis.append("\n");
 
-            // 5. 代码风格检查
+            // 代码风格检查
             analysis.append("【代码风格检查】\n");
             checkCodeStyle(javaCode, analysis);
             analysis.append("\n");
@@ -64,9 +70,17 @@ public class JavaCodeAnalysisTool {
         }
     }
 
+
+    /**
+     * 生成Java面试题目和标准答案
+     *
+     * @param level  面试级别：junior/middle/senior
+     * @param domain 技术领域：basic/spring/jvm/database/algorithm等
+     * @return 包含面试题目的字符串，如果生成失败则返回错误信息
+     */
     @Tool(description = "生成Java面试题目和标准答案")
     public String generateJavaInterviewQuestions(@ToolParam(description = "面试级别：junior/middle/senior") String level,
-                                                @ToolParam(description = "技术领域：basic/spring/jvm/database/algorithm等") String domain) {
+                                                 @ToolParam(description = "技术领域：basic/spring/jvm/database/algorithm等") String domain) {
         try {
             StringBuilder questions = new StringBuilder();
             questions.append("=== Java面试题库 ===\n");
@@ -88,13 +102,20 @@ public class JavaCodeAnalysisTool {
         }
     }
 
+
+    /**
+     * 对Java代码进行性能优化分析并提供优化建议
+     *
+     * @param javaCode 需要优化的Java代码字符串
+     * @return 包含优化建议的字符串，如果分析失败则返回错误信息
+     */
     @Tool(description = "Java代码性能优化建议")
     public String optimizeJavaCode(@ToolParam(description = "需要优化的Java代码") String javaCode) {
         try {
             StringBuilder optimization = new StringBuilder();
             optimization.append("=== Java代码优化建议 ===\n\n");
 
-            // 分析代码并给出优化建议
+            // FIXME 分析代码并给出优化建议
             analyzeForOptimization(javaCode, optimization);
 
             return optimization.toString();
@@ -102,6 +123,7 @@ public class JavaCodeAnalysisTool {
             return "代码优化分析失败: " + e.getMessage();
         }
     }
+
 
     /**
      * 基础语法检查
@@ -205,7 +227,7 @@ public class JavaCodeAnalysisTool {
             questions.append("### 1. Java基础概念\n");
             questions.append("**问题**: 什么是面向对象编程？Java中的三大特性是什么？\n");
             questions.append("**答案**: 面向对象编程是一种编程范式，Java的三大特性是封装、继承、多态...\n\n");
-            
+
             questions.append("**问题**: String、StringBuilder、StringBuffer的区别？\n");
             questions.append("**答案**: String是不可变的，StringBuilder是可变的非线程安全，StringBuffer是可变的线程安全...\n\n");
         }
@@ -234,21 +256,21 @@ public class JavaCodeAnalysisTool {
      */
     private void analyzeForOptimization(String code, StringBuilder optimization) {
         optimization.append("【优化建议】\n");
-        
+
         // 集合优化
         if (code.contains("ArrayList")) {
             optimization.append("1. ArrayList优化：\n");
             optimization.append("   - 预设初始容量避免扩容：new ArrayList<>(expectedSize)\n");
             optimization.append("   - 考虑使用LinkedList适合频繁插入删除的场景\n\n");
         }
-        
+
         // 字符串优化
         if (code.contains("String") && code.contains("+")) {
             optimization.append("2. 字符串优化：\n");
             optimization.append("   - 使用StringBuilder替代字符串连接\n");
             optimization.append("   - 考虑使用String.format()或MessageFormat\n\n");
         }
-        
+
         // 循环优化
         if (code.contains("for") || code.contains("while")) {
             optimization.append("3. 循环优化：\n");
@@ -256,7 +278,7 @@ public class JavaCodeAnalysisTool {
             optimization.append("   - 考虑使用Stream API提高可读性\n");
             optimization.append("   - 缓存数组长度避免重复计算\n\n");
         }
-        
+
         // 并发优化
         if (code.contains("synchronized")) {
             optimization.append("4. 并发优化：\n");
@@ -268,9 +290,13 @@ public class JavaCodeAnalysisTool {
 
     /**
      * 保存分析结果到文件
+     *
+     * @param fileName 文件名
+     * @param content  文件内容
      */
     private void saveAnalysisResult(String fileName, String content) {
         try {
+            // 构造文件路径并保存内容
             String filePath = FILE_DIR + "/" + fileName;
             FileUtil.mkdir(FILE_DIR);
             FileUtil.writeUtf8String(content, filePath);

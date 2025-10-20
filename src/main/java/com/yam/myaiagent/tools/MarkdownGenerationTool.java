@@ -1,10 +1,5 @@
 package com.yam.myaiagent.tools;
 
-/**
- * 功能：
- * 日期：2025/5/29 15:11
- */
-
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONUtil;
 import com.yam.myaiagent.constant.FileConstant;
@@ -26,6 +21,13 @@ public class MarkdownGenerationTool {
     // 得到项目启动的端口
     private static final String PORT = System.getProperty("server.port", "8123");
 
+    /**
+     * 生成一个 Markdown 文件并返回文件信息。
+     *
+     * @param fileName 要保存的 Markdown 文件名称
+     * @param content  要写入 Markdown 文件的内容
+     * @return 包含文件信息的字符串，包括文件名、路径、大小和下载链接等；若出错则返回错误信息
+     */
     @Tool(description = "Generate a Markdown file with given content and return file info", returnDirect = false)
     public String generateMarkdown(
             @ToolParam(description = "Name of the file to save the generated Markdown") String fileName,
@@ -48,24 +50,26 @@ public class MarkdownGenerationTool {
             // 将内容写入文件
             FileUtil.writeString(formattedContent, filePath, StandardCharsets.UTF_8);
 
-            // 获取文件信息
+            // 构建文件信息映射表
             File file = new File(filePath);
             Map<String, Object> fileInfo = new HashMap<>();
             fileInfo.put("fileName", fileName);
             fileInfo.put("filePath", filePath);
             fileInfo.put("size", file.length());
             fileInfo.put("sizeFormatted", FileUtil.readableFileSize(file.length()));
-            fileInfo.put("downloadUrl", "http://+"+ HOST+":" + PORT + "/api/files/markdown/" + fileName);
+            fileInfo.put("downloadUrl", "http://+" + HOST + ":" + PORT + "/api/files/markdown/" + fileName);
 
+            // 返回成功信息及文件详情
             return "Markdown文件生成成功！\n" +
                     "文件名: " + fileName + "\n" +
                     "文件大小: " + FileUtil.readableFileSize(file.length()) + "\n" +
-                    "下载链接: http://" + HOST + ":" + PORT + "/api/files/markdown/" + fileName + "\n"+
+                    "下载链接: http://" + HOST + ":" + PORT + "/api/files/markdown/" + fileName + "\n" +
                     "文件详情: " + JSONUtil.toJsonStr(fileInfo);
         } catch (Exception e) {
             return "Error generating Markdown file: " + e.getMessage();
         }
     }
+
 
     /**
      * 格式化 Markdown 内容

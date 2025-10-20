@@ -15,6 +15,12 @@ import java.util.Map;
  */
 public class WeatherSearchTool {
 
+    /**
+     * 根据城市名称搜索天气信息
+     *
+     * @param city 要查询天气的城市名称
+     * @return 天气信息字符串，包含城市名称、天气预报等详细信息，如果查询失败则返回错误信息
+     */
     @Tool(description = "Search for weather information by city name")
     public String searchWeather(
             @ToolParam(description = "the name of search city") String city) {
@@ -58,4 +64,5 @@ public class WeatherSearchTool {
             return "查询天气时发生错误: " + e.getMessage();
         }
     }
+
 }

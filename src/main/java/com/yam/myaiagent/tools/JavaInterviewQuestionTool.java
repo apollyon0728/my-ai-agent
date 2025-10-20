@@ -125,23 +125,19 @@ public class JavaInterviewQuestionTool {
     private List<String> getQuestionPool(String difficulty, String category) {
         List<String> questions = new ArrayList<>();
 
-        if ("basic".equals(category)) {
-            questions.addAll(getBasicQuestions(difficulty));
-        } else if ("oop".equals(category)) {
-            questions.addAll(getOOPQuestions(difficulty));
-        } else if ("collections".equals(category)) {
-            questions.addAll(getCollectionQuestions(difficulty));
-        } else if ("multithreading".equals(category)) {
-            questions.addAll(getMultithreadingQuestions(difficulty));
-        } else if ("jvm".equals(category)) {
-            questions.addAll(getJVMQuestions(difficulty));
-        } else if ("spring".equals(category)) {
-            questions.addAll(getSpringQuestions(difficulty));
-        } else {
-            // 混合题目
-            questions.addAll(getBasicQuestions(difficulty));
-            questions.addAll(getOOPQuestions(difficulty));
-            questions.addAll(getCollectionQuestions(difficulty));
+        switch (category) {
+            case "basic" -> questions.addAll(getBasicQuestions(difficulty));
+            case "oop" -> questions.addAll(getOOPQuestions(difficulty));
+            case "collections" -> questions.addAll(getCollectionQuestions(difficulty));
+            case "multithreading" -> questions.addAll(getMultithreadingQuestions(difficulty));
+            case "jvm" -> questions.addAll(getJVMQuestions(difficulty));
+            case "spring" -> questions.addAll(getSpringQuestions(difficulty));
+            case null, default -> {
+                // 混合题目
+                questions.addAll(getBasicQuestions(difficulty));
+                questions.addAll(getOOPQuestions(difficulty));
+                questions.addAll(getCollectionQuestions(difficulty));
+            }
         }
 
         return questions;

@@ -19,17 +19,22 @@ public class WebSearchTool {
     // AI整合搜索API接口地址
     private static final String AI_SEARCH_API_URL = "https://api.pearktrue.cn/api/aisearch/";
 
+    /**
+     * 使用AI集成搜索引擎搜索信息
+     *
+     * @param query 搜索查询关键词
+     * @return 搜索结果字符串，包含整合结果、相关问题和信息来源；如果搜索失败则返回错误信息
+     */
     @Tool(description = "Search for information from AI integrated search engine")
-    public String searchWeb(
-            @ToolParam(description = "Search query keyword") String query) {
+    public String searchWeb(@ToolParam(description = "Search query keyword") String query) {
         try {
-            // 构建请求URL - 使用URLUtil.encode进行编码
+            // 构建请求URL并进行编码处理
             String url = AI_SEARCH_API_URL + "?keyword=" + URLUtil.encode(query);
 
-            // 发送GET请求
+            // 发送GET请求获取搜索结果
             String response = HttpUtil.get(url);
 
-            // 解析JSON响应
+            // 解析JSON响应数据
             JSONObject jsonObject = JSONUtil.parseObj(response);
 
             // 检查状态码
@@ -67,4 +72,5 @@ public class WebSearchTool {
             return "Error searching with AI: " + e.getMessage();
         }
     }
+
 }

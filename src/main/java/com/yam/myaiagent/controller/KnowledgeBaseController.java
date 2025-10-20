@@ -137,4 +137,17 @@ public class KnowledgeBaseController {
         List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
         return ResponseEntity.ok(tasks);
     }
+    
+    /**
+     * 拆解并执行任务，然后汇总结果
+     * 该接口会先拆解任务，然后执行任务，最后汇总结果进行回答
+     * 
+     * @param request 包含问题的请求
+     * @return 包含回答和执行结果的响应
+     */
+    @PostMapping("/decomposeAndExecuteTasks")
+    public ResponseEntity<QAResponse> decomposeAndExecuteTasks(@RequestBody QARequest request) {
+        QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request.getQuestion(), request.getModelType());
+        return ResponseEntity.ok(response);
+    }
 }

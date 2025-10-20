@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -59,6 +60,39 @@ public class DecomposedTask {
     private String[] dependencies;
     
     /**
+     * 执行结果
+     * 存储任务执行的结果数据
+     */
+    private Object result;
+    
+    /**
+     * 执行状态
+     * 表示任务的执行状态
+     */
+    private ExecutionStatus status;
+    
+    /**
+     * 错误信息
+     * 当任务执行失败时，存储错误信息
+     */
+    private String errorMessage;
+    
+    /**
+     * 开始执行时间
+     */
+    private LocalDateTime startTime;
+    
+    /**
+     * 结束执行时间
+     */
+    private LocalDateTime endTime;
+    
+    /**
+     * 执行耗时（毫秒）
+     */
+    private long executionTimeMillis;
+    
+    /**
      * 任务类型枚举
      */
     public enum TaskType {
@@ -80,6 +114,46 @@ public class DecomposedTask {
         /**
          * 数据分析
          */
-        DATA_ANALYSIS
+        DATA_ANALYSIS,
+        
+        /**
+         * MCP工具调用
+         */
+        MCP_TOOL,
+        
+        /**
+         * Function Call工具调用
+         */
+        FUNCTION_CALL
+    }
+    
+    /**
+     * 执行状态枚举
+     */
+    public enum ExecutionStatus {
+        /**
+         * 未执行
+         */
+        NOT_STARTED,
+        
+        /**
+         * 执行中
+         */
+        IN_PROGRESS,
+        
+        /**
+         * 已完成
+         */
+        COMPLETED,
+        
+        /**
+         * 执行失败
+         */
+        FAILED,
+        
+        /**
+         * 已跳过（依赖任务失败导致）
+         */
+        SKIPPED
     }
 }

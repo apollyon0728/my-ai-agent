@@ -78,4 +78,19 @@ public interface KnowledgeBaseService {
      * @return 拆解后的任务列表
      */
     List<DecomposedTask> decomposeTask(String question);
+    
+    /**
+     * 执行拆解后的任务
+     * @param tasks 待执行的任务列表
+     * @return 执行后的任务列表
+     */
+    List<DecomposedTask> executeTasks(List<DecomposedTask> tasks);
+    
+    /**
+     * 拆解并执行任务，然后汇总结果
+     * @param question 用户问题
+     * @param modelType 模型类型
+     * @return 包含回答和执行结果的响应
+     */
+    QAResponse decomposeAndExecuteTasks(String question, String modelType);
 }

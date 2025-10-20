@@ -8,6 +8,7 @@ import com.yam.myaiagent.rag.QueryRewriter;
 import com.yam.myaiagent.service.KnowledgeBaseService;
 import com.yam.myaiagent.taskdecompose.DecomposedTask;
 import com.yam.myaiagent.taskdecompose.TaskDecomposer;
+import com.yam.myaiagent.taskexecutor.CompositeTaskExecutor;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -57,6 +58,9 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
     @Resource
     private TaskDecomposer taskDecomposer;
+    
+    @Resource
+    private CompositeTaskExecutor taskExecutor;
 
     private static final String MARKDOWN_DIR = "docs/markdown/";
 
@@ -301,5 +305,92 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         List<DecomposedTask> tasks = taskDecomposer.decompose(question);
         log.info("KnowledgeBaseServiceImpl.decomposeTask执行完成, 生成任务数量: {}", tasks.size());
         return tasks;
+    }
+    
+    /**
+     * 执行拆解后的任务
+     *
+     * @param tasks 待执行的任务列表
+     * @return 执行后的任务列表
+     */
+    @Override
+    public List<DecomposedTask> executeTasks(List<DecomposedTask> tasks) {
+        log.info("KnowledgeBaseServiceImpl.executeTasks开始执行, 任务数量: {}", tasks.size());
+        
+        // 使用组合任务执行器执行所有任务
+        List<DecomposedTask> executedTasks = taskExecutor.executeAll(tasks);
+        
+        log.info("KnowledgeBaseServiceImpl.executeTasks执行完成, 成功: {}, 失败: {}, 跳过: {}",
+                executedTasks.stream().filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED).count(),
+                executedTasks.stream().filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.FAILED).count(),
+                executedTasks.stream().filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.SKIPPED).count());
+        
+        return executedTasks;
+    }
+    
+    /**
+     * 拆解并执行任务，然后汇总结果
+     *
+     * @param question 用户问题
+     * @param modelType 模型类型
+     * @return 包含回答和执行结果的响应
+     */
+    @Override
+    public QAResponse decomposeAndExecuteTasks(String question, String modelType) {
+        log.info("KnowledgeBaseServiceImpl.decomposeAndExecuteTasks开始执行, 问题: {}, 模型类型: {}", question, modelType);
+        
+        // 1. 拆解任务
+        List<DecomposedTask> tasks = decomposeTask(question);
+        if (tasks.isEmpty()) {
+            log.warn("任务拆解结果为空，直接使用普通问答");
+            return getAnswerNew(question, modelType);
+        }
+        
+        // 2. 执行任务
+        List<DecomposedTask> executedTasks = executeTasks(tasks);
+        
+        // 3. 汇总结果
+        // 构建汇总提示词
+        StringBuilder summaryPrompt = new StringBuilder();
+        summaryPrompt.append("用户问题：").append(question).append("\n\n");
+        summaryPrompt.append("任务执行结果：\n");
+        
+        for (DecomposedTask task : executedTasks) {
+            summaryPrompt.append("- 任务：").append(task.getDescription()).append("\n");
+            summaryPrompt.append("  状态：").append(task.getStatus()).append("\n");
+            
+            if (task.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED) {
+                summaryPrompt.append("  结果：").append(task.getResult()).append("\n");
+            } else if (task.getStatus() == DecomposedTask.ExecutionStatus.FAILED) {
+                summaryPrompt.append("  错误：").append(task.getErrorMessage()).append("\n");
+            }
+            summaryPrompt.append("\n");
+        }
+        
+        summaryPrompt.append("请根据以上任务执行结果，综合分析并回答用户的问题。");
+        
+        // 4. 使用模型生成最终回答
+        String chatId = UUID.randomUUID().toString();
+        IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
+        ChatClient dynamicChatClient = strategy.getChatClient();
+        
+        ChatResponse chatResponse = dynamicChatClient
+                .prompt()
+                .user(summaryPrompt.toString())
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(new MyLoggerAdvisor())
+                .call()
+                .chatResponse();
+        
+        String content = chatResponse != null ? chatResponse.getResult().getOutput().getText() : null;
+        log.info("汇总分析结果: {}", content);
+        
+        // 5. 构建响应
+        QAResponse qaResponse = new QAResponse();
+        qaResponse.setAnswer(content);
+        qaResponse.setTasks(executedTasks);
+        
+        return qaResponse;
     }
 }

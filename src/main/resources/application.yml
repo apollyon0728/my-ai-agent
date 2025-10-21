@@ -2,11 +2,26 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-#    url: jdbc:postgresql://localhost:5432/AI_Test
-    url: jdbc:postgresql://localhost:5433/AI_Test
-    username: zhengdan3
-    password:
-    driver-class-name: org.postgresql.Driver
+    postgresql:
+#    jdbcUrl: jdbc:postgresql://localhost:5432/AI_Test
+      jdbcUrl: jdbc:postgresql://localhost:5433/AI_Test
+      username: zhengdan3
+      password:
+      driver-class-name: org.postgresql.Driver
+    mysql:
+      jdbcUrl: jdbc:mysql://10.170.223.156:3358/hr_cost_estimate_user?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: hr
+      password: qwerasdf
+      driver-class-name: com.mysql.cj.jdbc.Driver
+#      type: com.zaxxer.hikari.HikariDataSource
+#      hikari:
+#        minimum-idle: 5
+#        idle-timeout: 180000
+#        maximum-pool-size: 15
+#        auto-commit: true
+#        pool-name: MysqlHikariCP
+#        max-lifetime: 1800000
+#        connection-timeout: 30000
   application:
     name: my-ai-agent
   profiles:
@@ -25,9 +40,12 @@ spring:
         options:
           model: deepseek-chat
     openai:
-      api-key:
-#      base-url: https://api.deepseek.com/v1
-      base-url: https://api.deepseek.com
+#      api-key: sk-8a57a59c50ab4ffca52852e26966974e
+#      base-url: https://api.deepseek.com
+      api-key: 26cc4102-26c9-4055-a527-47de0a9e3730
+      base_url: http://gpt-proxy.jd.com
+#      api-key: sk-wyinvzkkadhokbjqhknxyzsvvvjsgusdnibjutlnkctjkgue
+#      base_url: https://api.siliconflow.cn
       chat:
         options:
 #          model: deepseek-chat

@@ -38,18 +38,17 @@ public class TaskRuleInitializer {
             Path rulesDir = Paths.get(resource.getURI());
 
             // FIXME MY：注释掉，要不然每次都在向量数据库中增加规则
-
             // 加载规则目录中的所有JSON规则文件, 检查规则目录是否存在且为目录类型
-//            if (Files.exists(rulesDir) && Files.isDirectory(rulesDir)) {
-//                // 遍历目录下的所有文件，筛选出JSON文件并加载
-//                try (Stream<Path> paths = Files.walk(rulesDir)) {
-//                    paths.filter(path -> path.toString().endsWith(".json"))
-//                            .forEach(this::loadRuleFile);
-//                }
-//            } else {
-//                // 记录警告日志：规则目录不存在
-//                log.warn("任务拆解规则目录不存在: {}", rulesDir);
-//            }
+            if (Files.exists(rulesDir) && Files.isDirectory(rulesDir)) {
+                // 遍历目录下的所有文件，筛选出JSON文件并加载
+                try (Stream<Path> paths = Files.walk(rulesDir)) {
+                    paths.filter(path -> path.toString().endsWith(".json"))
+                            .forEach(this::loadRuleFile);
+                }
+            } else {
+                // 记录警告日志：规则目录不存在
+                log.warn("任务拆解规则目录不存在: {}", rulesDir);
+            }
 
         } catch (IOException e) {
             log.error("加载任务拆解规则失败", e);

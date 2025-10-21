@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yam.myaiagent.taskexecutor.CompositeTaskExecutor;
 import com.yam.myaiagent.taskexecutor.FunctionCallTaskExecutor;
 import com.yam.myaiagent.taskexecutor.McpTaskExecutor;
+import com.yam.myaiagent.taskexecutor.SqlQueryTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,13 +56,13 @@ public class CustomTaskExecutorConfig {
      */
     @Bean(name = "taskExecutor")
     @Primary
-    public CompositeTaskExecutor taskExecutor(McpTaskExecutor mcpTaskExecutor, FunctionCallTaskExecutor functionCallTaskExecutor) {
+    public CompositeTaskExecutor taskExecutor(McpTaskExecutor mcpTaskExecutor, FunctionCallTaskExecutor functionCallTaskExecutor, SqlQueryTaskExecutor sqlQueryTaskExecutor) {
         logger.info("创建自定义的taskExecutor (CompositeTaskExecutor类型)");
         logger.info("注入的依赖: mcpTaskExecutor={}, functionCallTaskExecutor={}", 
                 mcpTaskExecutor != null ? mcpTaskExecutor.getClass().getName() : "null",
                 functionCallTaskExecutor != null ? functionCallTaskExecutor.getClass().getName() : "null");
         
-        CompositeTaskExecutor executor = new CompositeTaskExecutor(mcpTaskExecutor, functionCallTaskExecutor);
+        CompositeTaskExecutor executor = new CompositeTaskExecutor(mcpTaskExecutor, functionCallTaskExecutor, sqlQueryTaskExecutor);
         logger.info("CompositeTaskExecutor创建成功: {}", executor);
         return executor;
     }

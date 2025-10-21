@@ -37,7 +37,8 @@ public class CompositeTaskExecutor extends AbstractTaskExecutor {
     @Autowired
     public CompositeTaskExecutor(
             @Autowired(required = false) McpTaskExecutor mcpTaskExecutor,
-            @Autowired(required = false) FunctionCallTaskExecutor functionCallTaskExecutor) {
+            @Autowired(required = false) FunctionCallTaskExecutor functionCallTaskExecutor,
+            @Autowired(required = false) SqlQueryTaskExecutor sqlQueryTaskExecutor) {
         super();
         
         // 注册MCP任务执行器
@@ -50,6 +51,12 @@ public class CompositeTaskExecutor extends AbstractTaskExecutor {
         if (functionCallTaskExecutor != null) {
             registerExecutor(DecomposedTask.TaskType.FUNCTION_CALL, functionCallTaskExecutor);
             log.info("已注册Function Call任务执行器");
+        }
+        
+        // 注册SQL查询任务执行器
+        if (sqlQueryTaskExecutor != null) {
+            registerExecutor(DecomposedTask.TaskType.SQL_QUERY, sqlQueryTaskExecutor);
+            log.info("已注册SQL查询任务执行器");
         }
         
         // 设置默认执行器为自身，处理未注册类型的任务

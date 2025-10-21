@@ -219,19 +219,21 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     }
 
     /**
-     * 从文档解析规则
+     * 从文档中解析任务规则
      *
-     * @param document 文档对象
-     * @return 解析后的规则对象
+     * @param document 包含规则信息的文档对象，不能为空
+     * @return 解析成功返回TaskRule对象，解析失败返回null
      */
     private TaskRule parseRuleFromDocument(Document document) {
         try {
+            // 尝试将文档文本内容反序列化为TaskRule对象
             return objectMapper.readValue(document.getText(), TaskRule.class);
         } catch (JsonProcessingException e) {
             log.error("解析规则文档失败: {}", e.getMessage());
             return null;
         }
     }
+
 
     /**
      * 根据规则生成具体任务

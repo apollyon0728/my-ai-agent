@@ -334,7 +334,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     public List<DecomposedTask> executeTasks(List<DecomposedTask> tasks) {
         log.info("KnowledgeBaseServiceImpl.executeTasks开始执行, 任务数量: {}", tasks.size());
         
-        // 使用组合任务执行器执行所有任务
+        // 使用组合任务执行器执行所有任务 （目前注入的TaskExecutor是compositeTaskExecutor）
         List<DecomposedTask> executedTasks = taskExecutor.executeAll(tasks);
         
         log.info("KnowledgeBaseServiceImpl.executeTasks执行完成, 成功: {}, 失败: {}, 跳过: {}",

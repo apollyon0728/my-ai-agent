@@ -2,6 +2,7 @@ package com.yam.myaiagent.service.impl;
 
 import com.yam.myaiagent.advisor.MyLoggerAdvisor;
 import com.yam.myaiagent.agent.model.IChatModelStrategy;
+import com.yam.myaiagent.model.QARequest;
 import com.yam.myaiagent.model.QAResponse;
 import com.yam.myaiagent.rag.LoveAppDocumentLoader;
 import com.yam.myaiagent.rag.QueryRewriter;
@@ -420,7 +421,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         }
         
         // 从用户问题中提取处理方式，并生成相应的提示词
-        String customPrompt = generateCustomPromptFromQuestion(question);
+        String customPrompt = generateCustomPromptFromQuestion(question, null);
         summaryPrompt.append(customPrompt);
         
         // 4. 使用模型生成最终回答
@@ -450,13 +451,160 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     }
     
     /**
+     * 拆解并执行任务，然后汇总结果（增强版）
+     * 支持用户指定分析处理指令
+     *
+     * @param question 用户问题
+     * @param modelType 模型类型
+     * @param analysisInstruction 用户指定的分析处理指令
+     * @return 包含回答和执行结果的响应
+     */
+    @Override
+    public QAResponse decomposeAndExecuteTasks(String question, String modelType, String analysisInstruction) {
+        log.info("KnowledgeBaseServiceImpl.decomposeAndExecuteTasks(增强版)开始执行, 问题: {}, 模型类型: {}, 分析指令: {}",
+                question, modelType, analysisInstruction);
+        
+        // 1. 拆解任务 - 使用knowledgeBaseService.decomposeTask拆解任务
+        log.info("decomposeAndExecuteTasks 步骤1: 任务拆解 - 将复杂问题拆解为多个子任务");
+        List<DecomposedTask> tasks = decomposeTask(question);
+        if (tasks.isEmpty()) {
+            log.warn("decomposeAndExecuteTasks 任务拆解结果为空，直接使用普通问答");
+            return getAnswerNew(question, modelType);
+        }
+        
+        // 记录任务类型分布
+        Map<DecomposedTask.TaskType, Long> taskTypeCount = tasks.stream()
+                .collect(Collectors.groupingBy(task -> task.getTaskType(), Collectors.counting()));
+        log.info("decomposeAndExecuteTasks 任务类型分布: {}", taskTypeCount);
+        
+        // 2. 执行任务 - 根据任务类型选择合适的执行器（MCP或Function Call）
+        log.info("decomposeAndExecuteTasks 步骤2: 任务执行 - 根据任务类型选择合适的执行器（MCP或Function Call）");
+        List<DecomposedTask> executedTasks = executeTasks(tasks);
+        
+        // 统计执行结果
+        long completedCount = executedTasks.stream()
+                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED).count();
+        long failedCount = executedTasks.stream()
+                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.FAILED).count();
+        long skippedCount = executedTasks.stream()
+                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.SKIPPED).count();
+        log.info("decomposeAndExecuteTasks 任务执行结果统计: 成功={}, 失败={}, 跳过={}", completedCount, failedCount, skippedCount);
+        
+        // 3. 汇总结果 - 将所有任务的执行结果汇总，生成最终回答
+        log.info("decomposeAndExecuteTasks 步骤3: 结果汇总 - 将所有任务的执行结果汇总，生成最终回答");
+        
+        // 构建汇总提示词
+        StringBuilder summaryPrompt = new StringBuilder();
+        summaryPrompt.append("用户问题：").append(question).append("\n\n");
+        summaryPrompt.append("任务执行结果：\n");
+        
+        // 按任务类型分组展示结果
+        Map<DecomposedTask.TaskType, List<DecomposedTask>> tasksByType = executedTasks.stream()
+                .collect(Collectors.groupingBy(task -> task.getTaskType()));
+        
+        // 先展示MCP工具调用结果
+        if (tasksByType.containsKey(DecomposedTask.TaskType.MCP_TOOL)) {
+            summaryPrompt.append("\n## MCP工具调用结果\n");
+            appendTaskResults(summaryPrompt, tasksByType.get(DecomposedTask.TaskType.MCP_TOOL));
+        }
+        
+        // 再展示Function Call工具调用结果
+        if (tasksByType.containsKey(DecomposedTask.TaskType.FUNCTION_CALL)) {
+            summaryPrompt.append("\n## Function Call工具调用结果\n");
+            appendTaskResults(summaryPrompt, tasksByType.get(DecomposedTask.TaskType.FUNCTION_CALL));
+        }
+        
+        // 展示其他类型任务结果
+        for (Map.Entry<DecomposedTask.TaskType, List<DecomposedTask>> entry : tasksByType.entrySet()) {
+            if (entry.getKey() != DecomposedTask.TaskType.MCP_TOOL &&
+                entry.getKey() != DecomposedTask.TaskType.FUNCTION_CALL) {
+                summaryPrompt.append("\n## ").append(entry.getKey()).append("结果\n");
+                appendTaskResults(summaryPrompt, entry.getValue());
+            }
+        }
+        
+        // FIXME 使用用户指定的分析处理指令
+        String customPrompt = generateCustomPromptFromQuestion(question, analysisInstruction);
+        summaryPrompt.append(customPrompt);
+        
+        // 4. 使用模型生成最终回答
+        String chatId = UUID.randomUUID().toString();
+        IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
+        ChatClient dynamicChatClient = strategy.getChatClient();
+        
+        log.info("decomposeAndExecuteTasks 使用{}模型生成最终回答", modelType);
+        ChatResponse chatResponse = dynamicChatClient
+                .prompt()
+                .user(summaryPrompt.toString())
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(new MyLoggerAdvisor())
+                .call()
+                .chatResponse();
+        
+        String content = chatResponse != null ? chatResponse.getResult().getOutput().getText() : null;
+        log.info("decomposeAndExecuteTasks 汇总分析结果生成完成，长度: {}", content != null ? content.length() : 0);
+        
+        // 5. 构建响应
+        QAResponse qaResponse = new QAResponse();
+        qaResponse.setAnswer(content);
+        qaResponse.setTasks(executedTasks);
+        
+        return qaResponse;
+    }
+    
+    /**
+     * 拆解并执行任务，然后汇总结果（对象参数版）
+     * 通过QARequest对象传递所有参数，更灵活地支持后续扩展
+     *
+     * @param request 包含问题、模型类型、分析指令等参数的请求对象
+     * @return 包含回答和执行结果的响应
+     */
+    @Override
+    public QAResponse decomposeAndExecuteTasks(QARequest request) {
+        log.info("KnowledgeBaseServiceImpl.decomposeAndExecuteTasks(对象参数版)开始执行, 请求: {}", request);
+        
+        // 从请求对象中提取参数
+        String question = request.getQuestion();
+        String modelType = request.getModelType();
+        String analysisInstruction = request.getAnalysisInstruction();
+        boolean saveToVectorStore = request.isSaveToVectorStore();
+        
+        // 调用三参数版本的方法执行任务
+        QAResponse response = decomposeAndExecuteTasks(question, modelType, analysisInstruction);
+        
+        // 如果需要，将任务拆解结果存入向量数据库
+        if (saveToVectorStore && response != null && response.getTasks() != null && !response.getTasks().isEmpty()) {
+            log.info("将任务拆解结果存入向量数据库");
+            boolean saved = saveTasksToVectorStore(response.getTasks(), question);
+            log.info("存储结果: {}", saved ? "成功" : "失败");
+        }
+        
+        return response;
+    }
+    
+    /**
      * 从用户问题中提取处理方式，并生成相应的提示词
      * 根据问题中的关键词和语义，识别用户期望的处理方式，并生成相应的提示词
      *
      * @param question 用户问题
      * @return 根据处理方式生成的提示词
      */
-    private String generateCustomPromptFromQuestion(String question) {
+    /**
+     * 从用户问题中提取处理方式，并生成相应的提示词
+     * 根据问题中的关键词和语义，识别用户期望的处理方式，并生成相应的提示词
+     *
+     * @param question 用户问题
+     * @param analysisInstruction 用户指定的分析处理指令（可选）
+     * @return 根据处理方式生成的提示词
+     */
+    private String generateCustomPromptFromQuestion(String question, String analysisInstruction) {
+        // 如果用户提供了明确的分析处理指令，直接使用
+        if (analysisInstruction != null && !analysisInstruction.trim().isEmpty()) {
+            log.info("使用用户指定的分析处理指令: {}", analysisInstruction);
+            return "\n" + analysisInstruction;
+        }
+        
         log.info("从用户问题中提取处理方式: {}", question);
         
         // 默认提示词

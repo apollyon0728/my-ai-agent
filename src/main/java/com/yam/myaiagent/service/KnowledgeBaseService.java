@@ -95,6 +95,24 @@ public interface KnowledgeBaseService {
     QAResponse decomposeAndExecuteTasks(String question, String modelType);
     
     /**
+     * 拆解并执行任务，然后汇总结果（增强版）
+     * 支持用户指定分析处理指令
+     * @param question 用户问题
+     * @param modelType 模型类型
+     * @param analysisInstruction 用户指定的分析处理指令
+     * @return 包含回答和执行结果的响应
+     */
+    QAResponse decomposeAndExecuteTasks(String question, String modelType, String analysisInstruction);
+    
+    /**
+     * 拆解并执行任务，然后汇总结果（对象参数版）
+     * 通过QARequest对象传递所有参数，更灵活地支持后续扩展
+     * @param request 包含问题、模型类型、分析指令等参数的请求对象
+     * @return 包含回答和执行结果的响应
+     */
+    QAResponse decomposeAndExecuteTasks(com.yam.myaiagent.model.QARequest request);
+    
+    /**
      * 将任务拆解结果存入向量数据库
      *
      * @param tasks 任务列表

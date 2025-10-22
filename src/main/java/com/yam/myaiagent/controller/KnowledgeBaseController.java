@@ -156,8 +156,10 @@ public class KnowledgeBaseController {
      */
     @PostMapping("/decomposeAndExecuteTasks")
     public ResponseEntity<QAResponse> decomposeAndExecuteTasks(@RequestBody QARequest request) {
+        log.info("KnowledgeBaseController.decomposeAndExecuteTasks开始执行, 请求: {}", request);
         // 调用服务层方法，完成任务拆解、执行和结果汇总
-        QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request.getQuestion(), request.getModelType());
+        QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request);
+        log.info("KnowledgeBaseController.decomposeAndExecuteTasks执行完成");
         return ResponseEntity.ok(response);
     }
     
@@ -176,47 +178,12 @@ public class KnowledgeBaseController {
      */
     @PostMapping("/enhancedSmartQA")
     public ResponseEntity<QAResponse> enhancedSmartQA(@RequestBody QARequest request) {
-        log.info("KnowledgeBaseController.enhancedSmartQA开始执行, 问题: {}, 模型类型: {}, 是否存储到向量库: {}",
-                request.getQuestion(), request.getModelType(), request.isSaveToVectorStore());
+        log.info("KnowledgeBaseController.enhancedSmartQA开始执行, 问题: {}, 模型类型: {}, 分析指令: {}, 是否存储到向量库: {}",
+                request.getQuestion(), request.getModelType(), request.getAnalysisInstruction(), request.isSaveToVectorStore());
         
-        // FIXME 1. 拆解任务
-        log.info("步骤1: 任务拆解 - 将复杂问题拆解为多个子任务");
-        List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
-        log.info("任务拆解完成，共拆解出{}个任务", tasks.size());
-        
-        // FIXME 2. 执行任务
-        log.info("步骤2: 任务执行 - 根据任务类型选择合适的执行器（MCP或Function Call）");
-        List<DecomposedTask> executedTasks = knowledgeBaseService.executeTasks(tasks);
-        
-        // FIXME 统计执行结果
-        long completedCount = executedTasks.stream()
-                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED).count();
-        long failedCount = executedTasks.stream()
-                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.FAILED).count();
-        long skippedCount = executedTasks.stream()
-                .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.SKIPPED).count();
-        log.info("任务执行结果统计: 成功={}, 失败={}, 跳过={}", completedCount, failedCount, skippedCount);
-        
-        // 3. 汇总结果
-        log.info("步骤3: 结果汇总 - 将所有任务的执行结果汇总，生成最终回答");
-        QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request.getQuestion(), request.getModelType());
-        
-        // 4. 如果请求中指定了存储标志，则将任务拆解结果存入向量数据库
-        if (request.isSaveToVectorStore() && !tasks.isEmpty()) {
-            log.info("步骤4: 向量存储 - 将任务拆解结果存入向量数据库");
-            
-            // 调用服务层方法将任务拆解结果存入向量数据库
-            boolean saveResult = knowledgeBaseService.saveTasksToVectorStore(executedTasks, request.getQuestion());
-            
-            if (saveResult) {
-                log.info("任务拆解结果成功存入向量数据库");
-                // 设置响应中的标志位
-                response.setSavedToVectorStore(true);
-            } else {
-                log.warn("任务拆解结果存入向量数据库失败");
-                response.setSavedToVectorStore(false);
-            }
-        }
+        // 使用新的对象参数版本的方法，一次性完成任务拆解、执行和结果汇总
+        log.info("调用decomposeAndExecuteTasks(QARequest)方法，完成任务拆解、执行和结果汇总");
+        QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request);
         
         log.info("KnowledgeBaseController.enhancedSmartQA执行完成");
         return ResponseEntity.ok(response);
@@ -231,15 +198,12 @@ public class KnowledgeBaseController {
      */
     @PostMapping("/smartQA")
     public ResponseEntity<QAResponse> smartQA(@RequestBody QARequest request) {
-        // 1. 拆解任务
-        List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
+        log.info("KnowledgeBaseController.smartQA开始执行, 请求: {}", request);
         
-        // 2. 执行任务
-        List<DecomposedTask> executedTasks = knowledgeBaseService.executeTasks(tasks);
+        // 使用新的对象参数版本的方法，一次性完成任务拆解、执行和结果汇总
+        QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request);
         
-        // 3. 汇总结果
-        QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request.getQuestion(), request.getModelType());
-        
+        log.info("KnowledgeBaseController.smartQA执行完成");
         return ResponseEntity.ok(response);
     }
 }

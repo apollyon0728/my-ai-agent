@@ -37,8 +37,11 @@ public class SqlParameterUtils {
     // 日期正则表达式 (YYYY-MM-DD)
     private static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
     
-    // IN子句列表正则表达式
-    private static final Pattern LIST_PATTERN = Pattern.compile("^\\s*\\d+\\s*(,\\s*\\d+\\s*)*$");
+    // 带引号的日期正则表达式 ('YYYY-MM-DD')
+    private static final Pattern QUOTED_DATE_PATTERN = Pattern.compile("^'\\d{4}-\\d{2}-\\d{2}'$");
+    
+    // IN子句列表正则表达式 - 支持数字和日期格式
+    private static final Pattern LIST_PATTERN = Pattern.compile("^\\s*(\\d+|\\d{4}-\\d{2}-\\d{2})\\s*(,\\s*(\\d+|\\d{4}-\\d{2}-\\d{2})\\s*)*$");
 
     /**
      * 识别参数类型
@@ -68,8 +71,8 @@ public class SqlParameterUtils {
             return ParameterType.BOOLEAN;
         }
         
-        // 检查是否为日期
-        if (DATE_PATTERN.matcher(strValue).matches()) {
+        // 检查是否为日期（带引号或不带引号）
+        if (DATE_PATTERN.matcher(strValue).matches() || QUOTED_DATE_PATTERN.matcher(strValue).matches()) {
             return ParameterType.DATE;
         }
         
@@ -104,7 +107,12 @@ public class SqlParameterUtils {
             case BOOLEAN:
                 return strValue.toLowerCase();
             case DATE:
-                return "'" + strValue + "'";
+                // 检查日期是否已经包含单引号
+                if (strValue.startsWith("'") && strValue.endsWith("'")) {
+                    return strValue; // 已经有单引号，不再添加
+                } else {
+                    return "'" + strValue + "'";
+                }
             case LIST:
                 return formatListParameter(strValue);
             case UNKNOWN:
@@ -143,8 +151,15 @@ public class SqlParameterUtils {
         // 处理每个项
         for (String item : items) {
             String trimmedItem = item.trim();
-            ParameterType itemType = identifyParameterType(trimmedItem);
-            formattedItems.add(formatParameterValue(trimmedItem, itemType));
+            // 移除可能存在的多余引号
+            if (trimmedItem.startsWith("'") && trimmedItem.endsWith("'")) {
+                // 已经有单引号，直接使用
+                formattedItems.add(trimmedItem);
+            } else {
+                // 没有单引号，根据类型添加
+                ParameterType itemType = identifyParameterType(trimmedItem);
+                formattedItems.add(formatParameterValue(trimmedItem, itemType));
+            }
         }
         
         // 组合成IN子句参数

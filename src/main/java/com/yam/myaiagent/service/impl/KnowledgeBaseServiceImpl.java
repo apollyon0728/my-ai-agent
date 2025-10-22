@@ -419,7 +419,9 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
             }
         }
         
-        summaryPrompt.append("\n请根据以上任务执行结果，综合分析并回答用户的问题。提供详细、准确的回答，并引用相关任务的结果作为支持。");
+        // 从用户问题中提取处理方式，并生成相应的提示词
+        String customPrompt = generateCustomPromptFromQuestion(question);
+        summaryPrompt.append(customPrompt);
         
         // 4. 使用模型生成最终回答
         String chatId = UUID.randomUUID().toString();
@@ -445,6 +447,123 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         qaResponse.setTasks(executedTasks);
         
         return qaResponse;
+    }
+    
+    /**
+     * 从用户问题中提取处理方式，并生成相应的提示词
+     * 根据问题中的关键词和语义，识别用户期望的处理方式，并生成相应的提示词
+     *
+     * @param question 用户问题
+     * @return 根据处理方式生成的提示词
+     */
+    private String generateCustomPromptFromQuestion(String question) {
+        log.info("从用户问题中提取处理方式: {}", question);
+        
+        // 默认提示词
+        String defaultPrompt = "\n请根据以上任务执行结果，综合分析并回答用户的问题。提供详细、准确的回答，并引用相关任务的结果作为支持。";
+        
+        // 如果问题为空，返回默认提示词
+        if (question == null || question.trim().isEmpty()) {
+            return defaultPrompt;
+        }
+        
+        // 转换为小写，便于匹配关键词
+        String lowerQuestion = question.toLowerCase();
+        
+        // 提取处理方式的规则集
+        // 1. 摘要/总结类
+        if (lowerQuestion.contains("总结") || lowerQuestion.contains("摘要") ||
+            lowerQuestion.contains("概括") || lowerQuestion.contains("简述") ||
+            lowerQuestion.contains("归纳")) {
+            String prompt = "\n请根据以上任务执行结果，提供一个简洁的总结。重点突出关键信息，使用清晰的结构和要点形式呈现。";
+            log.info("匹配到处理方式: 摘要/总结类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 2. 分析/比较类
+        if (lowerQuestion.contains("分析") || lowerQuestion.contains("比较") ||
+            lowerQuestion.contains("对比") || lowerQuestion.contains("评估") ||
+            lowerQuestion.contains("优缺点")) {
+            String prompt = "\n请根据以上任务执行结果，进行深入分析和比较。识别关键差异、优缺点，并提供基于证据的评估。";
+            log.info("匹配到处理方式: 分析/比较类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 3. 建议/推荐类
+        if (lowerQuestion.contains("建议") || lowerQuestion.contains("推荐") ||
+            lowerQuestion.contains("如何改进") || lowerQuestion.contains("怎么解决") ||
+            lowerQuestion.contains("最佳方案")) {
+            String prompt = "\n请根据以上任务执行结果，提供具体、可行的建议或推荐。针对用户问题，给出明确的解决方案和实施步骤。";
+            log.info("匹配到处理方式: 建议/推荐类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 4. 预测/趋势类
+        if (lowerQuestion.contains("预测") || lowerQuestion.contains("趋势") ||
+            lowerQuestion.contains("未来") || lowerQuestion.contains("展望") ||
+            lowerQuestion.contains("可能会")) {
+            String prompt = "\n请根据以上任务执行结果，分析可能的未来趋势和发展。基于当前数据和模式，提供合理的预测和前瞻性见解。";
+            log.info("匹配到处理方式: 预测/趋势类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 5. 技术说明/教程类
+        if (lowerQuestion.contains("如何使用") || lowerQuestion.contains("怎么操作") ||
+            lowerQuestion.contains("步骤") || lowerQuestion.contains("教程") ||
+            lowerQuestion.contains("指南")) {
+            String prompt = "\n请根据以上任务执行结果，提供清晰的技术说明或教程。包含详细步骤、注意事项和最佳实践，确保用户能够轻松理解和操作。";
+            log.info("匹配到处理方式: 技术说明/教程类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 6. 数据统计/图表类
+        if (lowerQuestion.contains("统计") || lowerQuestion.contains("数据") ||
+            lowerQuestion.contains("图表") || lowerQuestion.contains("百分比") ||
+            lowerQuestion.contains("数量")) {
+            String prompt = "\n请根据以上任务执行结果，提供数据统计分析。整理关键数字、比例和趋势，并以清晰的方式呈现这些信息。";
+            log.info("匹配到处理方式: 数据统计/图表类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 7. 故障排除/问题解决类
+        if (lowerQuestion.contains("故障") || lowerQuestion.contains("错误") ||
+            lowerQuestion.contains("问题") || lowerQuestion.contains("修复") ||
+            lowerQuestion.contains("解决方案")) {
+            String prompt = "\n请根据以上任务执行结果，提供故障排除和问题解决方案。分析可能的原因，并给出具体的修复步骤和预防措施。";
+            log.info("匹配到处理方式: 故障排除/问题解决类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 8. 创意/头脑风暴类
+        if (lowerQuestion.contains("创意") || lowerQuestion.contains("想法") ||
+            lowerQuestion.contains("创新") || lowerQuestion.contains("头脑风暴") ||
+            lowerQuestion.contains("构思")) {
+            String prompt = "\n请根据以上任务执行结果，进行创意思考和头脑风暴。提供多样化、创新的想法和可能性，鼓励不同角度的思考。";
+            log.info("匹配到处理方式: 创意/头脑风暴类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 9. 决策支持类
+        if (lowerQuestion.contains("决策") || lowerQuestion.contains("选择") ||
+            lowerQuestion.contains("应该") || lowerQuestion.contains("是否应该") ||
+            lowerQuestion.contains("利弊")) {
+            String prompt = "\n请根据以上任务执行结果，提供决策支持分析。评估不同选项的利弊，并基于证据给出明确的建议，帮助用户做出明智决策。";
+            log.info("匹配到处理方式: 决策支持类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 10. 简化/通俗解释类
+        if (lowerQuestion.contains("简单解释") || lowerQuestion.contains("通俗") ||
+            lowerQuestion.contains("易懂") || lowerQuestion.contains("简化") ||
+            lowerQuestion.contains("非专业人士")) {
+            String prompt = "\n请根据以上任务执行结果，提供简化和通俗的解释。避免专业术语，使用类比和示例，确保非专业人士也能理解复杂概念。";
+            log.info("匹配到处理方式: 简化/通俗解释类，生成提示词: {}", prompt);
+            return prompt;
+        }
+        
+        // 如果没有匹配到特定处理方式，返回默认提示词
+        log.info("未匹配到特定处理方式，使用默认提示词: {}", defaultPrompt);
+        return defaultPrompt;
     }
     
     /**

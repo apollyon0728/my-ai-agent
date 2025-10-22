@@ -2,6 +2,7 @@ package com.yam.myaiagent.taskdecompose;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yam.myaiagent.taskdecompose.util.SqlParameterUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
@@ -256,13 +257,13 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             String taskId = UUID.randomUUID().toString();
             taskIdMap.put(i, taskId);
 
-            // 提取参数
+            // FIXME 提取参数
             Map<String, Object> parameters = extractParameters(template.getParameterMappings(), question);
 
-            // 处理查询模板中的参数占位符
+            // FIXME 处理查询模板中的参数占位符
             String processedQueryTemplate = processTemplate(template.getQueryTemplate(), parameters);
 
-            // 处理描述模板中的参数占位符
+            // FIXME 处理描述模板中的参数占位符
             String processedDescription = processTemplate(template.getDescriptionTemplate(), parameters);
 
             // 处理依赖关系
@@ -314,13 +315,33 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             Matcher matcher = pattern.matcher(question);
 
             if (matcher.find()) {
+                String extractedValue;
+                
                 // 如果有捕获组，使用第一个捕获组的值
                 if (matcher.groupCount() > 0) {
-                    parameters.put(paramName, matcher.group(1));
+                    extractedValue = matcher.group(1);
                 } else {
                     // 否则使用整个匹配的值
-                    parameters.put(paramName, matcher.group());
+                    extractedValue = matcher.group();
                 }
+                
+                // 检查参数安全性
+                if (!SqlParameterUtils.isSqlParameterSafe(extractedValue)) {
+                    log.warn("检测到不安全的SQL参数值: {}", extractedValue);
+                    continue;
+                }
+                
+                // 处理特殊参数类型
+                if (SqlParameterUtils.isInClauseParameter(paramName, extractedValue)) {
+                    // 对于IN子句参数，进行特殊处理
+                    log.info("检测到IN子句参数: {}={}", paramName, extractedValue);
+                    parameters.put(paramName, extractedValue);
+                } else {
+                    // 对于普通参数，直接存储
+                    parameters.put(paramName, extractedValue);
+                }
+                
+                log.debug("提取参数: {}={}", paramName, extractedValue);
             }
         }
 
@@ -343,8 +364,24 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
 
         // 替换参数占位符
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            String placeholder = "\\{\\{" + entry.getKey() + "\\}\\}";
-            result = result.replaceAll(placeholder, entry.getValue().toString());
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+            String placeholder = "\\{\\{" + paramName + "\\}\\}";
+            
+            // 根据参数类型进行格式化
+            String formattedValue;
+            if (SqlParameterUtils.isInClauseParameter(paramName, paramValue)) {
+                // 处理IN子句参数
+                formattedValue = SqlParameterUtils.processInClauseParameter(paramValue.toString());
+                log.info("格式化IN子句参数: {}={}", paramName, formattedValue);
+            } else {
+                // 处理普通参数
+                formattedValue = SqlParameterUtils.formatParameterValue(paramValue);
+                log.debug("格式化参数: {}={}", paramName, formattedValue);
+            }
+            
+            // 替换占位符
+            result = result.replaceAll(placeholder, formattedValue);
         }
 
         return result;

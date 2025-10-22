@@ -1571,10 +1571,53 @@ Spring AI 的 `PgVectorStore.similaritySearch()` 本质是：
 
 ### 规则上传
 
+http://dev.jdl.com:8123/api/swagger-ui/index.html#/knowledge-base-controller/taskRule
+
 <span class="opblock-summary-path" data-path="/api/knowledge/taskRule"><a class="nostyle" href="#/knowledge-base-controller/uploadTaskRule"><span>/api<wbr>/knowledge<wbr>/taskRule</span></a></span>
 
+
+
+```java
+/**
+ * 知识库控制器类
+ * 该类负责处理知识库相关的REST API请求，提供知识库的增删改查等操作接口。
+ * 所有接口都映射到"/api/knowledge"路径下。
+ */
+@RestController
+@RequestMapping("/api/knowledge")
+@Slf4j
+public class KnowledgeBaseController {
+
+		/**
+     * 上传任务拆解规则
+     * @param ruleJson 规则JSON字符串
+     * @return 上传成功的规则ID
+     */
+    @PostMapping("/taskRule")
+    public ResponseEntity<String> uploadTaskRule(@RequestBody String ruleJson) {
+        String ruleId = knowledgeBaseService.uploadTaskRule(ruleJson);
+        return ResponseEntity.ok(ruleId);
+    }
+    
+    /**
+     * 获取所有任务拆解规则
+     * @return 所有规则的列表
+     */
+    @GetMapping("/taskRules")
+    public ResponseEntity<List<String>> getAllTaskRules() {
+        List<String> rules = knowledgeBaseService.getAllTaskRules();
+        return ResponseEntity.ok(rules);
+    }
+```
+
+
+
+### 规则报文
+
 ```json
+-- 带变量
 {
+  "ruleId": "performance-reward-rule-001",
   "ruleName": "绩效奖励成本项数据波动分析规则",
   "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
   "matchPatterns": [
@@ -1592,8 +1635,63 @@ Spring AI 的 `PgVectorStore.similaritySearch()` 本质是：
         "source": "source\\s+in\\s+\\(([^\\)]+)\\)"
       },
       "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 2,
+      "descriptionTemplate": "查询指定用户的信息，使用前一天的业务日期",
+      "queryTemplate": "select * from user_info where erp = '{{erp}}' and business_day = '{{business_day}}'",
+      "parameterMappings": {
+        "erp": "erp\\s*=\\s*['\"]([^'\"]+)['\"]",
+        "business_day": "business_day\\s*=\\s*['\"]([^'\"]+)['\"]"
+      },
+      "dependencyIndices": [0]
     }
   ]
+}
+
+
+-- 写死值
+{
+    "ruleId": "3e6eb24f-c84c-416a-be8d-5c805a610750",
+    "businessId": "performance-reward-rule-001",
+    "ruleName": "绩效奖励成本项数据波动分析规则",
+    "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
+    "matchPattern": "绩效奖励.*波动",
+    "matchPatterns": [
+        "绩效奖励.*波动",
+        "绩效奖励.*数据.*分析",
+        "performance.*reward.*data"
+    ],
+    "matchType": null,
+    "threshold": 0,
+    "taskTemplates": [
+        {
+            "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+            "taskType": "SQL_QUERY",
+            "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day = '2024-12-29' and source in ('30') GROUP BY run_status_ext1, business_day, source order by business_day",
+            "parameterMappings": {
+                "source": "source\\s+in\\s+\\(([^\\)]+)\\)"
+            },
+            "priority": 1,
+            "dependencyIndices": [
+
+            ]
+        },
+        {
+            "descriptionTemplate": "查询指定用户的信息，使用前一天的业务日期",
+            "taskType": "SQL_QUERY",
+            "queryTemplate": "select * from user_info where erp = 'bjmiaoyanchao' and business_day = '2024-12-29'",
+            "parameterMappings": {
+                "erp": "erp\\s*=\\s*['\"]([^'\"]+)['\"]",
+                "business_day": "business_day\\s*=\\s*['\"]([^'\"]+)['\"]"
+            },
+            "priority": 2,
+            "dependencyIndices": [
+                0
+            ]
+        }
+    ]
 }
 ```
 
@@ -3347,7 +3445,17 @@ Content-Type: application/json
 
 
 
-# 相关知识点
+# [待完成功能] ★★
+
+- 内存或其他模式的向量存储实现
+- 完善任务和规则处理功能
+- 配套的前端实现：规则上传、结果展示...
+
+
+
+
+
+# [相关知识点]
 
 ## 检索增强生成 ★★
 

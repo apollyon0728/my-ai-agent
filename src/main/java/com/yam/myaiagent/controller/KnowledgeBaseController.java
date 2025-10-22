@@ -179,16 +179,16 @@ public class KnowledgeBaseController {
         log.info("KnowledgeBaseController.enhancedSmartQA开始执行, 问题: {}, 模型类型: {}, 是否存储到向量库: {}",
                 request.getQuestion(), request.getModelType(), request.isSaveToVectorStore());
         
-        // 1. 拆解任务
+        // FIXME 1. 拆解任务
         log.info("步骤1: 任务拆解 - 将复杂问题拆解为多个子任务");
         List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
         log.info("任务拆解完成，共拆解出{}个任务", tasks.size());
         
-        // 2. 执行任务
+        // FIXME 2. 执行任务
         log.info("步骤2: 任务执行 - 根据任务类型选择合适的执行器（MCP或Function Call）");
         List<DecomposedTask> executedTasks = knowledgeBaseService.executeTasks(tasks);
         
-        // 统计执行结果
+        // FIXME 统计执行结果
         long completedCount = executedTasks.stream()
                 .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED).count();
         long failedCount = executedTasks.stream()

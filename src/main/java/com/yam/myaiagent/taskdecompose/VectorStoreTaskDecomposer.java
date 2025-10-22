@@ -33,6 +33,12 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     @Qualifier("dashscopeEmbeddingModel")
     private EmbeddingModel embeddingModel;
 
+    /**
+     * ObjectMapper实例，用于JSON序列化和反序列化操作
+     * 该对象映射器被声明为final类型，确保其引用不可变，
+     * 并且在类初始化时创建一个新的ObjectMapper实例。
+     * ObjectMapper是Jackson库的核心类，提供Java对象与JSON之间的转换功能。</p>
+     */
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 规则文档的前缀，用于区分普通文档和规则文档
@@ -45,23 +51,19 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     private final Map<String, Long> recentRuleCache = new ConcurrentHashMap<>();
 
     /**
-     * 将问题拆解为具体任务列表
+     * 获取向量存储中的文档总数
      *
-     * @param question 用户输入的问题
-     * @return 拆解后的任务列表
-     */
-    /**
-     * 获取向量存储中的文档数量
-     * 用于调试和监控向量存储状态
+     * @return 向量存储中文档的数量，如果获取失败则返回-1
      */
     private long getVectorStoreDocumentCount() {
         try {
+            // 构造搜索请求来获取所有文档
             SearchRequest countRequest = SearchRequest.builder()
                     .query("*")
                     .topK(1000)  // 设置一个较大的值
                     .build();
             List<Document> allDocs = vectorStore.similaritySearch(countRequest);
-            return allDocs.size();
+            return Objects.requireNonNull(allDocs).size();
         } catch (Exception e) {
             log.error("获取向量存储文档数量失败: {}", e.getMessage());
             return -1;
@@ -79,7 +81,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         log.info("decompose 开始拆解问题: {}, 当前线程ID: {}, 当前向量存储文档数量: {}",
                 question, Thread.currentThread().getId(), getVectorStoreDocumentCount());
 
-        // 1. 查询相似的规则
+        // FIXME 1. 查询相似的规则
         List<TaskRule> matchedRules = findMatchingRules(question);
         if (matchedRules.isEmpty()) {
             log.info("未找到匹配的规则，返回空任务列表");
@@ -99,7 +101,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             tasks.addAll(generateTasksFromRule(rule, question));
         }
 
-        // 3. 按优先级排序
+        // FIXME 3. 按优先级排序
         tasks.sort(Comparator.comparingInt(DecomposedTask::getPriority));
 
         log.info("问题拆解完成，共生成{}个任务", tasks.size());
@@ -108,7 +110,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
 
 
     /**
-     * 查找与问题匹配的规则
+     * [重要] 查找与问题匹配的规则
      *
      * @param question 用户问题
      * @return 匹配的规则列表
@@ -123,7 +125,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         // 尝试不同格式的过滤表达式
         log.info("尝试使用不同格式的过滤表达式");
 
-        // 方式1: 使用 metadata.type = 'TASK_RULE' 格式
+        // FIXME 方式1: 使用 metadata.type = 'TASK_RULE' 格式
         String filterExpr1 = "metadata.type == 'TASK_RULE'";
         log.info("尝试过滤表达式格式1: {}", filterExpr1);
 
@@ -138,11 +140,11 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             log.info("成功创建SearchRequest对象(格式1)");
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
             log.info("格式1-查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
-                    similarDocuments.size(), getVectorStoreDocumentCount());
+                    Objects.requireNonNull(similarDocuments).size(), getVectorStoreDocumentCount());
 
             // 记录文档元数据，帮助调试
             if (!similarDocuments.isEmpty()) {
-                Document firstDoc = similarDocuments.get(0);
+                Document firstDoc = similarDocuments.getFirst();
                 log.info("第一个文档ID: {}, 元数据: {}", firstDoc.getId(), firstDoc.getMetadata());
             }
 
@@ -162,7 +164,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             log.error("过滤表达式格式1错误: {}, 尝试格式2", e.getMessage());
         }
 
-        // 方式2: 使用 type = 'TASK_RULE' 格式
+        // FIXME 方式2: 使用 type = 'TASK_RULE' 格式
         String filterExpr2 = "metadata['type'] == 'TASK_RULE'";
         log.info("尝试过滤表达式格式2: {}", filterExpr2);
 
@@ -195,8 +197,8 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             log.error("过滤表达式格式2错误: {}, 尝试不使用过滤器", e.getMessage());
         }
 
-        // 如果两种过滤表达式都失败，尝试不使用过滤器
-        log.info("尝试不使用过滤器");
+        // FIXME 如果两种过滤表达式都失败，尝试不使用过滤器
+        log.info("findMatchingRules 尝试不使用过滤器");
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(question)
                 .topK(5)
@@ -206,7 +208,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         log.info("成功创建无过滤器的SearchRequest对象");
         List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
         log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
-                similarDocuments.size(), getVectorStoreDocumentCount());
+                Objects.requireNonNull(similarDocuments).size(), getVectorStoreDocumentCount());
 
         // 解析文档内容为TaskRule对象
         List<TaskRule> rules = similarDocuments.stream()
@@ -478,9 +480,9 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             }
         }
 
-        // 如果两种过滤表达式都失败，尝试不使用过滤器
+        //  FIXME 如果两种过滤表达式都失败，尝试不使用过滤器
         if (!success) {
-            log.info("尝试不使用过滤器");
+            log.info("getAllRules 尝试不使用过滤器");
             SearchRequest searchRequest = SearchRequest.builder()
                     .query("*")
                     .topK(100)

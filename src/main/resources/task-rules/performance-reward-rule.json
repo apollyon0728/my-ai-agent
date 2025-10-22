@@ -25,7 +25,7 @@
       "descriptionTemplate": "查询指定用户的信息，使用前一天的业务日期",
       "queryTemplate": "select * from user_info where erp = {{erp}} and business_day = {{business_day}}",
       "parameterMappings": {
-        "erp": "erp\\s*=\\s*['\"]([^'\"]+)['\"]",
+        "erp": "erp\\s*=\\s*(?:['\"])?([^'\"\\s]+)(?:['\"])?",
         "business_day": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s]+)(?:['\"])?"
       },
       "dependencyIndices": [0]

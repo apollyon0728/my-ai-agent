@@ -93,10 +93,7 @@ public class KnowledgeBaseController {
         knowledgeBaseService.reloadAllDocuments();
         return ResponseEntity.ok("文档重新加载成功");
     }
-    /**
-     * 任务拆解相关接口
-     */
-    
+
     /**
      * 上传任务拆解规则
      * @param ruleJson 规则JSON字符串

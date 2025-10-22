@@ -31,7 +31,15 @@ https://platform.deepseek.com/usage
 
 ## 阿里云
 
-https://dashscope.console.aliyun.com/billing
+百炼大模型
+
+https://bailian.console.aliyun.com/?tab=model#/api-key
+
+
+
+费用
+
+https://billing-cost.console.aliyun.com/fortune/billing-account
 
 | [通义千问](https://help.aliyun.com/zh/dashscope/developer-reference/api-details?disableWebsiteRedirect=true) | qwen-turbo | `模型API调用时按照输入、输出token数量分别进行计费：对于中文文本来说，千问模型的1个token平均对应1.5-1.8个汉字；对于英文文本来说，1个token通常对应一个单词或词根。` | `输入0.0003元/1,000 tokens 输出0.0006元/1,000 tokens` | `开通DashScope即获赠总计 1,000,000 tokens限时免费使用额度，有效期 30 天。 2024年9月19号0点之后开通DashScope有效期为180` |
 | ------------------------------------------------------------ | ---------- | ------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------ |
@@ -41,7 +49,7 @@ https://dashscope.console.aliyun.com/billing
 
 
 
-PDF
+## PDF项目配置
 
 ```yaml
 spring:
@@ -413,6 +421,8 @@ server:
 https://github.com/apollyon0728/my-ai-agent
 
 
+
+https://github.com/apollyon0728/my-ai-agent.git
 
 ## 项目介绍
 
@@ -1135,6 +1145,392 @@ public QAResponse getAnswer(String message) {
    - `return qaResponse;`：返回包含回答内容的QAResponse对象。
 
 总的来说，这段代码实现了与大模型的对话，通过查询重写、聊天记忆和RAG检索增强服务来优化对话过程，并最终返回用户问题的回答。
+
+
+
+## [多model选择]
+
+模型策略选择
+
+```java
+IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
+ChatClient dynamicChatClient = strategy.getChatClient();
+```
+
+
+
+### 配置文件
+
+配置阿里云模型 以及通过 OpenAI调用DeepSeek大模型
+
+```yaml
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    postgresql:
+#    jdbcUrl: jdbc:postgresql://localhost:5432/AI_Test
+      jdbcUrl: jdbc:postgresql://localhost:5433/AI_Test
+      username: zhengdan3
+      password:
+      driver-class-name: org.postgresql.Driver
+    mysql:
+      jdbcUrl: jdbc:mysql://10.170.223.156:3358/hr_cost_estimate_user?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: hr
+      password: qwerasdf
+      driver-class-name: com.mysql.cj.jdbc.Driver
+#      type: com.zaxxer.hikari.HikariDataSource
+#      hikari:
+#        minimum-idle: 5
+#        idle-timeout: 180000
+#        maximum-pool-size: 15
+#        auto-commit: true
+#        pool-name: MysqlHikariCP
+#        max-lifetime: 1800000
+#        connection-timeout: 30000
+  application:
+    name: my-ai-agent
+  profiles:
+    active: local
+  ai:
+    dashscope:
+      # Aliyun https://dashscope.console.aliyun.com/apiKey
+      api-key: ${ALIBABA_API_KEY:sk-ad7748587a624bf89c711ea8d1157793}
+      chat:
+        options:
+          model: qwen-turbo-latest
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:sk-8a57a59c50ab4ffca52852e26966974e}
+      base-url: https://api.deepseek.com/v1
+      chat:
+        options:
+          model: deepseek-chat
+    openai:
+#      api-key: sk-8a57a59c50ab4ffca52852e26966974e
+#      base-url: https://api.deepseek.com
+      api-key: 26cc4102-26c9-4055-a527-47de0a9e3730
+      base_url: http://gpt-proxy.jd.com
+#      api-key: sk-wyinvzkkadhokbjqhknxyzsvvvjsgusdnibjutlnkctjkgue
+#      base_url: https://api.siliconflow.cn
+      chat:
+        options:
+#          model: deepseek-chat
+          model: DeepSeek-V3-0324-jdcloud-iaas
+#          model: Pro/deepseek-ai/DeepSeek-V3.1
+
+#    ollama:
+#      base-url: http://localhost:11434
+#      chat:
+#        model: gemma3:1b
+
+#    mcp:
+#      client:
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8127
+##              timeout: 60000  # 设置超时时间为 60 秒
+#        stdio:
+#          servers-configuration: classpath:mcp-servers.json
+#    vectorstore:
+#      pgvector:
+#        index-type: HNSW
+#        dimensions: 1536
+#        distance-type: COSINE_DISTANCE
+#        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+# springdoc-openapi config
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.yam.myaiagent.controller
+# knife4j config
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+# searchAPI
+search-api:
+  api-key: xxx
+# 修改日志级别，查看 Spring AI 更多调用细节
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    com.yam.myaiagent.config: DEBUG
+```
+
+
+
+### IChatModelStrategy
+
+```java
+/**
+ * 大模型 ChatClient 策略接口
+ * 每个实现代表一种大模型（如阿里、DeepSeek等）
+ */
+public interface IChatModelStrategy {
+    /**
+     * 获取当前模型的 ChatClient
+     */
+    ChatClient getChatClient();
+}
+
+```
+
+
+
+```java
+/**
+ * OpenAI大模型策略实现
+ */
+@Component("openai")
+public class OpenAIChatModelStrategy implements IChatModelStrategy {
+
+    @Autowired
+    @Qualifier("openAIChatModel")
+    private ChatModel openAIChatModel;
+
+    private volatile ChatClient chatClient;
+
+    @Override
+    public ChatClient getChatClient() {
+        if (chatClient == null) {
+            synchronized (this) {
+                if (chatClient == null) {
+                    org.slf4j.LoggerFactory.getLogger(OpenAIChatModelStrategy.class).info(
+                        "初始化OpenAIChatModelStrategy的ChatClient，使用的模型类型: {}", 
+                        openAIChatModel != null ? openAIChatModel.getClass().getName() : "null");
+                    chatClient = ChatClient.builder(openAIChatModel).build();
+                }
+            }
+        }
+        return chatClient;
+    }
+}
+```
+
+
+
+
+
+## [工具注册]
+
+```java
+package com.yam.myaiagent.tools;
+
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbacks;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * 集中的工具注册类
+ */
+@Configuration
+public class ToolRegistration {
+
+
+    /**
+     * 获取所有可用的工具回调数组
+     *
+     * @return ToolCallback[] 包含所有已初始化工具的回调数组
+     */
+    @Bean
+    public ToolCallback[] allTools() {
+        // 初始化各种工具实例
+        // 创建文件操作工具实例，用于执行文件相关的操作
+        FileOperationTool fileOperationTool = new FileOperationTool();
+
+        // 创建网络搜索工具实例，用于执行网络搜索功能
+        WebSearchTool webSearchTool = new WebSearchTool();
+
+        // 创建网页抓取工具实例，用于从网页中提取数据
+        WebScrapingTool webScrapingTool = new WebScrapingTool();
+
+        // 创建资源下载工具实例，用于下载网络资源
+        ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
+
+        // 创建终端操作工具实例，用于执行系统终端命令
+        TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
+
+        // 创建PDF生成工具实例，用于生成PDF文档
+        PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
+
+        // 创建Markdown生成工具实例，用于生成Markdown格式文档
+        MarkdownGenerationTool markdownGenerationTool = new MarkdownGenerationTool();
+
+        // 创建天气搜索工具实例，用于查询天气信息
+        WeatherSearchTool weatherSearchTool = new WeatherSearchTool();
+
+        // 创建终止工具实例，用于结束程序执行
+        TerminateTool terminateTool = new TerminateTool();
+
+//        ShowFileDownloadURLTool showFileDownloadURLTool = new ShowFileDownloadURLTool();
+
+        // 将所有工具转换为回调数组并返回
+        return ToolCallbacks.from(
+//                showFileDownloadURLTool,
+                weatherSearchTool,
+                markdownGenerationTool,
+                fileOperationTool,
+                webSearchTool,
+                webScrapingTool,
+                resourceDownloadTool,
+                terminalOperationTool,
+                pdfGenerationTool,
+                terminateTool
+        );
+    }
+
+}
+
+```
+
+
+
+
+
+## [任务拆解]★★
+
+```java
+/**
+ * 拆解任务
+ * @param request 包含问题的请求
+ * @return 拆解后的任务列表
+ */
+@PostMapping("/decomposeTask")
+public ResponseEntity<List<DecomposedTask>> decomposeTask(@RequestBody QARequest request) {
+    List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
+    return ResponseEntity.ok(tasks);
+}
+```
+
+
+
+基于我查看的代码文件，我现在对系统的任务拆解功能有了全面的了解。现在我可以回答用户的问题，提供一个调用`decomposeTask`接口的例子，并解释是否需要先上传数据到向量库。
+
+关键发现：
+
+1. `decomposeTask`接口位于`KnowledgeBaseController`中，接收一个包含问题的`QARequest`对象，返回拆解后的任务列表
+2. 底层实现是通过`VectorStoreTaskDecomposer`类，它使用向量存储来匹配规则并生成任务
+3. 系统使用向量数据库存储任务拆解规则，通过语义相似度匹配来找到适合的规则
+4. 规则需要预先上传到向量库中，才能被系统用于任务拆解
+5. 规则的格式是JSON，包含匹配模式、任务模板等信息
+
+根据我对代码的分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
+
+
+
+**是否需要先上传数据到向量库**
+
+**是的，需要先上传任务拆解规则到向量库**。从代码实现来看，`VectorStoreTaskDecomposer`类使用向量存储来匹配规则并生成任务。当调用`decomposeTask`方法时，系统会在向量库中查找与问题语义相似的规则，然后根据这些规则生成具体任务。如果向量库中没有相关规则，将返回空的任务列表。
+
+上传规则的步骤：
+
+1. 准备规则JSON文件（参考`performance-reward-rule.json`的格式）
+
+2. 调用`/api/knowledge/taskRule`接口上传规则
+
+   
+
+**调用`decomposeTask`接口的示例**
+
+请求示例
+
+```http
+POST /api/knowledge/decomposeTask
+Content-Type: application/json
+
+{
+  "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
+}
+```
+
+响应示例
+
+```json
+[
+  {
+    "taskId": "task-001",
+    "description": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+    "taskType": "SQL_QUERY",
+    "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in (JD, TB) GROUP BY run_status_ext1, business_day, source order by business_day",
+    "parameters": {
+      "source": "JD, TB"
+    },
+    "priority": 1,
+    "dependencies": []
+  }
+]
+```
+
+
+
+**完整调用流程**
+
+1. **上传任务规则**（如果尚未上传）：
+
+   ```json
+   POST /api/knowledge/taskRule
+   Content-Type: application/json
+   
+   {
+     "ruleName": "绩效奖励成本项数据波动分析规则",
+     "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
+     "matchPatterns": [
+       "绩效奖励.*波动",
+       "绩效奖励.*数据.*分析",
+       "performance.*reward.*data"
+     ],
+     "taskTemplates": [
+       {
+         "taskType": "SQL_QUERY",
+         "priority": 1,
+         "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+         "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in ({{source}}) GROUP BY run_status_ext1, business_day, source order by business_day",
+         "parameterMappings": {
+           "source": "source\\s+in\\s+\\(([^\\)]+)\\)"
+         },
+         "dependencyIndices": []
+       }
+     ]
+   }
+   ```
+
+2. **调用任务拆解接口**：
+
+   ```http
+   POST /api/knowledge/decomposeTask
+   Content-Type: application/json
+   
+   {
+     "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
+   }
+   ```
+
+3. **获取拆解后的任务列表**，然后可以根据任务列表进行后续处理。
+
+### 工作原理
+
+1. 系统将规则存储在向量数据库中
+2. 当收到问题时，系统使用向量搜索找到相似度高于阈值的规则
+3. 根据匹配的规则，系统从问题中提取参数（使用正则表达式）
+4. 系统生成具体任务，包括任务描述、查询模板、参数等
+5. 返回拆解后的任务列表
+
+这种方式允许系统根据预定义的规则模板，将自然语言问题转换为结构化的任务，便于后续执行和处理。
+
+根据代码分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
 
 
 
@@ -3190,224 +3586,13 @@ public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMat
 
 
 
-## [工具注册]
-
-```java
-package com.yam.myaiagent.tools;
-
-import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.tool.ToolCallbacks;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-/**
- * 集中的工具注册类
- */
-@Configuration
-public class ToolRegistration {
-
-
-    /**
-     * 获取所有可用的工具回调数组
-     *
-     * @return ToolCallback[] 包含所有已初始化工具的回调数组
-     */
-    @Bean
-    public ToolCallback[] allTools() {
-        // 初始化各种工具实例
-        // 创建文件操作工具实例，用于执行文件相关的操作
-        FileOperationTool fileOperationTool = new FileOperationTool();
-
-        // 创建网络搜索工具实例，用于执行网络搜索功能
-        WebSearchTool webSearchTool = new WebSearchTool();
-
-        // 创建网页抓取工具实例，用于从网页中提取数据
-        WebScrapingTool webScrapingTool = new WebScrapingTool();
-
-        // 创建资源下载工具实例，用于下载网络资源
-        ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
-
-        // 创建终端操作工具实例，用于执行系统终端命令
-        TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
-
-        // 创建PDF生成工具实例，用于生成PDF文档
-        PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
-
-        // 创建Markdown生成工具实例，用于生成Markdown格式文档
-        MarkdownGenerationTool markdownGenerationTool = new MarkdownGenerationTool();
-
-        // 创建天气搜索工具实例，用于查询天气信息
-        WeatherSearchTool weatherSearchTool = new WeatherSearchTool();
-
-        // 创建终止工具实例，用于结束程序执行
-        TerminateTool terminateTool = new TerminateTool();
-
-//        ShowFileDownloadURLTool showFileDownloadURLTool = new ShowFileDownloadURLTool();
-
-        // 将所有工具转换为回调数组并返回
-        return ToolCallbacks.from(
-//                showFileDownloadURLTool,
-                weatherSearchTool,
-                markdownGenerationTool,
-                fileOperationTool,
-                webSearchTool,
-                webScrapingTool,
-                resourceDownloadTool,
-                terminalOperationTool,
-                pdfGenerationTool,
-                terminateTool
-        );
-    }
-
-}
-
-```
-
-
-
-
-
-## [任务拆解]★★
-
-```java
-/**
- * 拆解任务
- * @param request 包含问题的请求
- * @return 拆解后的任务列表
- */
-@PostMapping("/decomposeTask")
-public ResponseEntity<List<DecomposedTask>> decomposeTask(@RequestBody QARequest request) {
-    List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
-    return ResponseEntity.ok(tasks);
-}
-```
-
-
-
-基于我查看的代码文件，我现在对系统的任务拆解功能有了全面的了解。现在我可以回答用户的问题，提供一个调用`decomposeTask`接口的例子，并解释是否需要先上传数据到向量库。
-
-关键发现：
-
-1. `decomposeTask`接口位于`KnowledgeBaseController`中，接收一个包含问题的`QARequest`对象，返回拆解后的任务列表
-2. 底层实现是通过`VectorStoreTaskDecomposer`类，它使用向量存储来匹配规则并生成任务
-3. 系统使用向量数据库存储任务拆解规则，通过语义相似度匹配来找到适合的规则
-4. 规则需要预先上传到向量库中，才能被系统用于任务拆解
-5. 规则的格式是JSON，包含匹配模式、任务模板等信息
-
-根据我对代码的分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
-
-
-
-**是否需要先上传数据到向量库**
-
-**是的，需要先上传任务拆解规则到向量库**。从代码实现来看，`VectorStoreTaskDecomposer`类使用向量存储来匹配规则并生成任务。当调用`decomposeTask`方法时，系统会在向量库中查找与问题语义相似的规则，然后根据这些规则生成具体任务。如果向量库中没有相关规则，将返回空的任务列表。
-
-上传规则的步骤：
-
-1. 准备规则JSON文件（参考`performance-reward-rule.json`的格式）
-
-2. 调用`/api/knowledge/taskRule`接口上传规则
-
-   
-
-**调用`decomposeTask`接口的示例**
-
-请求示例
-
-```http
-POST /api/knowledge/decomposeTask
-Content-Type: application/json
-
-{
-  "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
-}
-```
-
-响应示例
-
-```json
-[
-  {
-    "taskId": "task-001",
-    "description": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
-    "taskType": "SQL_QUERY",
-    "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in (JD, TB) GROUP BY run_status_ext1, business_day, source order by business_day",
-    "parameters": {
-      "source": "JD, TB"
-    },
-    "priority": 1,
-    "dependencies": []
-  }
-]
-```
-
-
-
-**完整调用流程**
-
-1. **上传任务规则**（如果尚未上传）：
-
-   ```json
-   POST /api/knowledge/taskRule
-   Content-Type: application/json
-   
-   {
-     "ruleName": "绩效奖励成本项数据波动分析规则",
-     "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
-     "matchPatterns": [
-       "绩效奖励.*波动",
-       "绩效奖励.*数据.*分析",
-       "performance.*reward.*data"
-     ],
-     "taskTemplates": [
-       {
-         "taskType": "SQL_QUERY",
-         "priority": 1,
-         "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
-         "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in ({{source}}) GROUP BY run_status_ext1, business_day, source order by business_day",
-         "parameterMappings": {
-           "source": "source\\s+in\\s+\\(([^\\)]+)\\)"
-         },
-         "dependencyIndices": []
-       }
-     ]
-   }
-   ```
-
-2. **调用任务拆解接口**：
-
-   ```http
-   POST /api/knowledge/decomposeTask
-   Content-Type: application/json
-   
-   {
-     "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
-   }
-   ```
-
-3. **获取拆解后的任务列表**，然后可以根据任务列表进行后续处理。
-
-### 工作原理
-
-1. 系统将规则存储在向量数据库中
-2. 当收到问题时，系统使用向量搜索找到相似度高于阈值的规则
-3. 根据匹配的规则，系统从问题中提取参数（使用正则表达式）
-4. 系统生成具体任务，包括任务描述、查询模板、参数等
-5. 返回拆解后的任务列表
-
-这种方式允许系统根据预定义的规则模板，将自然语言问题转换为结构化的任务，便于后续执行和处理。
-
-根据代码分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
-
-
-
-
-
 # [待完成功能] ★★
 
-- 内存或其他模式的向量存储实现
+- 内存或其他模式的向量存储实现(例如ES和Redis也可以，参考 https://docs.spring.io/spring-ai/reference/api/vectordbs.html)
 - 完善任务和规则处理功能
-- 配套的前端实现：规则上传、结果展示...
+- MCP的调用
+- 多场景应用（人力成本、绩效...)
+- **配套的前端实现：规则上传、结果展示..**.
 
 
 
@@ -3416,6 +3601,9 @@ Content-Type: application/json
 # [文档梳理点]
 
 - 自然语义对话和大模型结合，基于规则和任务理解找到对应的方法进行处理
+- 多model使用
+- 多数据源
+- 多场景应用
 
 
 
@@ -3512,6 +3700,74 @@ Content-Type: application/json
 > **让大模型“先查资料再回答”**，通过向量数据库实现动态知识注入，解决 LLM 的知识滞后与幻觉问题，是构建企业级智能问答系统的核心技术之一。
 
 这种模式结合了 **传统信息检索**（向量搜索） 与 **生成式 AI**（LLM） 的优势，是当前 RAG 架构的标准实践。
+
+
+
+
+
+# [相关资料]
+
+## SpringAI-官方文档
+
+https://docs.spring.io/spring-ai/reference/api/vectordbs/elasticsearch.html
+
+### VectorStore 实现
+
+这些是该接口的可用实现`VectorStore`：
+
+- [Azure Vector Search](https://docs.spring.io/spring-ai/reference/api/vectordbs/azure.html) - The [Azure](https://learn.microsoft.com/en-us/azure/search/vector-search-overview) vector store.
+- [Apache Cassandra](https://docs.spring.io/spring-ai/reference/api/vectordbs/apache-cassandra.html) - The [Apache Cassandra](https://cassandra.apache.org/doc/latest/cassandra/vector-search/overview.html) vector store.
+- [Chroma Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/chroma.html) - The [Chroma](https://www.trychroma.com/) vector store.
+- [Elasticsearch Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/elasticsearch.html) - The [Elasticsearch](https://www.elastic.co/) vector store.
+- [GemFire Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/gemfire.html) - The [GemFire](https://tanzu.vmware.com/content/blog/vmware-gemfire-vector-database-extension) vector store.
+- [MariaDB Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/mariadb.html) - The [MariaDB](https://mariadb.com/) vector store.
+- [Milvus Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/milvus.html) - The [Milvus](https://milvus.io/) vector store.
+- [MongoDB Atlas Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/mongodb.html) - The [MongoDB Atlas](https://www.mongodb.com/atlas/database) vector store.
+- [Neo4j Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/neo4j.html) - The [Neo4j](https://neo4j.com/) vector store.
+- [OpenSearch Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/opensearch.html) - The [OpenSearch](https://opensearch.org/platform/search/vector-database.html) vector store.
+- [Oracle Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/oracle.html) - The [Oracle Database](https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/overview-ai-vector-search.html) vector store.
+- [PgVector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/pgvector.html) - The [PostgreSQL/PGVector](https://github.com/pgvector/pgvector) vector store.
+- [Pinecone Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/pinecone.html) - [PineCone](https://www.pinecone.io/) vector store.
+- [Qdrant Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/qdrant.html) - [Qdrant](https://www.qdrant.tech/) vector store.
+- [Redis Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/redis.html) - The [Redis](https://redis.io/) vector store.
+- [SAP Hana Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/hana.html) - The [SAP HANA](https://news.sap.com/2024/04/sap-hana-cloud-vector-engine-ai-with-business-context/) vector store.
+- [Typesense Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/typesense.html) - The [Typesense](https://typesense.org/docs/0.24.0/api/vector-search.html) vector store.
+- [Weaviate Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/weaviate.html) - The [Weaviate](https://weaviate.io/) vector store.
+- [SimpleVectorStore](https://github.com/spring-projects/spring-ai/blob/main/spring-ai-vector-store/src/main/java/org/springframework/ai/vectorstore/SimpleVectorStore.java) - A simple implementation of persistent vector storage, good for educational purposes.
+
+
+
+- [Azure 矢量搜索](https://docs.spring.io/spring-ai/reference/api/vectordbs/azure.html)- [Azure](https://learn.microsoft.com/en-us/azure/search/vector-search-overview)矢量存储。
+- [Apache Cassandra](https://docs.spring.io/spring-ai/reference/api/vectordbs/apache-cassandra.html) - [Apache Cassandra](https://cassandra.apache.org/doc/latest/cassandra/vector-search/overview.html)矢量存储。
+- [Chroma 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/chroma.html)- [Chroma](https://www.trychroma.com/)矢量存储。
+- [Elasticsearch 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/elasticsearch.html)- [Elasticsearch](https://www.elastic.co/)矢量存储。
+- [GemFire 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/gemfire.html)- [GemFire](https://tanzu.vmware.com/content/blog/vmware-gemfire-vector-database-extension)矢量商店。
+- [MariaDB 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/mariadb.html)- [MariaDB](https://mariadb.com/)矢量存储。
+- [Milvus 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/milvus.html)- [Milvus](https://milvus.io/)矢量商店.
+- [MongoDB Atlas 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/mongodb.html)- [MongoDB Atlas](https://www.mongodb.com/atlas/database)矢量存储。
+- [Neo4j 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/neo4j.html)- [Neo4j](https://neo4j.com/)矢量存储。
+- [OpenSearch 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/opensearch.html)- [OpenSearch](https://opensearch.org/platform/search/vector-database.html)矢量存储。
+- [Oracle Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/oracle.html) - [Oracle 数据库](https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/overview-ai-vector-search.html)矢量存储。
+- [PgVector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/pgvector.html) - [PostgreSQL/PGVector](https://github.com/pgvector/pgvector)矢量存储。
+- [Pinecone 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/pinecone.html)- [PineCone](https://www.pinecone.io/)矢量商店。
+- [Qdrant 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/qdrant.html)- [Qdrant](https://www.qdrant.tech/)矢量存储。
+- [Redis 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/redis.html)- [Redis](https://redis.io/)矢量存储。
+- [SAP Hana 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/hana.html)- [SAP HANA](https://news.sap.com/2024/04/sap-hana-cloud-vector-engine-ai-with-business-context/)矢量存储。
+- [Typesense 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/typesense.html)- [Typesense](https://typesense.org/docs/0.24.0/api/vector-search.html)矢量商店。
+- [Weaviate 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/weaviate.html)- [Weaviate](https://weaviate.io/)矢量商店。
+- [SimpleVectorStore](https://github.com/spring-projects/spring-ai/blob/main/spring-ai-vector-store/src/main/java/org/springframework/ai/vectorstore/SimpleVectorStore.java) - 持久向量存储的简单实现，适合教育目的。
+
+未来版本可能会支持更多实现。
+
+如果您有一个需要 Spring AI 支持的矢量数据库，请在 GitHub 上打开一个问题，或者更好的是，提交一个带有实现的拉取请求。
+
+有关每种`VectorStore`实现方式的信息可在本章的小节中找到。
+
+
+
+
+
+
 
 
 

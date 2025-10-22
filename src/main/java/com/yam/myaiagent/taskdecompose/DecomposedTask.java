@@ -124,7 +124,12 @@ public class DecomposedTask {
         /**
          * Function Call工具调用
          */
-        FUNCTION_CALL
+        FUNCTION_CALL,
+
+        /**
+         * 代码分析
+         */
+        CODE_ANALYSIS
     }
     
     /**
@@ -178,6 +183,8 @@ public class DecomposedTask {
                 return "MCP工具调用";
             case FUNCTION_CALL:
                 return "Function Call工具调用";
+            case CODE_ANALYSIS:
+                return "代码分析";
             default:
                 return "未知类型";
         }

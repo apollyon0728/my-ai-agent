@@ -50,7 +50,7 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
     @Resource
-    @Qualifier("pgVectorVectorStore")  // 或 "loveAppVectorStore"
+    @Qualifier("pgVectorVectorStore")
     private VectorStore vectorStore;
 
     @Resource
@@ -527,7 +527,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         String customPrompt = generateCustomPromptFromQuestion(question, analysisInstruction);
         summaryPrompt.append(customPrompt);
         
-        // 4. 使用模型生成最终回答
+        // FIXME 4. 使用模型生成最终回答 （选择执行的模型，默认为阿里云模型）
         String chatId = UUID.randomUUID().toString();
         IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
         ChatClient dynamicChatClient = strategy.getChatClient();

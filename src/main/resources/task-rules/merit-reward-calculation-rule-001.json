@@ -1,0 +1,80 @@
+{
+  "ruleId": "merit-reward-calculation-rule-001",
+  "businessId": "MeritRewardV5",
+  "ruleName": "绩效奖励计算规则",
+  "description": "用于分析绩效奖励脚本(MeritRewardV5.groovy)中计算amount值的各个环节，包括SQL查询和计算过程",
+  "matchPatterns": [
+    "绩效奖励.*计算",
+    "绩效奖励.*金额",
+    "MeritReward.*计算",
+    "performance.*reward.*calculation"
+  ],
+  "matchType": "SEMANTIC",
+  "threshold": 0.75,
+  "taskTemplates": [
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 1,
+      "descriptionTemplate": "根据ERP查询用户绩效奖励数据",
+      "queryTemplate": "select sum(expense_cost) as amt from performance_reward_user where business_day = '{{business_day}}' and erp = '{{erp}}' and source = 40",
+      "parameterMappings": {
+        "business_day": "business_day\\s*=\\s*['\"]?([^'\"\\s]+)['\"]?",
+        "erp": "erp\\s*=\\s*['\"]?([^'\"\\s]+)['\"]?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 2,
+      "descriptionTemplate": "根据岗位编码查询绩效奖励数据",
+      "queryTemplate": "select sum(expense_cost) / COUNT(id) AS amt from performance_reward_user where business_day = '{{business_day}}' and ps_code = '{{ps_code}}' AND position_name = '{{position_name}}' AND nature = '{{nature}}' and source = 40",
+      "parameterMappings": {
+        "business_day": "business_day\\s*=\\s*['\"]?([^'\"\\s]+)['\"]?",
+        "ps_code": "ps_code\\s*=\\s*['\"]?([^'\"\\s]+)['\"]?",
+        "position_name": "position_name\\s*=\\s*['\"]?([^'\"\\s]+)['\"]?",
+        "nature": "nature\\s*=\\s*['\"]?([^'\"\\s]+)['\"]?"
+      },
+      "dependencyIndices": [0]
+    },
+    {
+      "taskType": "CODE_ANALYSIS",
+      "priority": 3,
+      "descriptionTemplate": "分析非O岗位员工的绩效奖励计算逻辑",
+      "queryTemplate": "非O岗位员工计算逻辑：\n1. 获取当月考勤自然天数(totalNatureDaysCount)\n2. 获取考勤开始日期到业务日期相差的自然日天数(naturalDayCount)\n3. 计算日均值：lastAvg = (rewardAmount / totalNatureDaysCount).setScale(2, RoundingMode.UP)\n4. 应用封顶逻辑：供应链下OST人员，大件DC为800，其他为400\n5. 计算最终金额：amount = (lastAvg * naturalDayCount).setScale(2, RoundingMode.UP)\n6. 应用调整系数：amount = rewardAdjust(month, amount, MeritRewardAdjustEnum.LAST_MONTH_ACTUAL)",
+      "parameterMappings": {},
+      "dependencyIndices": [0, 1]
+    },
+    {
+      "taskType": "CODE_ANALYSIS",
+      "priority": 4,
+      "descriptionTemplate": "分析O岗位员工的绩效奖励计算逻辑",
+      "queryTemplate": "O岗位员工计算逻辑：\n1. 获取上月出勤天数(lastMonthAttendance)\n2. 获取当月出勤天数(currentAttendanceDay)\n3. 计算日均值：lastAvg = (rewardAmount / lastMonthAttendance).setScale(2, RoundingMode.UP)\n4. 应用封顶逻辑：供应链下OST人员，大件DC为800，其他为400\n5. 计算最终金额：amount = (lastAvg * currentAttendanceDay).setScale(2, RoundingMode.UP)\n6. 应用调整系数：amount = rewardAdjust(month, amount, MeritRewardAdjustEnum.LAST_MONTH_ACTUAL)",
+      "parameterMappings": {},
+      "dependencyIndices": [0, 1]
+    },
+    {
+      "taskType": "CODE_ANALYSIS",
+      "priority": 5,
+      "descriptionTemplate": "分析历史均值计算逻辑(兜底方案)",
+      "queryTemplate": "历史均值计算逻辑：\n1. 调用calculate方法获取历史均值\n2. 应用调整系数：amount = rewardAdjust(month, amount, MeritRewardAdjustEnum.PREVIOUS_MONTH_MEAN)",
+      "parameterMappings": {},
+      "dependencyIndices": [2, 3]
+    },
+    {
+      "taskType": "CODE_ANALYSIS",
+      "priority": 6,
+      "descriptionTemplate": "分析特殊岗位处理逻辑",
+      "queryTemplate": "特殊岗位处理逻辑：\n1. BG2037岗位直接返回0\n2. MPT人员考勤使用自然天逻辑\n3. 供应链下OST人员封顶逻辑",
+      "parameterMappings": {},
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "CODE_ANALYSIS",
+      "priority": 7,
+      "descriptionTemplate": "分析绩效奖励调整系数逻辑",
+      "queryTemplate": "绩效奖励调整系数逻辑：\n1. 从cfg_merit_coefficient表获取调整系数\n2. 应用调整系数：amount = (amount * adjust.getAdjustCoefficient()).setScale(2, RoundingMode.UP)",
+      "parameterMappings": {},
+      "dependencyIndices": [2, 3, 4]
+    }
+  ]
+}

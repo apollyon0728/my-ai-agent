@@ -170,23 +170,15 @@ public class DecomposedTask {
      * @return 任务类型的名称
      */
     public static String getTaskTypeName(TaskType taskType) {
-        switch (taskType) {
-            case SQL_QUERY:
-                return "SQL查询";
-            case API_CALL:
-                return "API调用";
-            case TEXT_GENERATION:
-                return "文本生成";
-            case DATA_ANALYSIS:
-                return "数据分析";
-            case MCP_TOOL:
-                return "MCP工具调用";
-            case FUNCTION_CALL:
-                return "Function Call工具调用";
-            case CODE_ANALYSIS:
-                return "代码分析";
-            default:
-                return "未知类型";
-        }
+        return switch (taskType) {
+            case SQL_QUERY -> "SQL查询";
+            case API_CALL -> "API调用";
+            case TEXT_GENERATION -> "文本生成";
+            case DATA_ANALYSIS -> "数据分析";
+            case MCP_TOOL -> "MCP工具调用";
+            case FUNCTION_CALL -> "Function Call工具调用";
+            case CODE_ANALYSIS -> "代码分析";
+            default -> "未知类型";
+        };
     }
 }

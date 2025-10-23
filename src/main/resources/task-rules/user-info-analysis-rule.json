@@ -1,0 +1,204 @@
+{
+  "ruleId": "user-info-analysis-rule-001",
+  "ruleName": "人员信息数据波动分析规则",
+  "description": "用于分析人员信息数据波动、离职时间过滤和数据源变化的任务拆解规则",
+  "matchPatterns": [
+    "人员.*数据.*波动",
+    "人员.*数量.*差异",
+    "离职.*过滤",
+    "数据源.*变化",
+    "user.*info.*analysis"
+  ],
+  "taskTemplates": [
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 1,
+      "descriptionTemplate": "查询不同业务日期的人员数据量，分析数据波动情况",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count, MAX(ts) AS max_ts, MIN(ts) AS min_ts FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} AND data_source = {{data_source}} GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 2,
+      "descriptionTemplate": "比较非国际部门不同日期人员数据量差异",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} AND data_source = {{data_source}} AND NOT (full_ps_code_name LIKE '京东集团-京东物流-美洲区%' OR full_ps_code_name LIKE '京东集团-京东物流-欧洲区%' OR full_ps_code_name LIKE '京东集团-京东物流-中东区%' OR full_ps_code_name LIKE '京东集团-京东物流-亚太区%') GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": [0]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 3,
+      "descriptionTemplate": "查询特定ERP在不同业务日期的数据情况",
+      "queryTemplate": "SELECT business_day, quit_action_date, quit_time, entry_time, t.* FROM user_info t WHERE business_day >= {{start_date}} AND erp = {{erp}} ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "erp": "erp\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": [0]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 4,
+      "descriptionTemplate": "分析数据源变化情况",
+      "queryTemplate": "SELECT business_day, data_source, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, data_source ORDER BY business_day, data_source",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 5,
+      "descriptionTemplate": "查找数据源发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN data_source ELSE NULL END) AS day1_source, MIN(CASE WHEN business_day = {{day2}} THEN data_source ELSE NULL END) AS day2_source FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_source != day2_source OR (day1_source IS NULL) != (day2_source IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [4]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 6,
+      "descriptionTemplate": "分析离职时间分布",
+      "queryTemplate": "SELECT business_day, CASE WHEN quit_time IS NULL THEN 'NULL' WHEN quit_time < {{period_start}} THEN 'BEFORE_PERIOD' WHEN quit_time >= {{period_start}} AND quit_time < {{period_end}} THEN 'CURRENT_PERIOD' ELSE 'FUTURE_PERIOD' END AS quit_time_category, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, quit_time_category ORDER BY business_day, quit_time_category",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "period_start": "quit_time\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|quit_time\\s*<\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "period_end": "quit_time\\s*<\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|quit_time\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 7,
+      "descriptionTemplate": "查找离职时间发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN quit_time ELSE NULL END) AS day1_quit, MIN(CASE WHEN business_day = {{day2}} THEN quit_time ELSE NULL END) AS day2_quit FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING (day1_quit IS NULL AND day2_quit IS NOT NULL) OR (day1_quit IS NOT NULL AND day2_quit IS NULL) OR (day1_quit != day2_quit)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [6]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 8,
+      "descriptionTemplate": "分析人员状态分布",
+      "queryTemplate": "SELECT business_day, status, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, status ORDER BY business_day, status",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 9,
+      "descriptionTemplate": "查找状态发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN status ELSE NULL END) AS day1_status, MIN(CASE WHEN business_day = {{day2}} THEN status ELSE NULL END) AS day2_status FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_status != day2_status OR (day1_status IS NULL) != (day2_status IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [8]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 10,
+      "descriptionTemplate": "分析部门层级分布",
+      "queryTemplate": "SELECT business_day, SUBSTRING_INDEX(full_ps_code, '.', 3) AS dept_level3, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, dept_level3 ORDER BY business_day, dept_level3",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 11,
+      "descriptionTemplate": "查找部门发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN full_ps_code ELSE NULL END) AS day1_dept, MIN(CASE WHEN business_day = {{day2}} THEN full_ps_code ELSE NULL END) AS day2_dept FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_dept != day2_dept OR (day1_dept IS NULL) != (day2_dept IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [10]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 12,
+      "descriptionTemplate": "分析用工性质分布",
+      "queryTemplate": "SELECT business_day, nature, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, nature ORDER BY business_day, nature",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 13,
+      "descriptionTemplate": "查找用工性质发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN nature ELSE NULL END) AS day1_nature, MIN(CASE WHEN business_day = {{day2}} THEN nature ELSE NULL END) AS day2_nature FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_nature != day2_nature OR (day1_nature IS NULL) != (day2_nature IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [12]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 14,
+      "descriptionTemplate": "查询特定日期范围内离职时间在指定日期之前的人员数量",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count FROM user_info t WHERE is_delete = 0 AND data_source = {{data_source}} AND business_day >= {{start_date}} AND quit_time <= {{quit_date}} GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "quit_date": "quit_time\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 15,
+      "descriptionTemplate": "查询特定日期范围内离职时间在指定日期之后的人员数量",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count FROM user_info t WHERE is_delete = 0 AND data_source = {{data_source}} AND business_day >= {{start_date}} AND quit_time >= {{quit_date}} GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "quit_date": "quit_time\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 16,
+      "descriptionTemplate": "查询某一天存在但次日不存在的人员数量",
+      "queryTemplate": "SELECT COUNT(1) FROM (SELECT * FROM user_info WHERE is_delete = 0 AND business_day = {{day1}} AND data_source = {{data_source}} AND erp NOT IN (SELECT erp FROM user_info WHERE is_delete = 0 AND business_day = {{day2}} AND data_source = {{data_source}})) a",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    }
+  ]
+}

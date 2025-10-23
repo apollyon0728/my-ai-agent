@@ -97,7 +97,7 @@ public class CompositeTaskExecutor extends AbstractTaskExecutor {
      * 默认任务执行器
      * 用于处理未注册类型的任务
      */
-    private class DefaultTaskExecutor extends AbstractTaskExecutor {
+    private static class DefaultTaskExecutor extends AbstractTaskExecutor {
         
         @Override
         protected DecomposedTask executeTask(DecomposedTask task) {

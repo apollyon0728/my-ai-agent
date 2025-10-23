@@ -1,0 +1,318 @@
+## MQ报文
+
+查看MQ主题为userInfoSnapshoot的报文信息
+
+https://taishan.jd.com/jmq/topic/detail?id=userInfoSnapshoot&topic=userInfoSnapshoot&namespace=&tab=archive&producerDetailVisible=0&consumerDetailVisible=0&JMQ_ENV=prod
+
+
+
+## 业务过滤规则
+
+考勤周期：举例9月21到10月21为10月考勤周期、10月21到11月21为11月考勤周期；
+
+考勤周期-离职时间过滤条件：例如当前为25年10月22号，人员离职时间为10月21离职属于11考勤周期会计算；如果离职时间为10月21号前离职的不会在11月考勤周期计算，这种属于10月考勤周期。
+
+
+
+## 通过代码分析
+
+通过分析UserInfoMQServiceImpl类中的dealMsg方法及其调用的其他方法，以下是用户数据不会被保存而是直接return的业务规则：
+
+1. 基础信息校验不通过 (checkBaseInfo方法)
+传递的用户信息为空（dto == null）
+数据来源不正确（!UserInfoDataSourceEnum.checkDataSource(dto.getDataSource)）
+ERP和用户编码同时为空（StringUtils.isEmpty(dto.getErp()) && StringUtils.isEmpty(dto.getUserCode())）
+用户ID和用户编码同时为空（StringUtils.isEmpty(dto.getUserId()) && StringUtils.isEmpty(dto.getUserCode())）
+部门编码或部门path为空（StringUtils.isEmpty(dto.getPsCode()) || StringUtils.isEmpty(dto.getFullPsCode())）
+部门不属于京东物流体系（dto.getFullPsCode().indexOf(OrgConstants.ORG_PREFIX) != 0 && !duccConfig.checkDeptFullPath(dto.getFullPsCode())）
+2. 高职级人员过滤 (checkLevelName方法)
+用户职级属于高职级人员（levelExcludeSet.contains(levelName)）
+高职级包括：M4、P12、P13、T12、T13、T14、T15（通过配置项hr.user.level.exclude注入）
+3. 离职日期校验不通过 (checkQuitDateWithinPeriod方法)
+当前业务日期为空（dto.getBusinessDay() == null）
+对于大PS和小PS数据源：
+状态不是在职（status != 1）且离职日期为空（dto.getQuitDate() == null）
+对于大PS：离职日期不在考勤周期内（!PeriodIdUtil.checkWithinPeriod(dto.getBusinessDay(), calendar.getTime())）
+对于大PS：离职原因不符合要求（!duccConfig.checkQuitReason(dto.getQuitReason())）
+对于小PS：离职日期不在考勤周期内（!PeriodIdUtil.checkWithinPeriod(dto.getBusinessDay(), dto.getQuitDate())）
+对于账号系统数据源：入职日期不在考勤周期内（!PeriodIdUtil.checkWithinPeriod(dto.getBusinessDay(), dto.getEntryDate())）
+4. 用工性质校验不通过 (checkNature方法)
+数据来源为空（StringUtils.isEmpty(dto.getDataSource())）
+对于大PS数据源：用工性质不符合要求（!NatureEnum.checkBigPsNature(dto.getNature())）
+大PS允许的用工性质：A、B、D、E、F、G、H、I、L、T、U
+对于小PS数据源：用工性质不符合要求（!NatureEnum.checkSmallPsNature(dto.getNature())）
+小PS允许的用工性质：K、G、N、O、P
+对于账号系统数据源：用工性质不符合要求（!NatureEnum.checkAccountNature(dto.getNature())）
+账号系统允许的用工性质：R、Q
+数据来源错误（不属于以上三种）
+5. 特殊标岗过滤 (checkSpecialStdPosition方法，已注释)
+虽然代码中已注释，但原本逻辑为：
+
+标岗编码在特殊标岗集合中（specialStdPosition.contains(dto.getStdPositionCode())）
+职位名称以"骑手"开头（StringUtils.startsWith(positionName,"骑手")）
+6. 异常情况
+处理人员信息过程中出现异常（try-catch块中捕获的异常）
+以上是dealMsg方法中所有可能导致用户数据不被保存的业务规则。
+
+
+
+### 现在主要发现3种情况
+
+1. 昨天数据人员离职时间为空，今天下发时补了离职时间，且离职时间10月20日前，属于上一个考勤周期，数据被过滤 （chenlujie）
+2. 属于大PS人员昨天下发了，今天没有下发，且京ME可以查到 zengzhiwen.15
+3. 业务日期20号属于小PS，21号属于大PS，22号又属于小PS；20号带着离职时间(2025-10-20)符合条件接收了， 21号先发了一条属于大PS不带离职时间被接收了，后续又发了一条属于小PS带离职时间被过滤了；
+  22号又变回小PS yxmashunfu.1 
+
+
+
+```sql
+-- 比较不同日期人员数据量差异，business_day为业务日期，count为人员数量，比较波动情况
+select business_day, count(1), max(ts), min(ts) from user_info
+where 
+is_delete = 0
+and business_day >= '2025-10-18'
+and data_source = 'BIG_PS'
+group by business_day
+
+
+-- 比较不同日期人员数据量差异，business_day为业务日期，count为人员数量，比较波动情况
+select business_day, count(1),max(ts),min(ts) from user_info
+where 
+is_delete = 0
+and data_source = 'BIG_PS'
+and business_day in ('2025-10-20','2025-10-21','2025-10-22')
+group by business_day
+
+
+-- 比较非国际部门不同日期人员数据量差异，business_day为业务日期，count为人员数量，比较波动情况
+select business_day, count(1) from user_info
+where 
+is_delete = 0
+and business_day >= '2025-10-20'
+and data_source = 'BIG_PS'
+AND NOT (
+    full_ps_code_name LIKE '京东集团-京东物流-美洲区%' OR
+    full_ps_code_name LIKE '京东集团-京东物流-欧洲区%' OR
+    full_ps_code_name LIKE '京东集团-京东物流-中东区%' OR
+    full_ps_code_name LIKE '京东集团-京东物流-亚太区%'
+)
+group by business_day
+
+
+-- 查看某一个ERP在业务日期中数据差异，或是否存在该ERP的数据
+select business_day, quit_action_date,quit_time,entry_time, t.* from user_info t
+where business_day >= '2025-10-20'
+and erp = 'yxmashunfu.1'
+
+
+select business_day, erp, count(1) from user_info
+where 
+is_delete = 0
+and business_day = '2025-10-20'
+and data_source = 'BIG_PS'
+group by business_day, erp
+having count(1) > 0
+
+select count(1) from (
+    select * from user_info
+    where 
+    is_delete = 0
+    and business_day = '2025-10-21'
+    and data_source = 'BIG_PS'
+    and erp not in (
+        select erp from user_info
+        where 
+        is_delete = 0
+        and business_day = '2025-10-22'
+        and data_source = 'BIG_PS'
+    )
+) a
+
+
+-- 查看离职时间
+select business_day, count(1) from user_info t
+where 
+is_delete = 0
+and data_source = 'BIG_PS'
+and business_day >= '2025-10-20'
+--and quit_time <= '2025-10-20'
+and quit_time >= '2025-10-20'
+group by business_day
+
+```
+
+
+
+
+
+## AI分析
+
+### MQ报文数据波动分析报告
+
+**问题总结**
+
+通过代码分析和SQL查询结果，我发现主要有三种情况导致人员数据在不同业务日期之间出现波动：
+
+1. **离职时间过滤问题**：当前业务日期下发的人员数据中，如果补充了离职时间且该离职时间属于上一个考勤周期，则该数据会被过滤掉
+2. **数据源切换问题**：同一人员在不同日期可能属于不同数据源(大PS/小PS)，导致应用不同的过滤规则
+3. **MQ消息下发不稳定**：有些人员在某天有数据下发，次日却没有下发
+
+ 
+
+**分析方向建议**
+
+为了更全面地分析人员数据波动情况，建议从以下几个维度进行深入分析：
+
+ 1. 数据源变化分析
+
+```sql
+-- 统计每天不同数据源的人员数量
+SELECT business_day, data_source, COUNT(1) AS user_count
+FROM user_info
+WHERE is_delete = 0 AND business_day >= '2025-10-18'
+GROUP BY business_day, data_source
+ORDER BY business_day, data_source;
+
+
+-- 查找数据源发生变化的人员
+SELECT erp, 
+       MIN(CASE WHEN business_day = '2025-10-21' THEN data_source ELSE NULL END) AS day1_source,
+       MIN(CASE WHEN business_day = '2025-10-22' THEN data_source ELSE NULL END) AS day2_source
+FROM user_info
+WHERE is_delete = 0 AND business_day IN ('2025-10-21', '2025-10-22') AND erp IS NOT NULL
+GROUP BY erp
+HAVING day1_source != day2_source OR (day1_source IS NULL) != (day2_source IS NULL);
+```
+
+ 2. 离职时间分析
+
+```sql
+-- 分析离职时间分布
+SELECT 
+    business_day,
+    CASE 
+        WHEN quit_time IS NULL THEN 'NULL'
+        WHEN quit_time < '2025-10-21' THEN 'BEFORE_PERIOD'
+        WHEN quit_time >= '2025-10-21' AND quit_time < '2025-11-21' THEN 'CURRENT_PERIOD'
+        ELSE 'FUTURE_PERIOD'
+    END AS quit_time_category,
+    COUNT(1) AS user_count
+FROM user_info
+WHERE is_delete = 0 AND business_day >= '2025-10-20'
+GROUP BY business_day, quit_time_category
+ORDER BY business_day, quit_time_category;
+
+-- 查找离职时间发生变化的人员
+SELECT erp, 
+       MIN(CASE WHEN business_day = '2025-10-20' THEN quit_time ELSE NULL END) AS day1_quit,
+       MIN(CASE WHEN business_day = '2025-10-21' THEN quit_time ELSE NULL END) AS day2_quit
+FROM user_info
+WHERE is_delete = 0 AND business_day IN ('2025-10-20', '2025-10-21') AND erp IS NOT NULL
+GROUP BY erp
+HAVING (day1_quit IS NULL AND day2_quit IS NOT NULL) OR 
+       (day1_quit IS NOT NULL AND day2_quit IS NULL) OR
+       (day1_quit != day2_quit);
+```
+
+ 3. 人员状态变化分析
+
+```sql
+-- 分析人员状态分布
+SELECT business_day, status, COUNT(1) AS user_count
+FROM user_info
+WHERE is_delete = 0 AND business_day >= '2025-10-20'
+GROUP BY business_day, status
+ORDER BY business_day, status;
+
+-- 查找状态发生变化的人员
+SELECT erp, 
+       MIN(CASE WHEN business_day = '2025-10-21' THEN status ELSE NULL END) AS day1_status,
+       MIN(CASE WHEN business_day = '2025-10-22' THEN status ELSE NULL END) AS day2_status
+FROM user_info
+WHERE is_delete = 0 AND business_day IN ('2025-10-21', '2025-10-22') AND erp IS NOT NULL
+GROUP BY erp
+HAVING day1_status != day2_status OR (day1_status IS NULL) != (day2_status IS NULL);
+```
+
+ 4. 部门变化分析
+
+```sql
+-- 分析部门层级分布
+SELECT business_day, 
+       SUBSTRING_INDEX(full_ps_code, '.', 3) AS dept_level3,
+       COUNT(1) AS user_count
+FROM user_info
+WHERE is_delete = 0 AND business_day >= '2025-10-20'
+GROUP BY business_day, dept_level3
+ORDER BY business_day, dept_level3;
+
+-- 查找部门发生变化的人员
+SELECT erp, 
+       MIN(CASE WHEN business_day = '2025-10-21' THEN full_ps_code ELSE NULL END) AS day1_dept,
+       MIN(CASE WHEN business_day = '2025-10-22' THEN full_ps_code ELSE NULL END) AS day2_dept
+FROM user_info
+WHERE is_delete = 0 AND business_day IN ('2025-10-21', '2025-10-22') AND erp IS NOT NULL
+GROUP BY erp
+HAVING day1_dept != day2_dept OR (day1_dept IS NULL) != (day2_dept IS NULL);
+```
+
+ 5. 用工性质分析
+
+```sql
+-- 分析用工性质分布
+SELECT business_day, nature, COUNT(1) AS user_count
+FROM user_info
+WHERE is_delete = 0 AND business_day >= '2025-10-20'
+GROUP BY business_day, nature
+ORDER BY business_day, nature;
+
+-- 查找用工性质发生变化的人员
+SELECT erp, 
+       MIN(CASE WHEN business_day = '2025-10-21' THEN nature ELSE NULL END) AS day1_nature,
+       MIN(CASE WHEN business_day = '2025-10-22' THEN nature ELSE NULL END) AS day2_nature
+FROM user_info
+WHERE is_delete = 0 AND business_day IN ('2025-10-21', '2025-10-22') AND erp IS NOT NULL
+GROUP BY erp
+HAVING day1_nature != day2_nature OR (day1_nature IS NULL) != (day2_nature IS NULL);
+```
+
+ 
+
+**解决方案建议**
+
+1. **考勤周期过滤逻辑优化**：
+   - 修改 `checkQuitDateWithinPeriod` 方法，确保离职时间判断逻辑符合业务预期
+   - 考虑在数据处理前增加日志记录，记录被过滤的原因和详细信息
+
+2. **数据源一致性处理**：
+   - 对于同一人员在不同日期出现不同数据源的情况，建立统一的处理规则
+   - 考虑在系统中增加数据源变更的监控和告警机制
+
+3. **MQ消息监控**：
+   - 建立MQ消息监控系统，监控每日下发的消息数量和质量
+   - 对于未下发数据的人员，建立补偿机制
+
+4. **数据一致性校验**：
+   - 定期执行数据一致性校验任务，比较不同日期的人员数据
+   - 对于发现的异常数据，建立自动修复或人工干预的流程
+
+5. **业务规则文档化**：
+   - 将所有数据过滤规则清晰文档化，便于业务人员理解和排查问题
+   - 对规则变更进行版本管理和变更影响分析
+
+通过以上分析和建议，可以帮助更好地理解和解决人员数据在不同业务日期之间的波动问题，提高数据的准确性和一致性。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

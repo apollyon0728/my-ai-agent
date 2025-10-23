@@ -3182,7 +3182,7 @@ My：提问时只输入“建表”，然后给我生成了java代码，包括co
 
 您提到的功能是通过RAG（检索增强生成）技术实现的，整个流程如下：
 
-## 1. 核心工作流程
+**核心工作流程**
 
 1. **文档上传与向量化**
    - 通过`uploadMarkdownDocument`方法将"【大模型】-优化后的提问模板.mkd"上传到系统
@@ -3193,7 +3193,9 @@ My：提问时只输入“建表”，然后给我生成了java代码，包括co
    - 使用`QuestionAnswerAdvisor`从向量数据库中检索相关内容
    - 将检索到的内容与用户问题一起发送给大模型生成回答
 
-## 2. 关键技术组件
+
+
+**关键技术组件**
 
 - **Controller层**：`KnowledgeBaseController`处理HTTP请求，调用`askQuestionNew`方法
 - **Service层**：`KnowledgeBaseServiceImpl`实现业务逻辑，包含`getAnswerNew`方法
@@ -3201,7 +3203,9 @@ My：提问时只输入“建表”，然后给我生成了java代码，包括co
 - **向量检索**：`pgVectorVectorStore`从PostgreSQL中检索相关文档
 - **大模型调用**：通过`ChatClient`和`IChatModelStrategy`动态选择并调用不同的大模型
 
-## 3. 代码生成原理
+
+
+**代码生成原理**
 
 当用户输入"建表"时：
 
@@ -3210,7 +3214,9 @@ My：提问时只输入“建表”，然后给我生成了java代码，包括co
 3. 大模型根据检索到的内容（包含MySQL表结构和生成要求）生成完整的Java代码
 4. 生成的代码包括实体类、Controller、Service接口及实现、Mapper接口及XML文件
 
-## 4. 技术亮点
+
+
+**技术亮点**
 
 - **多模型支持**：通过`modelStrategyMap`支持不同大模型（alibaba、deepseek等）
 - **查询优化**：使用`RewriteQueryTransformer`提高检索质量
@@ -3221,366 +3227,17 @@ My：提问时只输入“建表”，然后给我生成了java代码，包括co
 
 
 
+## 生成规则文件
 
+### 绩效奖励规则
 
-### {question_answer_context}
+为MeritRewardV5.groovy脚本生成 "ruleId": "performance-reward-rule-001",格式相同的文件，用于AI智能分析问题，提取groovy脚本中计算amount值的相关环节，例如SQL查询语句，包括将Mybatis对应的转义成SQL，以及计算过程
 
-Given the context and provided history information and not prior knowledge,
-reply to the user comment. If the answer is not in the context, inform
-the user that you can't answer the question.
 
-2025-10-19T14:16:47.758+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.yam.myaiagent.advisor.MyLoggerAdvisor  : AI Response: 根据提供的MySQL表结构，我将为您生成对应的Java后端代码结构（实体类、Controller、Service、MyBatis Mapper接口及XML文件）。以下是代码实现：
 
-1. 实体类 (Entity)
+### 人员数量校验规则
 
-```java
-package com.example.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-import lombok.Data;
-import java.util.Date;
-
-@Data
-@TableName("biz_package_material_detail")
-public class BizPackageMaterialDetail {
-    @TableId(type = IdType.AUTO)
-    private Long id;
-    
-    private String packageCode;
-    
-    private String sku;
-    
-    private Integer quantityRatio;
-    
-    @TableField(fill = FieldFill.INSERT)
-    private String createUser;
-    
-    @TableField(fill = FieldFill.INSERT)
-    private String createName;
-    
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-    
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updateUser;
-    
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updateName;
-    
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-    
-    @TableLogic
-    private Integer isDelete;
-    
-    @Version
-    private Integer sysVersion;
-    
-    private Date ts;
-}
-```
-
-2. Controller
-
-```java
-package com.example.controller;
-
-import com.example.entity.BizPackageMaterialDetail;
-import com.example.service.IBizPackageMaterialDetailService;
-import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
-import java.util.List;
-
-@RestController
-@RequestMapping("/package-material-detail")
-public class BizPackageMaterialDetailController {
-
-    @Resource
-    private IBizPackageMaterialDetailService service;
-
-    @PostMapping
-    public boolean save(@RequestBody BizPackageMaterialDetail entity) {
-        return service.save(entity);
-    }
-
-    @PutMapping
-    public boolean update(@RequestBody BizPackageMaterialDetail entity) {
-        return service.updateById(entity);
-    }
-
-    @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable Long id) {
-        return service.removeById(id);
-    }
-
-    @GetMapping("/{id}")
-    public BizPackageMaterialDetail getById(@PathVariable Long id) {
-        return service.getById(id);
-    }
-
-    @GetMapping("/list")
-    public List<BizPackageMaterialDetail> list() {
-        return service.list();
-    }
-}
-```
-
-3. Service接口及实现
-
-接口:
-
-```java
-package com.example.service;
-
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.entity.BizPackageMaterialDetail;
-
-public interface IBizPackageMaterialDetailService extends IService<BizPackageMaterialDetail> {
-}
-```
-
-实现类:
-
-```java
-package com.example.service.impl;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.entity.BizPackageMaterialDetail;
-import com.example.mapper.BizPackageMaterialDetailMapper;
-import com.example.service.IBizPackageMaterialDetailService;
-import org.springframework.stereotype.Service;
-
-@Service
-public class BizPackageMaterialDetailServiceImpl 
-    extends ServiceImpl<BizPackageMaterialDetailMapper, BizPackageMaterialDetail> 
-    implements IBizPackageMaterialDetailService {
-}
-```
-
-4. Mapper接口
-
-```java
-package com.example.mapper;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.entity.BizPackageMaterialDetail;
-
-public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMaterialDetail> {
-}
-```
-
-5. MyBatis XML映射文件
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.mapper.BizPackageMaterialDetailMapper">
-
-    <resultMap id="BaseResultMap" type="com.example.entity.BizPackageMaterialDetail">
-        <id column="id" property="id" />
-        <result column="package_code" property="packageCode" />
-        <result column="sku" property="sku" />
-        <result column="quantity_ratio" property="quantityRatio" />
-        <result column="create_user" property="createUser" />
-        <result column="create_name" property="createName" />
-        <result column="create_time" property="createTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="update_name" property="updateName" />
-        <result column="update_time" property="updateTime" />
-        <result column="is_delete" property="isDelete" />
-        <result column="sys_version" property="sysVersion" />
-        <result column="ts" property="ts" />
-    </resultMap>
-
-</mapper>
-```
-
-注意事项：
-
-1. 使用了Lombok简化代码
-2. 使用MyBatis-Plus注解简化CRUD操作
-3. 自动填充字段使用了MyBatis-Plus的字段填充功能
-4. 软删除使用@TableLogic注解
-5. 乐观锁使用@Version注解
-6. 表名和字段名映射使用MyBatis-Plus的默认策略（下划线转驼峰）
-
-如需调整任何部分或有其他需求，请告知。
-2025-10-19T14:16:47.759+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.y.m.s.impl.KnowledgeBaseServiceImpl    : getAnswerNew content: 根据提供的MySQL表结构，我将为您生成对应的Java后端代码结构（实体类、Controller、Service、MyBatis Mapper接口及XML文件）。以下是代码实现：
-
-1. 实体类 (Entity)
-
-```java
-package com.example.entity;
-
-import com.baomidou.mybatisplus.annotation.*;
-import lombok.Data;
-import java.util.Date;
-
-@Data
-@TableName("biz_package_material_detail")
-public class BizPackageMaterialDetail {
-    @TableId(type = IdType.AUTO)
-    private Long id;
-    
-    private String packageCode;
-    
-    private String sku;
-    
-    private Integer quantityRatio;
-    
-    @TableField(fill = FieldFill.INSERT)
-    private String createUser;
-    
-    @TableField(fill = FieldFill.INSERT)
-    private String createName;
-    
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-    
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updateUser;
-    
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updateName;
-    
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-    
-    @TableLogic
-    private Integer isDelete;
-    
-    @Version
-    private Integer sysVersion;
-    
-    private Date ts;
-}
-```
-
-2. Controller
-
-```java
-package com.example.controller;
-
-import com.example.entity.BizPackageMaterialDetail;
-import com.example.service.IBizPackageMaterialDetailService;
-import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
-import java.util.List;
-
-@RestController
-@RequestMapping("/package-material-detail")
-public class BizPackageMaterialDetailController {
-
-    @Resource
-    private IBizPackageMaterialDetailService service;
-
-    @PostMapping
-    public boolean save(@RequestBody BizPackageMaterialDetail entity) {
-        return service.save(entity);
-    }
-
-    @PutMapping
-    public boolean update(@RequestBody BizPackageMaterialDetail entity) {
-        return service.updateById(entity);
-    }
-
-    @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable Long id) {
-        return service.removeById(id);
-    }
-
-    @GetMapping("/{id}")
-    public BizPackageMaterialDetail getById(@PathVariable Long id) {
-        return service.getById(id);
-    }
-
-    @GetMapping("/list")
-    public List<BizPackageMaterialDetail> list() {
-        return service.list();
-    }
-}
-```
-
-3. Service接口及实现
-
-接口:
-
-```java
-package com.example.service;
-
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.entity.BizPackageMaterialDetail;
-
-public interface IBizPackageMaterialDetailService extends IService<BizPackageMaterialDetail> {
-}
-```
-
-实现类:
-
-```java
-package com.example.service.impl;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.entity.BizPackageMaterialDetail;
-import com.example.mapper.BizPackageMaterialDetailMapper;
-import com.example.service.IBizPackageMaterialDetailService;
-import org.springframework.stereotype.Service;
-
-@Service
-public class BizPackageMaterialDetailServiceImpl 
-    extends ServiceImpl<BizPackageMaterialDetailMapper, BizPackageMaterialDetail> 
-    implements IBizPackageMaterialDetailService {
-}
-```
-
-4. Mapper接口
-
-```java
-package com.example.mapper;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.entity.BizPackageMaterialDetail;
-
-public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMaterialDetail> {
-}
-```
-
-5. MyBatis XML映射文件
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.mapper.BizPackageMaterialDetailMapper">
-
-    <resultMap id="BaseResultMap" type="com.example.entity.BizPackageMaterialDetail">
-        <id column="id" property="id" />
-        <result column="package_code" property="packageCode" />
-        <result column="sku" property="sku" />
-        <result column="quantity_ratio" property="quantityRatio" />
-        <result column="create_user" property="createUser" />
-        <result column="create_name" property="createName" />
-        <result column="create_time" property="createTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="update_name" property="updateName" />
-        <result column="update_time" property="updateTime" />
-        <result column="is_delete" property="isDelete" />
-        <result column="sys_version" property="sysVersion" />
-        <result column="ts" property="ts" />
-    </resultMap>
-
-</mapper>
-```
-
-注意事项：
-
-1. 使用了Lombok简化代码
-2. 使用MyBatis-Plus注解简化CRUD操作
-3. 自动填充字段使用了MyBatis-Plus的字段填充功能
-4. 软删除使用@TableLogic注解
-5. 乐观锁使用@Version注解
-6. 表名和字段名映射使用MyBatis-Plus的默认策略（下划线转驼峰）
-
-如需调整任何部分或有其他需求，请告知。
 
 
 
@@ -3605,7 +3262,9 @@ public interface BizPackageMaterialDetailMapper extends BaseMapper<BizPackageMat
 - 多数据源
 - 多场景应用
 
+### 项目架构与文档梳理
 
+https://joyspace.jd.com/pages/ClP8VsDoQGRfs1mA9F5q
 
 
 

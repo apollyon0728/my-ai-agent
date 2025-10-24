@@ -105,7 +105,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         // FIXME 3. 按优先级排序
         tasks.sort(Comparator.comparingInt(DecomposedTask::getPriority));
 
-        log.info("问题拆解完成，共生成{}个任务", tasks.size());
+        log.info("VectorStoreTaskDecomposer decompose 问题拆解完成>>>>>，共生成{}个任务", tasks.size());
         return tasks;
     }
 

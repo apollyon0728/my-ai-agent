@@ -24,25 +24,25 @@ public class ChatModelConfig {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @PostConstruct
-    public void init() {
-        logger.info("=== ChatModelConfig初始化 ===");
-        logger.info("检查所有ChatModel Bean:");
-
-        String[] beanNames = applicationContext.getBeanNamesForType(ChatModel.class);
-        logger.info("找到 {} 个ChatModel Bean", beanNames.length);
-
-        try {
-            for (String beanName : beanNames) {
-                Object bean = applicationContext.getBean(beanName);
-                logger.info("Bean名称: {}, 类型: {}", beanName, bean.getClass().getName());
-            }
-        } catch (Exception e) {
-            logger.error("初始化ChatModelBeanTracker时发生错误: ", e);
-        }
-
-        logger.info("=== ChatModelConfig初始化完成 ===");
-    }
+    // [修复循环依赖异常] 移除 @PostConstruct，避免在 Bean 初始化阶段主动获取 ChatModel Bean
+    // public void init() {
+    //     logger.info("=== ChatModelConfig初始化 ===");
+    //     logger.info("检查所有ChatModel Bean:");
+    //
+    //     String[] beanNames = applicationContext.getBeanNamesForType(ChatModel.class);
+    //     logger.info("找到 {} 个ChatModel Bean", beanNames.length);
+    //
+    //     try {
+    //         for (String beanName : beanNames) {
+    //             Object bean = applicationContext.getBean(beanName);
+    //             logger.info("Bean名称: {}, 类型: {}", beanName, bean.getClass().getName());
+    //         }
+    //     } catch (Exception e) {
+    //         logger.error("初始化ChatModelBeanTracker时发生错误: ", e);
+    //     }
+    //
+    //     logger.info("=== ChatModelConfig初始化完成 ===");
+    // }
 
     @Bean(name = "alibabaChatModel")
     @Primary

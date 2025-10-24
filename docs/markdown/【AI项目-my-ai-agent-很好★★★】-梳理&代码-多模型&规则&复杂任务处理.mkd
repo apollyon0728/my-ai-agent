@@ -1,0 +1,3903 @@
+# 大模型账号
+
+## DeepSeek
+
+sk-8a57a59c50ab4ffca52852e26966974e
+
+https://platform.deepseek.com/api_keys
+
+## 模型细节
+
+| 模型                                                         | deepseek-chat                                                | deepseek-reasoner              |      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------ | ---- |
+| 模型版本                                                     | DeepSeek-V3.2-Exp （非思考模式）                             | DeepSeek-V3.2-Exp （思考模式） |      |
+| 上下文长度                                                   | 128K                                                         |                                |      |
+| 输出长度                                                     | 默认 4K，最大 8K                                             | 默认 32K，最大 64K             |      |
+| 功能                                                         | [Json Output](https://api-docs.deepseek.com/zh-cn/guides/json_mode) | 支持                           | 支持 |
+| [Function Calling](https://api-docs.deepseek.com/zh-cn/guides/function_calling) | 支持                                                         | 不支持(1)                      |      |
+| [对话前缀续写（Beta）](https://api-docs.deepseek.com/zh-cn/guides/chat_prefix_completion) | 支持                                                         | 支持                           |      |
+| [FIM 补全（Beta）](https://api-docs.deepseek.com/zh-cn/guides/fim_completion) | 支持                                                         | 不支持                         |      |
+| 价格                                                         | 百万tokens输入（缓存命中）                                   | 0.2元                          |      |
+| 百万tokens输入（缓存未命中）                                 | 2元                                                          |                                |      |
+| 百万tokens输出                                               | 3元                                                          |                                |      |
+
+
+
+**用量信息**
+
+https://platform.deepseek.com/usage
+
+
+
+## 阿里云
+
+百炼大模型
+
+https://bailian.console.aliyun.com/?tab=model#/api-key
+
+
+
+费用
+
+https://billing-cost.console.aliyun.com/fortune/billing-account
+
+| [通义千问](https://help.aliyun.com/zh/dashscope/developer-reference/api-details?disableWebsiteRedirect=true) | qwen-turbo | `模型API调用时按照输入、输出token数量分别进行计费：对于中文文本来说，千问模型的1个token平均对应1.5-1.8个汉字；对于英文文本来说，1个token通常对应一个单词或词根。` | `输入0.0003元/1,000 tokens 输出0.0006元/1,000 tokens` | `开通DashScope即获赠总计 1,000,000 tokens限时免费使用额度，有效期 30 天。 2024年9月19号0点之后开通DashScope有效期为180` |
+| ------------------------------------------------------------ | ---------- | ------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------ |
+|                                                              |            |                                                              |                                                       |                                                              |
+
+
+
+
+
+## PDF项目配置
+
+```yaml
+spring:
+  main:
+    allow-circular-references: true
+  profiles:
+    active: ${spring.profiles.active}
+  application:
+    name: jdlhr-ai-extract-${spring.profiles.active}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.170.223.156:3358/jdlhr_pdf?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true
+    username: hr
+    password: qwerasdf
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  ai:
+    chat:
+      client:
+        enabled: false #禁用原生ChatClient.Builder
+        observations:
+          log-prompt: true #开启日志记录，需注意敏感信息
+    openai:
+      api-key: false #springai必填项
+      base-url: false #springai必填项
+    model:
+      chat: jd #开启多model模式
+    chats:
+      - api-key: sk-wyinvzkkadhokbjqhknxyzsvvvjsgusdnibjutlnkctjkgue
+        base_url: https://api.siliconflow.cn
+        model-id: Siliconflow-Deepseek3.1
+        options:
+          completions-path: /v1/chat/completions
+          model: Pro/deepseek-ai/DeepSeek-V3.1
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: P22gd0rcA9pW0lWsMRDnmin3obJZfsTG
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-Pro-PRICE
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-Pro
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: P22gd0rcA9pW0lWsMRDnmin3obJZfsTG
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-750B-PRICE
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-750B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-750B-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-750B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-T1-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-T1
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-Pro-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-Pro
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-10B-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-10B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 9n7F95TwCNEB0C3NEuv2hWFkbk1SPEnc
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-470B-preview-0103-CRM
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-470B-preview-0103
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-750B
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-750B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+          extra_body:
+            chat_template_kwargs:
+              enable_thinking: false
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-T1
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-T1
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B-Pro
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B-Pro
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-10B
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-10B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-81B
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-81B
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: ah5eMAJLL2xPMF7uh2qnhXBWMXP7lfMM
+        base_url: http://api.chatrhino.jd.com/api
+        model-id: Chatrhino-470B-preview-0103
+        options:
+          completions-path: /v1/chat/completions
+          model: Chatrhino-470B-preview-0103
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 'NONE'
+        base_url: http://inference-internal.yanxi-cap.jd.com/inference/service-bcf4faliof
+        model-id: llm
+        options:
+          completions-path: /v1/chat/completions
+          model: llm
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 'NONE'
+        base_url: http://inference-internal.yanxi-cap.jd.com/inference/service-sgdh3ifzck
+        model-id: qwen2-72b
+        options:
+          completions-path: /v1/chat/completions
+          model: qwen2-72b
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+      - api-key: 26cc4102-26c9-4055-a527-47de0a9e3730
+        base_url: http://gpt-proxy.jd.com
+        model-id: DeepSeek-V3-0324-jdcloud-iaas
+        options:
+          completions-path: /v1/chat/completions
+          model: DeepSeek-V3-0324-jdcloud-iaas
+          n: 1
+          temperature: 0.2
+          max_tokens: 4096
+          top_p: 0.1
+          frequency_penalty: 0
+          presence_penalty: 0
+          stream: true
+          response_format:
+            type: json_object
+mybatis-plus:
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml  #指定sql映射文件
+  global-config:
+    db-config:
+      logic-delete-field: is_deleted # 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
+      logic-delete-value: 1 # 逻辑已删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    com.jd.jdlhr.pdf: INFO
+    org.springframework.ai.chat.client.advisor: DEBUG
+    #cn.aradin.easy.http: DEBUG
+aradin:
+  swagger:
+    base-package: com.jd.jdlhr.pdf.adapter.controller
+    ant-path:
+    title: PDF服务
+    description:
+    version: 1.0.0
+    enable: true
+    auth: false
+    contact-name: liuda17
+    contact-email: liuda17@jd.com
+    contact-url:
+    license:
+    license-url:
+    use-default-status: false
+
+ump:
+  jvm:
+    key: ${spring.application.name}.jvm.key
+
+jsf:
+  provider:
+    alias: ${spring.application.name}
+jme:
+  appKey: 0crYnMAOryq8mFFW1cnj
+  appSecret: T0xnqKpq65SiuQYrZBQL
+  openTeamId: 0960e2db2ef94636fc9b88316252338e
+
+server:
+  servlet:
+    jsp:
+      class-name: com.jd.security.tomcat.JDJspServlet
+      init-parameters:
+        enableJsp: false
+        xpoweredBy: false
+        springboot: true
+
+```
+
+
+
+
+
+
+
+# GIT
+
+https://github.com/apollyon0728/my-ai-agent
+
+
+
+https://github.com/apollyon0728/my-ai-agent.git
+
+## 项目介绍
+
+My AI Agent 是一个基于 Spring Boot 和 Spring AI 框架构建的智能代理服务，集成了现代大模型能力，提供对话记忆、多模态交互等功能。本项目通过整合阿里云灵积大模型服务，实现了智能化的人机交互体验，并支持基于 RAG（检索增强生成）的知识库问答能力。
+
+ 
+
+## 系统架构
+
+**项目采用模块化设计，主要包括：**
+
+- **核心服务模块**：基于 Spring Boot 的 Web 服务
+- **AI 对话模块**：集成 Spring AI 与阿里云大模型能力
+- **记忆持久化模块**：实现会话状态的本地文件持久化
+- **图像搜索服务**：独立的 MCP 服务模块
+- **知识库模块**：基于 PGVector 的向量数据库存储和检索服务
+- **智能代理模块**：实现 AI 自主决策和工具调用能力
+
+ 
+
+**核心功能**
+
+- ✅ **智能对话**：接入阿里云灵积模型，支持自然语言交互
+- ✅ **对话记忆**：基于文件系统的会话记忆持久化，保持上下文连贯性
+- ✅ **图像搜索**：独立模块支持基于图像的搜索功能
+- ✅ **智能代理**：
+  - 支持 AI 自主决策和任务规划
+  - 多轮对话中的工具调用能力
+  - 基于 ReAct 模式的推理和执行
+  - 灵活的工具注册和使用机制
+- ✅ **知识库问答**：
+  - 支持 Markdown 文档上传和管理
+  - 基于 RAG 技术的智能问答
+  - 使用 PGVector 进行高效的向量检索
+  - 支持文档的增删改查操作
+
+ 
+
+## 技术栈
+
+- **后端框架**：Spring Boot 3.4.x
+- **AI 框架**：Spring AI (1.0.0-M6.x)
+- **大模型接入**：
+  - 阿里云 DashScope SDK (2.19.1)
+  - Spring AI Alibaba (1.0.0-M6.1)
+  - Ollama 集成
+- **向量数据库**：
+  - PostgreSQL with pgvector 扩展
+  - Spring AI VectorStore 集成
+- **序列化工具**：Kryo
+- **构建工具**：Maven 3.9.9
+- **其他工具**：
+  - Hutool (5.8.37)
+  - Lombok
+- **运行环境**：Java 21
+
+
+
+## 快速开始
+
+**环境要求**
+
+- JDK 21+
+- Maven 3.9+
+- 阿里云账号和 API Key（用于灵积模型访问）
+
+ 
+
+**安装与运行**
+
+1. 克隆项目到本地
+
+```
+git clone https://github.com/your-username/my-ai-agent.git
+cd my-ai-agent
+```
+
+
+
+1. 配置环境变量
+
+```
+ 阿里云 API Key（必需）
+export ALIBABA_API_KEY=your_api_key_here
+```
+
+
+
+1. 构建项目
+
+```
+./mvnw clean package
+```
+
+
+
+1. 运行主应用
+
+```
+java -jar target/my-ai-agent-0.0.1-SNAPSHOT.jar
+```
+
+
+
+1. 运行图像搜索服务（可选）
+
+```
+cd my-image-search-mcp-server
+../mvnw spring-boot:run
+```
+
+
+
+**项目结构**
+
+```
+my-ai-agent/
+├── src/main/java/com/yam/myaiagent/
+│   ├── chatmemory/           对话记忆实现
+│   ├── constant/             常量定义
+│   ├── controller/           HTTP 接口控制器
+│   ├── service/              业务逻辑服务
+│   └── MyAiAgentApplication.java   应用入口
+├── my-image-search-mcp-server/     图像搜索服务模块
+├── .mvn/                    Maven 包装器配置
+├── pom.xml                  Maven 项目配置
+└── README.md                项目说明文档
+```
+
+
+
+**配置说明**
+
+主要配置项包括：
+
+- **聊天记忆存储路径**：默认为项目根目录下的 `/tmp` 文件夹
+- **模型参数**：可在应用配置中调整大模型的参数设置
+- **服务端口**：默认为 Spring Boot 标准端口 8080
+- **向量数据库配置**：
+  - PostgreSQL 连接信息
+  - pgvector 相关参数设置
+
+ 
+
+## API 接口
+
+ **健康检查**
+
+```json
+GET /health
+响应: "ok"
+```
+
+
+
+ **知识库管理接口**
+
+```json
+ 上传文档
+POST /api/knowledge/upload
+Content-Type: multipart/form-data
+
+ 获取文档列表
+GET /api/knowledge/documents
+
+ 删除文档
+DELETE /api/knowledge/documents/{documentId}
+
+ 知识库问答
+POST /api/knowledge/qa
+Content-Type: application/json
+{
+    "question": "您的问题"
+}
+```
+
+
+
+**高级特性**
+
+文件持久化对话记忆
+
+项目实现了基于 Kryo 序列化的文件持久化对话记忆机制，支持会话状态的保存与恢复，保证了对话的连贯性和上下文理解。
+
+ 智能代理系统
+
+- 基于 ReAct（Reasoning and Acting）模式的智能代理实现
+- 支持多轮对话中的自主决策和工具调用
+- 灵活的工具注册机制，支持动态扩展
+- 状态管理和执行流程控制
+- 支持流式输出和异步处理
+
+ 
+
+**图像搜索服务**
+
+独立的图像搜索模块采用 Spring AI MCP 服务架构，提供多模态交互能力。
+
+ RAG 知识库问答
+
+- 基于 PGVector 的高性能向量存储
+- 支持文档的语义检索和相关性排序
+- 智能查询重写优化检索效果
+- 支持多种文档格式的处理和向量化
+
+
+
+## swagger
+
+http://dev.jdl.com:8123/api/swagger-ui/index.html
+
+
+
+# 代码解读★★
+
+## [知识库服务实现类] ★★★
+
+KnowledgeBaseServiceImpl
+
+```java
+/**
+ * 功能：知识库服务实现类
+ * 日期：2025/5/19 20:56
+ */
+@Service
+@Slf4j
+public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
+
+
+    @Resource
+    @Qualifier("pgVectorVectorStore")  // 或 "loveAppVectorStore"
+    private VectorStore vectorStore;
+
+    @Resource
+    private LoveAppDocumentLoader documentLoader;
+
+
+    @Resource
+    private QueryRewriter queryRewriter;
+    @Resource
+    private VectorStore pgVectorVectorStore;
+
+    private static final String MARKDOWN_DIR = "docs/markdown/";
+
+
+    private final ChatClient chatClient;
+
+    private static final String SYSTEM_PROMPT_NORMAL = "你是一个AI助手，可以帮助用户解答各种问题。";
+
+    /**
+     * 初始化 ChatClient
+     *
+     * @param dashscopeChatModel
+     */
+    public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) {
+//        // 初始化基于文件的对话记忆
+//        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
+//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+        // 初始化基于内存的对话记忆
+        ChatMemory chatMemory = new InMemoryChatMemory();
+        chatClient = ChatClient.builder(dashscopeChatModel)
+                .defaultSystem(SYSTEM_PROMPT_NORMAL)
+                .defaultAdvisors(
+                        new MessageChatMemoryAdvisor(chatMemory),
+                        // 自定义日志 Advisor，可按需开启
+                        new MyLoggerAdvisor()
+//                        // 自定义推理增强 Advisor，可按需开启
+//                       ,new ReReadingAdvisor()
+                )
+                .build();
+    }
+
+    /**
+     * 上传Markdown文档到知识库
+     * @param file
+     */
+    @Override
+    public void uploadMarkdownDocument(MultipartFile file) {
+        try {
+            // 确保目录存在
+            Path dirPath = Paths.get(MARKDOWN_DIR);
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+
+            // 保存文件
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = dirPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath);
+
+            // 加载新文档并添加到向量存储
+            List<Document> documents = documentLoader.loadMarkdownByPath(String.valueOf(filePath.toFile()));
+            addDocuments(documents);
+        } catch (IOException e) {
+            throw new RuntimeException("文档上传失败", e);
+        }
+    }
+
+    @Override
+    public void addDocuments(List<Document> documents) {
+        vectorStore.add(documents);
+    }
+
+     /**
+     * 获取问题的回答
+     *
+     * @param message 用户输入的问题消息
+     * @return QAResponse 包含回答内容的响应对象
+     */
+    @Override
+    public QAResponse getAnswer(String message) {
+        String chatId = UUID.randomUUID().toString();
+
+        // FIXME 查询重写（主要作用是通过预定义的转换器优化或改写用户的查询语句）
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+
+        // 构建聊天请求并获取响应
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                // 使用改写后的查询
+                .user(rewrittenMessage)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                // 开启日志，便于观察效果
+                .advisors(new MyLoggerAdvisor())
+                // 应用 RAG 检索增强服务（基于 PgVector 向量存储）
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .call()
+                .chatResponse();
+
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+
+        QAResponse qaResponse = new QAResponse();
+        qaResponse.setAnswer(content);
+        return qaResponse;
+    }
+
+
+    @Override
+    public List<Document> getDocumentList() {
+        // 这里需要实现文档列表的获取逻辑
+        // 可以从文件系统或数据库中获取
+        return documentLoader.loadMarkdowns();
+    }
+
+    @Override
+    public void deleteDocument(String documentId) {
+
+    }
+
+    @Override
+    public void reloadAllDocuments() {
+
+    }
+}
+```
+
+
+
+这段代码是Spring Boot应用程序中的一个服务实现类，主要负责处理与知识库相关的操作，包括上传Markdown文档、添加文档到向量存储、获取问题的回答以及获取文档列表等功能。以下是对代码的详细解读：
+
+1. **类定义和注解**
+   - `@Service`：标记这个类是一个服务类。
+   - `@Slf4j`：使用Lombok提供的日志注解，简化日志记录。
+
+2. **成员变量和构造函数**
+   - `vectorStore`：向量存储，用于存储文档的向量表示。
+   - `documentLoader`：文档加载器，用于从文件系统中读取Markdown文档。
+   - `queryRewriter`：查询重写器，用于优化或改写用户的查询语句。
+   - `pgVectorVectorStore`：另一个向量存储，用于RAG检索增强服务。
+   - `chatClient`：Chat Client，用于与大模型进行对话。
+
+   在构造函数中，通过DI（Dependency Injection）方式获取必要的依赖，并初始化ChatClient。ChatClient的初始化包括设置默认系统提示消息和添加默认的Advisor（日志Advisor和消息ChatMemoryAdvisor）。
+
+3. **上传Markdown文档**
+   - `uploadMarkdownDocument(MultipartFile file)`：接收上传的Markdown文件，保存到指定目录，并加载新文档到向量存储中。
+
+4. **添加文档到向量存储**
+   - `addDocuments(List<Document> documents)`：将给定的文档列表添加到向量存储中。
+
+5. **获取问题的回答**
+   - `getAnswer(String message)`：接收用户输入的问题消息，通过ChatClient与大模型进行对话，获取回答内容并返回。
+
+   在这个方法中，首先对用户输入的消息进行查询重写，然后构建聊天请求并获取响应。ChatClient的调用过程中，使用了改写后的查询，并指定了聊天记忆的ID和检索大小。同时，开启了日志Advisor和RAG检索增强服务（基于PgVector向量存储）。
+
+6. **获取文档列表**
+   - `getDocumentList()`：从文件系统或数据库中获取文档列表。
+
+7. **删除文档**
+   - `deleteDocument(String documentId)`：删除指定ID的文档。
+
+8. **重新加载所有文档**
+   - `reloadAllDocuments()`：重新加载所有文档到向量存储中。
+
+大模型的选择在这个例子中并没有明确指定，但可以推测是使用了一个支持RAG（Retrieval-Augmented Generation）功能的对话大模型。RAG是一种结合检索和生成的技术，能够帮助大模型更好地理解和回答问题。通过向量存储（如PgVectorVectorStore）检索相关的文档，然后将这些文档作为上下文信息提供给大模型，增强了大模型的对话能力。
+
+
+
+### 用户查询进行重写优化
+
+```java
+package com.yam.myaiagent.rag;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.rag.Query;
+import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
+import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
+import org.springframework.stereotype.Component;
+
+/**
+ * 查询重写器
+ */
+@Component
+public class QueryRewriter {
+
+    private final QueryTransformer queryTransformer;
+
+    public QueryRewriter(ChatModel dashscopeChatModel) {
+        ChatClient.Builder builder = ChatClient.builder(dashscopeChatModel);
+        // 创建查询重写转换器
+        queryTransformer = RewriteQueryTransformer.builder()
+                .chatClientBuilder(builder)
+                .build();
+    }
+
+    /**
+     * 执行查询重写
+     * 这段代码的功能是执行查询重写：
+     * 1. 将输入的`prompt`字符串封装成`Query`对象
+     * 2. 调用`queryTransformer.transform()`方法对查询进行重写转换
+     * 3. 返回重写后的查询文本内容
+     * 主要作用是通过预定义的转换器优化或改写用户的查询语句。
+     * @param prompt 用户输入的查询
+     * @return  重写后的查询文本内容
+     */
+    public String doQueryRewrite(String prompt) {
+        Query query = new Query(prompt);
+        // 执行查询重写
+        Query transformedQuery = queryTransformer.transform(query);
+        // 输出重写后的查询
+        return transformedQuery.text();
+    }
+}
+
+```
+
+
+
+
+
+### advisor 检索增强生成
+
+`.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))` 这一行代码在大模型对话系统中扮演了**检索增强生成**（Retrieval-Augmented Generation, RAG）的关键角色。下面从作用、原理、技术栈和相关知识点几个方面进行重点解读：
+
+
+
+**一、作用：实现检索增强生成（RAG）**
+
+ 核心目标：
+在大模型（LLM）生成回答前，**先从外部知识库**（如企业文档、FAQ、数据库等）。
+
+ 为什么需要？
+- **大模型知识有限**：LLM 的训练数据截止于某个时间点，无法获取最新或私有信息。
+- **幻觉问题**：LLM 可能“编造”答案，尤其在面对专业或特定领域问题时。
+- **提升准确性与可信度**：通过引入真实、权威的上下文，使回答更可靠。
+
+
+
+**二、技术原理：RAG 工作流程**
+
+1. **用户提问** → `message`
+2. **查询重写**（可选）→ `rewrittenMessage`（提升检索效果）
+3. **向量化查询**：将 `rewrittenMessage` 通过嵌入模型（如 text-embedding-ada-002）转换为向量
+4. **向量检索**：在 `pgVectorVectorStore`（基于 PostgreSQL + pgvector 插件的向量数据库）中查找与查询向量最相似的 Top-K 文档片段
+5. **上下文注入**：将检索到的相关文档作为上下文（context）拼接到 prompt 中
+6. **大模型生成**：LLM 基于“问题 + 检索到的上下文”生成最终回答
+
+> **`QuestionAnswerAdvisor` 就是负责第 3–5 步的“顾问”（Advisor），它拦截对话流程，在调用 LLM 前动态注入检索结果。**
+
+
+
+**三、关键组件解析**
+
+ 1. `QuestionAnswerAdvisor`
+- 是一个自定义的 **Spring AI Advisor**（或类似框架中的拦截器）
+- 在 prompt 构建阶段介入，执行：
+  - 向量检索
+  - 构造 RAG prompt（如：“基于以下资料回答问题：{retrieved_docs}。问题：{query}”）
+- 通常封装了与向量数据库交互的逻辑
+
+ 2. `pgVectorVectorStore`
+- 基于 **PostgreSQL** 的向量存储扩展 [pgvector](https://github.com/pgvector/pgvector)
+- 支持高效相似性搜索（如余弦相似度、内积、欧氏距离）
+- 优点：与关系型数据共存、事务支持、易于部署维护
+- 存储内容通常是：文档分块 + 嵌入向量 + 元数据（如来源、时间）
+
+
+
+**四、相关知识点扩展**
+
+| 概念                                         | 说明                                                         |
+| -- |  |
+| **Embedding**                                | 将文本转换为高维向量，语义相近的文本向量距离更近             |
+| **Chunking**                                 | 将长文档切分为小段（chunks），便于向量化和检索               |
+| **Similarity Search**                        | 在向量空间中查找最接近查询向量的 Top-K 向量                  |
+| **Prompt Engineering for RAG**               | 设计 prompt 模板，引导 LLM 优先使用检索内容作答              |
+| **HyDE**（Hypothetical Document Embeddings） | 先让 LLM 生成假设答案，再用其向量检索，提升召回率（高级技巧） |
+| **Re-ranking**                               | 对初检结果用 Cross-Encoder 等模型二次排序，提升精度          |
+
+
+
+**五、实际效果示例**
+
+**用户问**：  
+> “我们公司最新的请假政策是什么？”
+
+**系统行为**：
+1. 查询重写为：“查询公司最新的员工请假政策”
+2. 向量检索命中 HR 手册中“2025年员工休假制度”片段
+3. LLM 接收到上下文：
+   ```
+   相关资料：
+   - 根据《2025年员工手册》第3章，年假为15天，病假需提供医院证明...
+   问题：我们公司最新的请假政策是什么？
+   ```
+4. LLM 基于资料生成准确回答，而非“根据我的训练数据……”
+
+
+
+**六、总结**
+
+`.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))` 的本质是：
+
+> **让大模型“先查资料再回答”**，通过向量数据库实现动态知识注入，解决 LLM 的知识滞后与幻觉问题，是构建企业级智能问答系统的核心技术之一。
+
+这种模式结合了 **传统信息检索**（向量搜索） 与 **生成式 AI**（LLM） 的优势，是当前 RAG 架构的标准实践。
+
+
+
+### KnowledgeBaseServiceImpl构造
+
+```java
+@Service
+@Slf4j
+public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
+
+	  ......
+
+    private static final String SYSTEM_PROMPT_NORMAL = "你是一个AI助手，可以帮助用户解答各种问题。";
+
+    /**
+     * 初始化 ChatClient
+     * 知识库服务实现类构造函数
+     * @param dashscopeChatModel 通义千问聊天模型实例，用于构建聊天客户端
+     */
+    public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) {
+      
+```
+
+
+
+**[GPT4.1] KnowledgeBaseServiceImpl implements KnowledgeBaseService 是一个接口实现，为什么里面还有一个public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) { 构造函数？ 这是如何初始化的**
+
+`KnowledgeBaseServiceImpl`是接口实现类，为什么还会有带参数的构造函数public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel)，它又是如何初始化的？Spring是支持通过构造函数自动注入依赖的（构造函数注入），只要有合适的Bean。要让解释更直观，应说明：当项目用@Component/@Service/@Repository等注解标记实现类时，Spring会自动扫描并注册为Bean，如果这个类只有一个构造函数（如带参数），Spring会自动查找并注入匹配类型的Bean。
+
+我可以进一步确认该类有无@Component/@Service注解（一般会有），以及ChatModel的Bean定义情况，为严谨起见，先查看KnowledgeBaseServiceImpl开头部分，验证注解及依赖注入细节。
+
+
+
+**确认了`KnowledgeBaseServiceImpl`类用`@Service`注解标记，说明它是Spring容器自动注册的Bean。只要类只有一个构造函数（如public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel)），Spring会自动查找容器中类型为`ChatModel`的Bean并通过构造函数注入，实现依赖注入**。这就是为什么接口实现类可以有带参数构造函数，且参数由Spring自动赋值，无需手动new。
+
+
+
+为让用户理解，可以补充Spring的构造器注入机制原理与适用场景。
+
+`KnowledgeBaseServiceImpl` 虽然是接口实现类，但因为被 [`@Service`](https://file+.sourcegraphstatic.com/main-resource-nonce?-132548863#) 注解标记，Spring 会自动扫描并注册为 Bean。对于有参数的构造函数（如 `public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel)`），Spring 框架采用**构造函数注入机制**：
+
+- Spring 容器在创建 Bean 时，会自动查找并调用唯一的构造函数（或者用 `@Autowired` 标记的构造函数）。
+
+- 如果构造函数有参数（如 `ChatModel dashscopeChatModel`），Spring 会自动查找容器中类型为 `ChatModel` 的 Bean，并传入该参数。
+
+- 只要项目中有 `ChatModel` 类型的 Bean（通常是通过配置类或 starter 自动装配），Spring 就能完成依赖注入，无需手动 new 或赋值。
+
+  
+
+**为什么可以这样用？**
+
+- Spring 推荐使用构造方法注入（Constructor Injection），这样可以确保依赖是不可变的、线程安全的，也便于单元测试和代码维护。
+- 如果有多个同类型 Bean，可以通过 `@Qualifier` 注解指定注入哪个 Bean。
+
+**总结：**
+
+- 有参数的构造函数是 Spring 推荐的依赖注入方式之一，Spring 会自动查找并注入参数所需的 Bean。
+- 你无需手动调用或 new，只需保证依赖的 Bean 已注册到容器即可。
+
+官方参考：[Spring官方文档-构造函数注入](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaboration.html#beans-constructor-injection)
+
+
+
+### ChatModel dashscopeChatModel 构建
+
+```java
+public KnowledgeBaseServiceImpl(ChatModel dashscopeChatModel) {
+```
+
+**`ChatModel dashscopeChatModel` 参数是通过 Spring Boot 的自动配置机制构建和初始化的**。具体过程如下：
+
+1. **依赖引入**：项目中引入了阿里云的 Spring AI 集成依赖：
+
+   ```xml
+   <dependency>
+       <groupId>com.alibaba.cloud.ai</groupId>
+       <artifactId>spring-ai-alibaba-starter</artifactId>
+       <version>1.0.0-M6.1</version>
+   </dependency>
+   ```
+
+2. **配置属性**：在 `application.yml` 中配置了阿里云 DashScope 的相关参数：
+
+   ```yaml
+   spring:
+     ai:
+       dashscope:
+         api-key: ${ALIBABA_API_KEY:sk-ad7748587a624bf89c711ea8d1157793}
+         chat:
+           options:
+             model: qwen-turbo-latest
+   ```
+
+3. **自动装配过程**：
+
+   - Spring Boot 启动时，`spring-ai-alibaba-starter` 会自动注册 `DashscopeChatModel` Bean
+   - 这个 Bean 会读取 `application.yml` 中的配置信息，包括 API Key 和模型名称
+   - 通过 Spring 的自动装配机制，这个 Bean 会被注入到需要它的地方
+
+4. **构造函数注入**：
+
+   - `KnowledgeBaseServiceImpl` 类的构造函数声明了对 `ChatModel` 类型的依赖
+   - Spring 容器会自动找到类型为 `ChatModel` 的 Bean（即自动配置的 `DashscopeChatModel`）
+   - 在创建 `KnowledgeBaseServiceImpl` 实例时，Spring 会将这个 Bean 作为参数传入构造函数
+
+这种方式是 Spring 依赖注入的标准模式，无需手动创建 `ChatModel` 实例，整个过程由 Spring Boot 的自动配置和依赖注入机制完成。
+
+
+
+### getAnswer ★★
+
+```java
+/**
+ * 获取问题的回答
+ *
+ * @param message 用户输入的问题消息
+ * @return QAResponse 包含回答内容的响应对象
+ */
+@Override
+public QAResponse getAnswer(String message) {
+    String chatId = UUID.randomUUID().toString();
+
+    // FIXME 查询重写（主要作用是通过预定义的转换器优化或改写用户的查询语句）
+    String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+
+    // 构建聊天请求并获取响应
+    ChatResponse chatResponse = chatClient
+            .prompt()
+            // 使用改写后的查询
+            .user(rewrittenMessage)
+            .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                    .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+            // 开启日志，便于观察效果
+            .advisors(new MyLoggerAdvisor())
+            // 应用 RAG 检索增强服务（基于 PgVector 向量存储）
+            .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+            .call()
+            .chatResponse();
+
+    String content = chatResponse.getResult().getOutput().getText();
+    log.info("content: {}", content);
+
+    QAResponse qaResponse = new QAResponse();
+    qaResponse.setAnswer(content);
+    return qaResponse;
+}
+```
+
+
+
+这段代码是Spring Boot应用程序中的一个服务方法，用于获取用户问题的回答。下面是对这段代码的详细解读：
+
+1. **获取问题的回答方法定义**
+   - `getAnswer(String message)`：接收一个字符串参数`message`，表示用户输入的问题消息。
+
+2. **生成唯一的聊天ID**
+   - `String chatId = UUID.randomUUID().toString();`：生成一个随机的UUID作为聊天的唯一ID。
+
+3. **查询重写**
+   - `String rewrittenMessage = queryRewriter.doQueryRewrite(message);`：使用`queryRewriter`实例对用户输入的消息进行查询重写。查询重写的目的是通过预定义的转换器优化或改写用户的查询语句，以便更好地匹配知识库中的信息。
+
+4. **构建聊天请求并获取响应**
+   - `ChatResponse chatResponse = chatClient.prompt().user(rewrittenMessage).advisors(...).call().chatResponse();`：使用`chatClient`实例构建聊天请求，并获取ChatResponse对象。
+     - `.prompt()`：开始一个新的对话。
+     - `.user(rewrittenMessage)`：设置用户输入的消息。
+     - `.advisors(...)`：添加Advisor（顾问）来增强对话过程。这里添加了三个Advisor：
+       - `spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId).param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)`：设置聊天记忆的ID和检索大小。
+       - `new MyLoggerAdvisor()`：添加自定义的日志Advisor，用于日志记录。
+       - `new QuestionAnswerAdvisor(pgVectorVectorStore)`：添加RAG检索增强服务的Advisor，基于PgVector向量存储进行检索。
+     - `.call()`：执行对话请求。
+     - `.chatResponse()`：获取ChatResponse对象。
+
+5. **提取回答内容**
+   - `String content = chatResponse.getResult().getOutput().getText();`：从ChatResponse对象中提取回答内容。
+
+6. **日志记录**
+   - `log.info("content: {}", content);`：使用Slf4j日志记录回答内容。
+
+7. **构建并返回QAResponse对象**
+   - `QAResponse qaResponse = new QAResponse();`：创建一个新的QAResponse对象。
+   - `qaResponse.setAnswer(content);`：将回答内容设置到QAResponse对象中。
+   - `return qaResponse;`：返回包含回答内容的QAResponse对象。
+
+总的来说，这段代码实现了与大模型的对话，通过查询重写、聊天记忆和RAG检索增强服务来优化对话过程，并最终返回用户问题的回答。
+
+
+
+## [多model选择]
+
+模型策略选择
+
+```java
+IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
+ChatClient dynamicChatClient = strategy.getChatClient();
+```
+
+
+
+### 配置文件
+
+配置阿里云模型 以及通过 OpenAI调用DeepSeek大模型
+
+```yaml
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    postgresql:
+#    jdbcUrl: jdbc:postgresql://localhost:5432/AI_Test
+      jdbcUrl: jdbc:postgresql://localhost:5433/AI_Test
+      username: zhengdan3
+      password:
+      driver-class-name: org.postgresql.Driver
+    mysql:
+      jdbcUrl: jdbc:mysql://10.170.223.156:3358/hr_cost_estimate_user?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: hr
+      password: qwerasdf
+      driver-class-name: com.mysql.cj.jdbc.Driver
+#      type: com.zaxxer.hikari.HikariDataSource
+#      hikari:
+#        minimum-idle: 5
+#        idle-timeout: 180000
+#        maximum-pool-size: 15
+#        auto-commit: true
+#        pool-name: MysqlHikariCP
+#        max-lifetime: 1800000
+#        connection-timeout: 30000
+  application:
+    name: my-ai-agent
+  profiles:
+    active: local
+  ai:
+    dashscope:
+      # Aliyun https://dashscope.console.aliyun.com/apiKey
+      api-key: ${ALIBABA_API_KEY:sk-ad7748587a624bf89c711ea8d1157793}
+      chat:
+        options:
+          model: qwen-turbo-latest
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:sk-8a57a59c50ab4ffca52852e26966974e}
+      base-url: https://api.deepseek.com/v1
+      chat:
+        options:
+          model: deepseek-chat
+    openai:
+#      api-key: sk-8a57a59c50ab4ffca52852e26966974e
+#      base-url: https://api.deepseek.com
+      api-key: 26cc4102-26c9-4055-a527-47de0a9e3730
+      base_url: http://gpt-proxy.jd.com
+#      api-key: sk-wyinvzkkadhokbjqhknxyzsvvvjsgusdnibjutlnkctjkgue
+#      base_url: https://api.siliconflow.cn
+      chat:
+        options:
+#          model: deepseek-chat
+          model: DeepSeek-V3-0324-jdcloud-iaas
+#          model: Pro/deepseek-ai/DeepSeek-V3.1
+
+#    ollama:
+#      base-url: http://localhost:11434
+#      chat:
+#        model: gemma3:1b
+
+#    mcp:
+#      client:
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8127
+##              timeout: 60000  # 设置超时时间为 60 秒
+#        stdio:
+#          servers-configuration: classpath:mcp-servers.json
+#    vectorstore:
+#      pgvector:
+#        index-type: HNSW
+#        dimensions: 1536
+#        distance-type: COSINE_DISTANCE
+#        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+# springdoc-openapi config
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.yam.myaiagent.controller
+# knife4j config
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+# searchAPI
+search-api:
+  api-key: xxx
+# 修改日志级别，查看 Spring AI 更多调用细节
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    com.yam.myaiagent.config: DEBUG
+```
+
+
+
+### IChatModelStrategy
+
+```java
+/**
+ * 大模型 ChatClient 策略接口
+ * 每个实现代表一种大模型（如阿里、DeepSeek等）
+ */
+public interface IChatModelStrategy {
+    /**
+     * 获取当前模型的 ChatClient
+     */
+    ChatClient getChatClient();
+}
+
+```
+
+
+
+```java
+/**
+ * OpenAI大模型策略实现
+ */
+@Component("openai")
+public class OpenAIChatModelStrategy implements IChatModelStrategy {
+
+    @Autowired
+    @Qualifier("openAIChatModel")
+    private ChatModel openAIChatModel;
+
+    private volatile ChatClient chatClient;
+
+    @Override
+    public ChatClient getChatClient() {
+        if (chatClient == null) {
+            synchronized (this) {
+                if (chatClient == null) {
+                    org.slf4j.LoggerFactory.getLogger(OpenAIChatModelStrategy.class).info(
+                        "初始化OpenAIChatModelStrategy的ChatClient，使用的模型类型: {}", 
+                        openAIChatModel != null ? openAIChatModel.getClass().getName() : "null");
+                    chatClient = ChatClient.builder(openAIChatModel).build();
+                }
+            }
+        }
+        return chatClient;
+    }
+}
+```
+
+
+
+
+
+## [工具注册]
+
+```java
+package com.yam.myaiagent.tools;
+
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbacks;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * 集中的工具注册类
+ */
+@Configuration
+public class ToolRegistration {
+
+
+    /**
+     * 获取所有可用的工具回调数组
+     *
+     * @return ToolCallback[] 包含所有已初始化工具的回调数组
+     */
+    @Bean
+    public ToolCallback[] allTools() {
+        // 初始化各种工具实例
+        // 创建文件操作工具实例，用于执行文件相关的操作
+        FileOperationTool fileOperationTool = new FileOperationTool();
+
+        // 创建网络搜索工具实例，用于执行网络搜索功能
+        WebSearchTool webSearchTool = new WebSearchTool();
+
+        // 创建网页抓取工具实例，用于从网页中提取数据
+        WebScrapingTool webScrapingTool = new WebScrapingTool();
+
+        // 创建资源下载工具实例，用于下载网络资源
+        ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
+
+        // 创建终端操作工具实例，用于执行系统终端命令
+        TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
+
+        // 创建PDF生成工具实例，用于生成PDF文档
+        PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
+
+        // 创建Markdown生成工具实例，用于生成Markdown格式文档
+        MarkdownGenerationTool markdownGenerationTool = new MarkdownGenerationTool();
+
+        // 创建天气搜索工具实例，用于查询天气信息
+        WeatherSearchTool weatherSearchTool = new WeatherSearchTool();
+
+        // 创建终止工具实例，用于结束程序执行
+        TerminateTool terminateTool = new TerminateTool();
+
+//        ShowFileDownloadURLTool showFileDownloadURLTool = new ShowFileDownloadURLTool();
+
+        // 将所有工具转换为回调数组并返回
+        return ToolCallbacks.from(
+//                showFileDownloadURLTool,
+                weatherSearchTool,
+                markdownGenerationTool,
+                fileOperationTool,
+                webSearchTool,
+                webScrapingTool,
+                resourceDownloadTool,
+                terminalOperationTool,
+                pdfGenerationTool,
+                terminateTool
+        );
+    }
+
+}
+
+```
+
+
+
+
+
+## [任务拆解]★★
+
+```java
+/**
+ * 拆解任务
+ * @param request 包含问题的请求
+ * @return 拆解后的任务列表
+ */
+@PostMapping("/decomposeTask")
+public ResponseEntity<List<DecomposedTask>> decomposeTask(@RequestBody QARequest request) {
+    List<DecomposedTask> tasks = knowledgeBaseService.decomposeTask(request.getQuestion());
+    return ResponseEntity.ok(tasks);
+}
+```
+
+
+
+基于我查看的代码文件，我现在对系统的任务拆解功能有了全面的了解。现在我可以回答用户的问题，提供一个调用`decomposeTask`接口的例子，并解释是否需要先上传数据到向量库。
+
+关键发现：
+
+1. `decomposeTask`接口位于`KnowledgeBaseController`中，接收一个包含问题的`QARequest`对象，返回拆解后的任务列表
+2. 底层实现是通过`VectorStoreTaskDecomposer`类，它使用向量存储来匹配规则并生成任务
+3. 系统使用向量数据库存储任务拆解规则，通过语义相似度匹配来找到适合的规则
+4. 规则需要预先上传到向量库中，才能被系统用于任务拆解
+5. 规则的格式是JSON，包含匹配模式、任务模板等信息
+
+根据我对代码的分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
+
+
+
+**是否需要先上传数据到向量库**
+
+**是的，需要先上传任务拆解规则到向量库**。从代码实现来看，`VectorStoreTaskDecomposer`类使用向量存储来匹配规则并生成任务。当调用`decomposeTask`方法时，系统会在向量库中查找与问题语义相似的规则，然后根据这些规则生成具体任务。如果向量库中没有相关规则，将返回空的任务列表。
+
+上传规则的步骤：
+
+1. 准备规则JSON文件（参考`performance-reward-rule.json`的格式）
+
+2. 调用`/api/knowledge/taskRule`接口上传规则
+
+   
+
+**调用`decomposeTask`接口的示例**
+
+请求示例
+
+```http
+POST /api/knowledge/decomposeTask
+Content-Type: application/json
+
+{
+  "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
+}
+```
+
+响应示例
+
+```json
+[
+  {
+    "taskId": "task-001",
+    "description": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+    "taskType": "SQL_QUERY",
+    "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in (JD, TB) GROUP BY run_status_ext1, business_day, source order by business_day",
+    "parameters": {
+      "source": "JD, TB"
+    },
+    "priority": 1,
+    "dependencies": []
+  }
+]
+```
+
+
+
+**完整调用流程**
+
+1. **上传任务规则**（如果尚未上传）：
+
+   ```json
+   POST /api/knowledge/taskRule
+   Content-Type: application/json
+   
+   {
+     "ruleName": "绩效奖励成本项数据波动分析规则",
+     "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
+     "matchPatterns": [
+       "绩效奖励.*波动",
+       "绩效奖励.*数据.*分析",
+       "performance.*reward.*data"
+     ],
+     "taskTemplates": [
+       {
+         "taskType": "SQL_QUERY",
+         "priority": 1,
+         "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+         "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= DATE_FORMAT(date_sub(curdate(),interval 3 day), '%Y-%m-%d') and source in ({{source}}) GROUP BY run_status_ext1, business_day, source order by business_day",
+         "parameterMappings": {
+           "source": "source\\s+in\\s+\\(([^\\)]+)\\)"
+         },
+         "dependencyIndices": []
+       }
+     ]
+   }
+   ```
+
+2. **调用任务拆解接口**：
+
+   ```http
+   POST /api/knowledge/decomposeTask
+   Content-Type: application/json
+   
+   {
+     "question": "分析绩效奖励数据波动情况，source in (JD, TB)"
+   }
+   ```
+
+3. **获取拆解后的任务列表**，然后可以根据任务列表进行后续处理。
+
+### 工作原理
+
+1. 系统将规则存储在向量数据库中
+2. 当收到问题时，系统使用向量搜索找到相似度高于阈值的规则
+3. 根据匹配的规则，系统从问题中提取参数（使用正则表达式）
+4. 系统生成具体任务，包括任务描述、查询模板、参数等
+5. 返回拆解后的任务列表
+
+这种方式允许系统根据预定义的规则模板，将自然语言问题转换为结构化的任务，便于后续执行和处理。
+
+根据代码分析，我可以提供`decomposeTask`接口的调用示例，并解释是否需要先上传数据到向量库。
+
+
+
+## [向量存储]
+
+### 创建并配置vectorStore向量存储Bean
+
+PGVector 向量存储配置定义
+
+通过 application.yml 验证，项目有标准 spring.datasource 配置，说明 Spring Boot 会自动创建 DataSource、JdbcTemplate Bean。对于 EmbeddingModel，因 spring.ai.dashscope 配置存在，说明 Spring AI 相关 starter 也会根据配置自动注册 EmbeddingModel 类型的 Bean。两者都是通过 Spring Boot 自动装配机制生成，无需手写 Bean。
+
+还可以补充，**Spring 在调用 @Bean 方法时，会自动查找容器中类型匹配的 Bean 并注入参数。如果有多个同类型 Bean，还可以用 @Qualifier 指定。结论：这两个参数的 Bean 都由 Spring Boot 或相关 starter 自动生成并注册到容器，@Bean 方法参数只需声明类型即可自动注入，无需手动操作。**
+
+关于 `@Bean public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel)` 里的 `jdbcTemplate` 和 `dashscopeEmbeddingModel` 参数来源说明如下：
+
+1. **JdbcTemplate**
+   - 项目在 [`application.yml`](https://file+.sourcegraphstatic.com/main-resource-nonce?288809961#) 已配置了 `spring.datasource`，Spring Boot 会自动根据此配置创建 `DataSource` Bean。
+   - Spring Boot 框架检测到有 `DataSource` 后，会自动创建 `JdbcTemplate` Bean 并注册到容器中。
+   - 因此，`JdbcTemplate` 可以直接作为参数被 Spring 自动注入到 `@Bean` 方法。
+2. **EmbeddingModel dashscopeEmbeddingModel**
+   - 配置文件里的 `spring.ai.dashscope` 部分由 Spring AI 相关 starter 自动识别。
+   - Spring AI starter 会根据配置自动创建适配 DashScope 的 `EmbeddingModel` Bean（通常命名为 `dashscopeEmbeddingModel` 或类似）。
+   - 只要依赖和配置正确，这个 Bean 会自动注册到容器，也能被注入到 `@Bean` 方法参数。
+3. **Spring 的自动装配机制**
+   - Spring 调用 `@Bean` 方法时，会自动查找容器中与参数类型（和名称）匹配的 Bean 注入，无需手动提供或 new。
+   - 如果容器中有多个同类型 Bean，可以用 `@Qualifier` 注解指定注入哪个。
+
+**总结：**
+
+- 这两个参数都是通过 Spring Boot（JdbcTemplate）和 Spring AI（EmbeddingModel）自动装配生成的 Bean。
+- 你只需在 `@Bean` 方法中直接声明参数类型，Spring 会负责自动传入，无需手动 new 或调用其他方法。
+
+如果依赖和 starter 配置齐全，这一切都是自动完成的。
+
+```java
+package com.yam.myaiagent.rag;
+
+import jakarta.annotation.Resource;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
+
+import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistanceType.COSINE_DISTANCE;
+import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
+
+/**
+ *  PGVector 向量存储配置
+ */
+
+@Configuration
+public class PgVectorVectorStoreConfig {
+
+    @Resource
+    private LoveAppDocumentLoader loveAppDocumentLoader;
+
+    /**
+     * 创建并配置PgVector向量存储Bean
+     *
+     * @param jdbcTemplate 数据库操作模板，用于执行SQL语句
+     * @param dashscopeEmbeddingModel 嵌入模型，用于将文本转换为向量表示
+     * @return 配置好的向量存储实例
+     */
+    @Bean
+    public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel) {
+        // 构建PgVector存储配置
+        VectorStore vectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
+                .dimensions(1536)                    // 可选：默认为模型维度或1536
+                .distanceType(COSINE_DISTANCE)       // 可选：默认为余弦距离
+                .indexType(HNSW)                     // 可选：默认为HNSW
+                .initializeSchema(true)              // 可选：默认为false
+                .schemaName("public")                // 可选：默认为"public"
+                .vectorTableName("vector_store")     // 可选：默认为"vector_store"
+                .maxDocumentBatchSize(10000)         // 可选：默认为10000
+                .build();
+        // 每次启动都会加载文档，加载一次即可
+//        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+//        vectorStore.add(documents);
+        return vectorStore;
+    }
+
+}
+```
+
+
+
+VectorStore配置类，用于创建和配置PgVector向量存储的Bean。下面是对代码中各个参数的详细解读：
+
+1. **pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel)**：这个方法接受两个参数：
+   - `JdbcTemplate jdbcTemplate`：数据库操作模板，用于执行SQL语句。
+   - `EmbeddingModel dashscopeEmbeddingModel`：嵌入模型，用于将文本转换为向量表示。
+
+2. **PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)**：使用Builder模式创建PgVector存储的配置对象。
+
+3. **.dimensions(1536)**：设置向量的维度。这里将维度设置为1536，可能是根据特定的嵌入模型或需求来选择的。
+
+4. **.distanceType(COSINE_DISTANCE)**：设置向量之间的距离计算方法。这里使用余弦距离（COSINE_DISTANCE），是常见的文本相似度计算方法。
+
+5. **.indexType(HNSW)**：设置向量存储的索引类型。这里使用HNSW（Hierarchical Navigable Small World）索引，适合高维向量空间中的近邻搜索。
+
+6. **.initializeSchema(true)**：设置是否在启动时初始化数据库模式。这里设置为true，表示每次启动都会初始化数据库模式。
+
+7. **.schemaName("public")**：设置数据库模式的名称。这里使用默认的"public"模式。
+
+8. **.vectorTableName("vector_store")**：设置向量表的名称。这里使用默认的"vector_store"表。
+
+9. **.maxDocumentBatchSize(10000)**：设置每次批量添加文档的最大数量。这里将其设置为10000。
+
+10. **.build()**：构建并返回配置好的向量存储实例。
+
+11. **// 每次启动都会加载文档，加载一次即可**：这是一条注释，表明每次应用程序启动时都会加载文档到向量存储中。因此，实际上不需要在这里加载文档。
+
+12. **List<Document> documents = loveAppDocumentLoader.loadMarkdowns();**：这行代码是被注释掉的，原本是用来加载Markdown文档的。loveAppDocumentLoader是一个自定义的文档加载器，用于从文件系统中读取Markdown文档并将其转换为Document对象。
+
+13. **vectorStore.add(documents);**：这行代码也是被注释掉的，原本是用来将加载的文档添加到向量存储中的。
+
+总的来说，这段代码配置了一个PgVector向量存储实例，并设置了相关的参数，包括向量维度、距离计算方法、索引类型等。这些参数会影响向量存储的性能和准确性。
+
+
+
+### 如何调整和优化vector参数
+
+**[GTP4.1] 如何调整和优化vector参数? **
+
+调整和优化vector参数可以根据具体的需求和场景进行。以下是一些常见的参数调整和优化建议：
+
+1. **向量维度（dimensions）**：
+   - 如果你发现向量太稀疏或过于密集，可以尝试调整维度。较高的维度可能会捕捉更多的细节，但也可能导致计算复杂性增加和过拟合的风险。
+   - 对于大多数NLP任务，维度在100到1000之间是常见的选择。
+
+2. **距离计算方法（distanceType）**：
+   - 余弦距离（COSINE_DISTANCE）通常用于文本相似度计算，因为它可以有效地处理高维向量。
+   - 欧几里得距离（EUCLIDEAN_DISTANCE）可能更适合一些其他类型的数据，例如图像或音频特征。
+
+3. **索引类型（indexType）**：
+   - HNSW（Hierarchical Navigable Small World）索引是目前最流行的选择，适合高维向量空间中的近邻搜索。
+   - 如果你需要更快的索引构建时间，可以尝试使用FLAT（Flat）索引，但这可能会牺牲一些查询性能。
+
+4. **初始化数据库模式（initializeSchema）**：
+   - 如果你在每次启动应用程序时都想重新初始化数据库模式，可以将其设置为true。
+   - 如果你只想在第一次启动时初始化数据库模式，或者已经有了一个预先创建的模式，可以将其设置为false。
+
+5. **数据库模式名称（schemaName）和向量表名称（vectorTableName）**：
+   - 这些参数可以根据你的数据库架构进行调整。确保使用的名称与你的数据库结构相匹配。
+
+6. **批量添加文档的最大数量（maxDocumentBatchSize）**：
+   - 这个参数影响向量存储的性能。较大的批量大小可以提高添加文档的效率，但也可能增加内存消耗和等待时间。
+   - 根据你的硬件资源和文档数量，选择一个合适的批量大小。
+
+7. **使用合适的嵌入模型**：
+   - 不同的嵌入模型可能会产生不同的向量表示。选择一个适合你任务的嵌入模型非常重要。
+   - 如果你使用的是预训练的嵌入模型，确保它与你的文本数据相匹配。
+
+8. **监控和评估性能**：
+   - 在调整参数后，监控向量存储的性能和准确性。
+   - 使用一些基准测试或评估指标来衡量你的模型的效果，例如精确率、召回率或F1分数。
+
+9. **考虑使用其他向量存储库**：
+   - 如果你发现PgVector不满足你的需求，可以考虑使用其他向量存储库，例如Faiss、Annoy或Hnswlib等。
+   - 不同的向量存储库可能有不同的优缺点和适用场景。
+
+总的来说，调整和优化vector参数需要根据具体的任务和数据进行实验和评估。没有一个通用的最佳配置，需要根据实际情况进行调整。
+
+
+
+### 上传Markdown文档到知识库-向量存储
+
+加载新文档并添加到向量存储 postgresSQL存储向量化数据
+
+```java
+/**
+ * 知识库控制器类
+ * 该类负责处理知识库相关的REST API请求，提供知识库的增删改查等操作接口。
+ * 所有接口都映射到"/api/knowledge"路径下。
+ */
+@RestController
+@RequestMapping("/api/knowledge")
+public class KnowledgeBaseController {
+  	
+  /**
+   * 上传Markdown文档到知识库
+   * （加载新文档并添加到向量存储 postgresSQL存储向量化数据）
+   */
+  @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file) {
+      knowledgeBaseService.uploadMarkdownDocument(file);
+      return ResponseEntity.ok("文档上传成功");
+  }
+  
+```
+
+
+
+**上传Markdown文档到知识库，写入到向量数据库中**
+
+- vectorStore.add(documents);
+
+PgVectorVectorStoreConfig中配置了vectorStore(org.springframework.ai.vectorstore)
+
+```java
+/**
+ * 功能：知识库服务实现类
+ * 日期：2025/5/19 20:56
+ */
+@Service
+@Slf4j
+public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
+
+  /**
+  * 上传Markdown文档到知识库
+  * @param file
+  */
+  @Override
+  public void uploadMarkdownDocument(MultipartFile file) {
+    try {
+        // 确保目录存在
+        Path dirPath = Paths.get(MARKDOWN_DIR);
+        if (!Files.exists(dirPath)) {
+            Files.createDirectories(dirPath);
+        }
+
+        // 保存文件
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path filePath = dirPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath);
+
+        // 加载新文档并添加到向量存储
+        List<Document> documents = documentLoader.loadMarkdownByPath(String.valueOf(filePath.toFile()));
+        addDocuments(documents);
+    } catch (IOException e) {
+        throw new RuntimeException("文档上传失败", e);
+    }
+  }
+
+  @Override
+  public void addDocuments(List<Document> documents) {
+    vectorStore.add(documents);
+  }
+```
+
+
+
+### PgVectorStore.similaritySearch
+
+在 Spring AI 中，当你使用 **`PgVectorStore`**（基于 PostgreSQL + pgvector 扩展）调用 `similaritySearch()` 方法时，底层会执行一条 **带向量相似度排序的 SQL 查询**，并结合可选的 **元数据过滤（metadata filter）** 和 **Top-K 限制**。
+
+下面我将从 **原理、SQL 语句、执行流程、索引优化** 四个方面详细说明其查询机制。
+
+---
+
+ 一、核心原理
+
+`similaritySearch(query)` 的执行流程如下：
+
+1. **将用户查询文本**（query）  
+   → 使用配置的 `EmbeddingModel`（如 OpenAI）生成一个向量（例如 1536 维）。
+
+2. **构造 SQL 查询语句**：  
+   - 在 `vector_store` 表中，计算每条记录的 `embedding` 与查询向量的**距离**（如余弦距离）。
+   - 按距离升序排序（越小越相似）。
+   - 可选：加上 `WHERE` 子句过滤 `metadata`。
+   - 限制返回前 K 条（默认 `topK=4`）。
+
+3. **执行查询并返回 `Document` 列表**。
+
+---
+
+ 二、实际生成的 SQL 示例
+
+假设：
+- 表名：`vector_store`
+- 查询文本向量：`[0.12, -0.45, ..., 0.89]`（1536 维）
+- 过滤条件：`metadata->>'type' = 'TASK_RULE'`
+- topK = 3
+- 使用 **余弦相似度**（对应 pgvector 的 `<=>` 操作符）
+
+ ✅ 生成的 SQL 类似于：
+
+```sql
+SELECT id, content, metadata, embedding
+FROM vector_store
+WHERE metadata->>'type' = 'TASK_RULE'
+ORDER BY embedding <=> '[0.12,-0.45,...,0.89]'::vector
+LIMIT 3;
+```
+
+> 🔔 注意：
+> - `<=>` 是 pgvector 提供的 **余弦距离操作符**（值越小越相似）
+> - 如果配置的是 `l2` 距离，则用 `<->`
+> - 如果是内积（inner product），用 `<>`
+
+这些由 Spring AI 根据 `application.yml` 中的 `index-metric` 自动选择。
+
+---
+
+ 三、关键配置影响查询行为
+
+在 `application.yml` 中：
+
+```yaml
+spring:
+  ai:
+    pgvector:
+      index-metric: cosine    决定使用 <=>（余弦）、<->（L2）还是 <>（内积）
+      embedding-dimension: 1536
+```
+
+| `index-metric`  | 向量距离操作符 | 说明                                           |
+| --------------- | -------------- | ---------------------------------------------- |
+| `cosine`        | `<=>`          | 余弦距离（最常用）                             |
+| `l2`            | `<->`          | 欧氏距离                                       |
+| `inner_product` | `<>`           | 内积（注意：需对向量归一化才等价于余弦相似度） |
+
+> ⚠️ 查询时使用的操作符必须与建索引时一致！
+
+---
+
+ 四、是否使用索引？
+
+如果 **没有创建向量索引**，PostgreSQL 会执行 **全表扫描 + 逐一向量计算距离**，性能很差（O(N)）。
+
+ ✅ 推荐创建索引（以余弦为例）：
+
+```sql
+-- IVFFlat 索引（适合百万级）
+CREATE INDEX ON vector_store 
+USING ivfflat (embedding vector_cosine_ops) 
+WITH (lists = 100);
+
+-- HNSW 索引（pgvector ≥ 0.5.0，更快但内存高）
+CREATE INDEX ON vector_store 
+USING hnsw (embedding vector_cosine_ops);
+```
+
+创建索引后，查询会走近似最近邻（ANN），速度大幅提升。
+
+---
+
+ 五、代码层面如何触发查询？
+
+当你调用：
+
+```java
+List<Document> results = vectorStore.similaritySearch("如何创建任务？");
+```
+
+或带过滤：
+
+```java
+SearchRequest request = SearchRequest
+    .query("如何创建任务？")
+    .withTopK(5)
+    .withFilter("metadata->>'type' = 'TASK_RULE'");
+
+List<Document> results = vectorStore.similaritySearch(request);
+```
+
+Spring AI 内部会：
+
+1. 调用 `embeddingModel.embed("如何创建任务？")` → 得到 `float[]` 向量
+2. 将向量格式化为 PostgreSQL 的 `vector` 字面量：`'[0.1,0.2,...]'::vector`
+3. 拼接 SQL（如上所示）
+4. 通过 `JdbcTemplate` 执行查询
+5. 将结果映射为 `List<Document>`
+
+---
+
+ 六、性能建议
+
+| 项目     | 建议                                                         |
+| -------- | ------------------------------------------------------------ |
+| 向量维度 | 尽量使用较小维度模型（如 `text-embedding-3-small` 512维）    |
+| 索引     | 必须创建 `ivfflat` 或 `hnsw` 索引                            |
+| 过滤字段 | 对高频过滤的 metadata 字段（如 `type`）可额外建 B-tree 索引：<br>`CREATE INDEX ON vector_store ((metadata->>'type'));` |
+| topK     | 不要设太大（通常 3~10 足够）                                 |
+
+---
+
+ 七、调试技巧
+
+ 1. 开启 SQL 日志（Spring Boot）
+
+```yaml
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG
+```
+
+你将看到类似：
+
+```
+Executing SQL statement [SELECT id, content, metadata, embedding FROM vector_store WHERE metadata->>'type' = ? ORDER BY embedding <=> ?::vector LIMIT ?]
+```
+
+ 2. 手动在 psql 中测试
+
+```sql
+EXPLAIN ANALYZE
+SELECT content
+FROM vector_store
+WHERE metadata->>'type' = 'TASK_RULE'
+ORDER BY embedding <=> '[0.1,0.2,...]'::vector
+LIMIT 3;
+```
+
+看是否走了索引（Index Scan using ...）。
+
+---
+
+ 总结
+
+Spring AI 的 `PgVectorStore.similaritySearch()` 本质是：
+
+> **“将查询文本向量化，然后在 PostgreSQL 中执行带向量距离排序的 SQL 查询”**
+
+只要理解：
+- `metadata` 是 JSONB，要用 `->>` 访问
+- 向量距离操作符由 `index-metric` 决定
+- 必须建 pgvector 索引才能高效查询
+
+就能高效使用它构建 RAG 应用。
+
+如需我帮你生成完整的建表 + 索引 + 查询调试脚本，也可以告诉我！
+
+
+
+## [规则处理] ★★
+
+### 规则上传
+
+http://dev.jdl.com:8123/api/swagger-ui/index.html#/knowledge-base-controller/taskRule
+
+<span class="opblock-summary-path" data-path="/api/knowledge/taskRule"><a class="nostyle" href="#/knowledge-base-controller/uploadTaskRule"><span>/api<wbr>/knowledge<wbr>/taskRule</span></a></span>
+
+
+
+```java
+/**
+ * 知识库控制器类
+ * 该类负责处理知识库相关的REST API请求，提供知识库的增删改查等操作接口。
+ * 所有接口都映射到"/api/knowledge"路径下。
+ */
+@RestController
+@RequestMapping("/api/knowledge")
+@Slf4j
+public class KnowledgeBaseController {
+
+		/**
+     * 上传任务拆解规则
+     * @param ruleJson 规则JSON字符串
+     * @return 上传成功的规则ID
+     */
+    @PostMapping("/taskRule")
+    public ResponseEntity<String> uploadTaskRule(@RequestBody String ruleJson) {
+        String ruleId = knowledgeBaseService.uploadTaskRule(ruleJson);
+        return ResponseEntity.ok(ruleId);
+    }
+    
+    /**
+     * 获取所有任务拆解规则
+     * @return 所有规则的列表
+     */
+    @GetMapping("/taskRules")
+    public ResponseEntity<List<String>> getAllTaskRules() {
+        List<String> rules = knowledgeBaseService.getAllTaskRules();
+        return ResponseEntity.ok(rules);
+    }
+```
+
+
+
+### 规则报文
+
+performance-reward-rule.json
+
+```json
+{
+  "ruleId": "performance-reward-rule-001",
+  "ruleName": "绩效奖励成本项数据波动分析规则",
+  "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
+  "matchPatterns": [
+    "绩效奖励.*波动",
+    "绩效奖励.*数据.*分析",
+    "performance.*reward.*data"
+  ],
+  "taskTemplates": [
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 1,
+      "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+      "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day >= {{business_day}} and source in ({{source}}) GROUP BY run_status_ext1, business_day, source order by business_day",
+      "parameterMappings": {
+        "source": "source\\s+in\\s+\\(([^\\)]+)\\)",
+        "business_day": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 2,
+      "descriptionTemplate": "查询指定用户的信息，使用前一天的业务日期",
+      "queryTemplate": "select * from user_info where erp = {{erp}} and business_day = {{business_day}}",
+      "parameterMappings": {
+        "erp": "erp\\s*=\\s*(?:['\"])?([^'\"\\s]+)(?:['\"])?",
+        "business_day": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s]+)(?:['\"])?"
+      },
+      "dependencyIndices": [0]
+    }
+  ]
+}
+```
+
+
+
+### 任务拆解规则
+
+```java
+/**
+ * 任务拆解规则初始化器
+ * 在应用启动时自动加载规则文件到向量数据库
+ */
+@Component
+@Slf4j
+public class TaskRuleInitializer {
+
+    @Resource
+    private TaskDecomposer taskDecomposer;
+
+    /**
+     * 初始化方法，在应用启动时自动运行
+     * 加载规则文件到向量数据库
+     */
+    @PostConstruct
+    public void init() {
+        log.info("开始初始化任务拆解规则...");
+
+        try {
+            // 加载规则目录下的所有JSON文件
+            ClassPathResource resource = new ClassPathResource("task-rules");
+            Path rulesDir = Paths.get(resource.getURI());
+            // 加载规则目录中的所有JSON规则文件, 检查规则目录是否存在且为目录类型
+            if (Files.exists(rulesDir) && Files.isDirectory(rulesDir)) {
+                // 遍历目录下的所有文件，筛选出JSON文件并加载
+                try (Stream<Path> paths = Files.walk(rulesDir)) {
+                    paths.filter(path -> path.toString().endsWith(".json"))
+                            .forEach(this::loadRuleFile);
+                }
+            } else {
+                // 记录警告日志：规则目录不存在
+                log.warn("任务拆解规则目录不存在: {}", rulesDir);
+            }
+
+        } catch (IOException e) {
+            log.error("加载任务拆解规则失败", e);
+        }
+
+        log.info("任务拆解规则初始化完成");
+    }
+
+    /**
+     * 加载单个规则文件
+     *
+     * @param filePath 规则文件路径
+     */
+    private void loadRuleFile(Path filePath) {
+        try {
+            log.info("加载规则文件: {}", filePath.getFileName());
+
+            // 读取文件内容
+            String ruleJson = Files.readString(filePath, StandardCharsets.UTF_8);
+
+            // 上传规则到向量数据库
+            String ruleId = taskDecomposer.uploadRule(ruleJson);
+
+            log.info("规则上传成功: {}, 规则ID: {}", filePath.getFileName(), ruleId);
+        } catch (Exception e) {
+            log.error("加载规则文件失败: {}", filePath.getFileName(), e);
+        }
+    }
+}
+```
+
+
+
+### 任务拆解器接口
+
+```java
+package com.yam.myaiagent.taskdecompose;
+
+import java.util.List;
+
+/**
+ * 任务拆解器接口
+ * 负责将用户输入的问题拆解为具体的任务列表
+ */
+public interface TaskDecomposer {
+    
+    /**
+     * 将问题拆解为具体任务列表
+     * 
+     * @param question 用户输入的问题
+     * @return 拆解后的任务列表
+     */
+    List<DecomposedTask> decompose(String question);
+    
+    /**
+     * 上传拆解规则到向量数据库
+     * 
+     * @param ruleJson 规则JSON字符串
+     * @return 上传成功的规则ID
+     */
+    String uploadRule(String ruleJson);
+    
+    /**
+     * 获取所有拆解规则
+     * 
+     * @return 所有规则的列表
+     */
+    List<String> getAllRules();
+    
+    /**
+     * 删除指定规则
+     * 
+     * @param ruleId 规则ID
+     */
+    void deleteRule(String ruleId);
+}
+```
+
+
+
+### 基于向量存储的任务拆解器实现
+
+```java
+package com.yam.myaiagent.taskdecompose;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+/**
+ * 基于向量存储的任务拆解器实现
+ * 使用向量数据库存储和检索任务拆解规则
+ */
+@Service
+@Slf4j
+public class VectorStoreTaskDecomposer implements TaskDecomposer {
+
+    @Resource
+    @Qualifier("pgVectorVectorStore")
+    private VectorStore vectorStore;
+
+    @Resource
+    @Qualifier("dashscopeEmbeddingModel")
+    private EmbeddingModel embeddingModel;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // 规则文档的前缀，用于区分普通文档和规则文档
+    private static final String RULE_PREFIX = "TASK_RULE:";
+
+    // 相似度阈值，用于匹配规则 - 降低阈值以提高匹配率
+    private static final double SIMILARITY_THRESHOLD = 0.6;
+
+    // 缓存最近使用的规则ID，避免重复添加
+    private final Map<String, Long> recentRuleCache = new ConcurrentHashMap<>();
+
+    /**
+     * 将问题拆解为具体任务列表
+     *
+     * @param question 用户输入的问题
+     * @return 拆解后的任务列表
+     */
+    /**
+     * 获取向量存储中的文档数量
+     * 用于调试和监控向量存储状态
+     */
+    private long getVectorStoreDocumentCount() {
+        try {
+            SearchRequest countRequest = SearchRequest.builder()
+                    .query("*")
+                    .topK(1000)  // 设置一个较大的值
+                    .build();
+            List<Document> allDocs = vectorStore.similaritySearch(countRequest);
+            return allDocs.size();
+        } catch (Exception e) {
+            log.error("获取向量存储文档数量失败: {}", e.getMessage());
+            return -1;
+        }
+    }
+
+    /**
+     * 将输入的问题拆解为多个子任务
+     *
+     * @param question 需要拆解的问题字符串
+     * @return 拆解后的任务列表，按优先级排序
+     */
+    @Override
+    public List<DecomposedTask> decompose(String question) {
+        log.info("decompose 开始拆解问题: {}, 当前线程ID: {}, 当前向量存储文档数量: {}",
+                question, Thread.currentThread().getId(), getVectorStoreDocumentCount());
+
+        // 1. 查询相似的规则
+        List<TaskRule> matchedRules = findMatchingRules(question);
+        if (matchedRules.isEmpty()) {
+            log.info("未找到匹配的规则，返回空任务列表");
+            return Collections.emptyList();
+        }
+
+        // 记录找到的规则信息，便于调试
+        log.info("找到{}个匹配规则:", matchedRules.size());
+        for (int i = 0; i < matchedRules.size(); i++) {
+            TaskRule rule = matchedRules.get(i);
+            log.info("规则 #{}: ID={}, 名称={}", i + 1, rule.getRuleId(), rule.getRuleName());
+        }
+
+        // FIXME 2. 根据规则生成任务
+        List<DecomposedTask> tasks = new ArrayList<>();
+        for (TaskRule rule : matchedRules) {
+            tasks.addAll(generateTasksFromRule(rule, question));
+        }
+
+        // 3. 按优先级排序
+        tasks.sort(Comparator.comparingInt(DecomposedTask::getPriority));
+
+        log.info("问题拆解完成，共生成{}个任务", tasks.size());
+        return tasks;
+    }
+
+
+    /**
+     * 查找与问题匹配的规则
+     *
+     * @param question 用户问题
+     * @return 匹配的规则列表
+     */
+    private List<TaskRule> findMatchingRules(String question) {
+        // 使用向量搜索查找相似的规则
+        // 使用Builder模式创建SearchRequest对象
+        long initialDocCount = getVectorStoreDocumentCount();
+        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}, 查询前向量存储文档数量: {}",
+                question, SIMILARITY_THRESHOLD, Thread.currentThread().getId(), initialDocCount);
+
+        // 尝试不同格式的过滤表达式
+        log.info("尝试使用不同格式的过滤表达式");
+
+        // 方式1: 使用 metadata.type = 'TASK_RULE' 格式
+        String filterExpr1 = "metadata.type == 'TASK_RULE'";
+        log.info("尝试过滤表达式格式1: {}", filterExpr1);
+
+        try {
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query(question)
+                    .topK(5)
+                    .similarityThreshold(SIMILARITY_THRESHOLD)
+                    .filterExpression(filterExpr1)
+                    .build();
+
+            log.info("成功创建SearchRequest对象(格式1)");
+            List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("格式1-查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+                    similarDocuments.size(), getVectorStoreDocumentCount());
+
+            // 记录文档元数据，帮助调试
+            if (!similarDocuments.isEmpty()) {
+                Document firstDoc = similarDocuments.get(0);
+                log.info("第一个文档ID: {}, 元数据: {}", firstDoc.getId(), firstDoc.getMetadata());
+            }
+
+            // 解析文档内容为TaskRule对象
+            List<TaskRule> rules = similarDocuments.stream()
+                    .map(this::parseRuleFromDocument)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (!rules.isEmpty()) {
+                log.info("使用过滤表达式格式1成功找到{}个规则", rules.size());
+                return rules;
+            }
+
+            log.info("使用过滤表达式格式1未找到规则，尝试格式2");
+        } catch (Exception e) {
+            log.error("过滤表达式格式1错误: {}, 尝试格式2", e.getMessage());
+        }
+
+        // 方式2: 使用 type = 'TASK_RULE' 格式
+        String filterExpr2 = "metadata['type'] == 'TASK_RULE'";
+        log.info("尝试过滤表达式格式2: {}", filterExpr2);
+
+        try {
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query(question)
+                    .topK(5)
+                    .similarityThreshold(SIMILARITY_THRESHOLD)
+                    .filterExpression(filterExpr2)
+                    .build();
+
+            log.info("成功创建SearchRequest对象(格式2)");
+            List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("格式2-查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+                    similarDocuments.size(), getVectorStoreDocumentCount());
+
+            // 解析文档内容为TaskRule对象
+            List<TaskRule> rules = similarDocuments.stream()
+                    .map(this::parseRuleFromDocument)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (!rules.isEmpty()) {
+                log.info("使用过滤表达式格式2成功找到{}个规则", rules.size());
+                return rules;
+            }
+
+            log.info("使用过滤表达式格式2未找到规则，尝试不使用过滤器");
+        } catch (Exception e) {
+            log.error("过滤表达式格式2错误: {}, 尝试不使用过滤器", e.getMessage());
+        }
+
+        // 如果两种过滤表达式都失败，尝试不使用过滤器
+        log.info("尝试不使用过滤器");
+        SearchRequest searchRequest = SearchRequest.builder()
+                .query(question)
+                .topK(5)
+                .similarityThreshold(SIMILARITY_THRESHOLD)
+                .build();
+
+        log.info("成功创建无过滤器的SearchRequest对象");
+        List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+        log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+                similarDocuments.size(), getVectorStoreDocumentCount());
+
+        // 解析文档内容为TaskRule对象
+        List<TaskRule> rules = similarDocuments.stream()
+                .map(this::parseRuleFromDocument)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        log.info("不使用过滤器找到{}个规则", rules.size());
+        return rules;
+    }
+
+    /**
+     * 从文档解析规则
+     *
+     * @param document 文档对象
+     * @return 解析后的规则对象
+     */
+    private TaskRule parseRuleFromDocument(Document document) {
+        try {
+            return objectMapper.readValue(document.getText(), TaskRule.class);
+        } catch (JsonProcessingException e) {
+            log.error("解析规则文档失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 根据规则生成具体任务
+     *
+     * @param rule     匹配的规则
+     * @param question 用户问题
+     * @return 生成的任务列表
+     */
+    private List<DecomposedTask> generateTasksFromRule(TaskRule rule, String question) {
+        List<DecomposedTask> tasks = new ArrayList<>();
+        Map<Integer, String> taskIdMap = new HashMap<>();
+
+        // 遍历规则中的任务模板
+        for (int i = 0; i < rule.getTaskTemplates().size(); i++) {
+            TaskRule.TaskTemplate template = rule.getTaskTemplates().get(i);
+
+            // 生成任务ID
+            String taskId = UUID.randomUUID().toString();
+            taskIdMap.put(i, taskId);
+
+            // 提取参数
+            Map<String, Object> parameters = extractParameters(template.getParameterMappings(), question);
+
+            // 处理查询模板中的参数占位符
+            String processedQueryTemplate = processTemplate(template.getQueryTemplate(), parameters);
+
+            // 处理描述模板中的参数占位符
+            String processedDescription = processTemplate(template.getDescriptionTemplate(), parameters);
+
+            // 处理依赖关系
+            String[] dependencies = null;
+            if (template.getDependencyIndices() != null && template.getDependencyIndices().length > 0) {
+                dependencies = Arrays.stream(template.getDependencyIndices())
+                        .mapToObj(taskIdMap::get)
+                        .toArray(String[]::new);
+            }
+
+            // 创建任务对象
+            DecomposedTask task = DecomposedTask.builder()
+                    .taskId(taskId)
+                    .description(processedDescription)
+                    .taskType(template.getTaskType())
+                    .queryTemplate(processedQueryTemplate)
+                    .parameters(parameters)
+                    .priority(template.getPriority())
+                    .dependencies(dependencies)
+                    .build();
+
+            tasks.add(task);
+        }
+
+        return tasks;
+    }
+
+    /**
+     * 从问题中提取参数
+     *
+     * @param parameterMappings 参数映射
+     * @param question          用户问题
+     * @return 提取的参数
+     */
+    private Map<String, Object> extractParameters(Map<String, String> parameterMappings, String question) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        if (parameterMappings == null) {
+            return parameters;
+        }
+
+        // 遍历参数映射
+        for (Map.Entry<String, String> entry : parameterMappings.entrySet()) {
+            String paramName = entry.getKey();
+            String extractRule = entry.getValue();
+
+            // 使用正则表达式提取参数
+            Pattern pattern = Pattern.compile(extractRule);
+            Matcher matcher = pattern.matcher(question);
+
+            if (matcher.find()) {
+                // 如果有捕获组，使用第一个捕获组的值
+                if (matcher.groupCount() > 0) {
+                    parameters.put(paramName, matcher.group(1));
+                } else {
+                    // 否则使用整个匹配的值
+                    parameters.put(paramName, matcher.group());
+                }
+            }
+        }
+
+        return parameters;
+    }
+
+    /**
+     * 处理模板中的参数占位符
+     *
+     * @param template   模板字符串
+     * @param parameters 参数映射
+     * @return 处理后的字符串
+     */
+    private String processTemplate(String template, Map<String, Object> parameters) {
+        if (template == null) {
+            return null;
+        }
+
+        String result = template;
+
+        // 替换参数占位符
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            String placeholder = "\\{\\{" + entry.getKey() + "\\}\\}";
+            result = result.replaceAll(placeholder, entry.getValue().toString());
+        }
+
+        return result;
+    }
+
+    /**
+     * 上传拆解规则到向量数据库
+     *
+     * @param ruleJson 规则JSON字符串
+     * @return 上传成功的规则ID
+     */
+    @Override
+    public String uploadRule(String ruleJson) {
+        try {
+            log.info("开始上传规则，规则JSON: {}", ruleJson);
+
+            // 解析规则JSON
+            TaskRule rule = objectMapper.readValue(ruleJson, TaskRule.class);
+
+            // 处理matchPatterns字段
+            if (rule.getMatchPatterns() != null && !rule.getMatchPatterns().isEmpty()) {
+                log.info("检测到matchPatterns字段，值为: {}", rule.getMatchPatterns());
+                // 如果matchPattern为空，使用matchPatterns的第一个元素
+                if (rule.getMatchPattern() == null && !rule.getMatchPatterns().isEmpty()) {
+                    rule.setMatchPattern(rule.getMatchPatterns().get(0));
+                    log.info("将matchPatterns的第一个元素设置为matchPattern: {}", rule.getMatchPattern());
+                }
+            }
+
+            // 记录原始规则ID
+            String originalId = rule.getRuleId();
+            log.info("原始规则ID: {}, 类型: {}", originalId,
+                    originalId != null ? originalId.getClass().getName() : "null");
+
+            // 保存原始业务ID到businessId字段
+            if (originalId != null) {
+                rule.setBusinessId(originalId);
+                log.info("设置业务ID(businessId): {}", rule.getBusinessId());
+            }
+
+            // 生成规则ID
+            if (originalId == null) {
+                rule.setRuleId(UUID.randomUUID().toString());
+                log.info("规则ID为空，生成新的UUID: {}", rule.getRuleId());
+            } else {
+                // 检查规则ID是否为有效的UUID格式
+                try {
+                    UUID.fromString(originalId);
+                    log.info("规则ID已经是有效的UUID格式: {}", originalId);
+                } catch (IllegalArgumentException e) {
+                    // 如果不是有效的UUID，则生成新的UUID
+                    String newUuid = UUID.randomUUID().toString();
+                    log.info("规则ID不是有效的UUID格式，从 '{}' 替换为新生成的UUID: {}", originalId, newUuid);
+                    rule.setRuleId(newUuid);
+                }
+            }
+
+            // 构建元数据，保留原始ID
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("type", "TASK_RULE");  // 使用不带前缀的类型名称
+            metadata.put("name", rule.getRuleName());
+
+            // 使用businessId字段保存原始业务ID
+            if (rule.getBusinessId() != null) {
+                metadata.put("businessId", rule.getBusinessId());
+                log.info("保存业务ID '{}' 到元数据中", rule.getBusinessId());
+            }
+
+            // 将规则转换为文档
+            Document document = Document.builder()
+                    .id(rule.getRuleId())
+                    .text(objectMapper.writeValueAsString(rule))
+                    .metadata(metadata)
+                    .build();
+
+            log.info("创建文档，文档ID: {}, 元数据: {}", document.getId(), metadata);
+
+            // 添加到向量存储
+            vectorStore.add(Collections.singletonList(document));
+
+            log.info("规则上传成功: {}", rule.getRuleId());
+            return rule.getRuleId();
+        } catch (JsonProcessingException e) {
+            log.error("规则上传失败: {}", e.getMessage());
+            throw new RuntimeException("规则上传失败", e);
+        }
+    }
+
+    /**
+     * 获取所有拆解规则
+     *
+     * @return 所有规则的列表
+     */
+    @Override
+    public List<String> getAllRules() {
+        log.info("获取所有拆解规则");
+
+        // 尝试不同格式的过滤表达式
+        List<Document> ruleDocuments = new ArrayList<>();
+        boolean success = false;
+
+        // 方式1: 使用 metadata.type = 'TASK_RULE' 格式
+        try {
+            log.info("尝试使用过滤表达式格式1: metadata.type = 'TASK_RULE'");
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query("*")
+                    .topK(100)
+                    .filterExpression("metadata.type = 'TASK_RULE'")
+                    .build();
+
+            ruleDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("使用过滤表达式格式1成功找到{}个规则文档", ruleDocuments.size());
+            success = true;
+        } catch (Exception e) {
+            log.error("使用过滤表达式格式1失败: {}", e.getMessage());
+        }
+
+        // 方式2: 使用 type = 'TASK_RULE' 格式
+        if (!success) {
+            try {
+                log.info("尝试使用过滤表达式格式2: type = 'TASK_RULE'");
+                SearchRequest searchRequest = SearchRequest.builder()
+                        .query("*")
+                        .topK(100)
+                        .filterExpression("type = 'TASK_RULE'")
+                        .build();
+
+                ruleDocuments = vectorStore.similaritySearch(searchRequest);
+                log.info("使用过滤表达式格式2成功找到{}个规则文档", ruleDocuments.size());
+                success = true;
+            } catch (Exception e) {
+                log.error("使用过滤表达式格式2失败: {}", e.getMessage());
+            }
+        }
+
+        // 如果两种过滤表达式都失败，尝试不使用过滤器
+        if (!success) {
+            log.info("尝试不使用过滤器");
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query("*")
+                    .topK(100)
+                    .build();
+
+            ruleDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("不使用过滤器找到{}个文档", ruleDocuments.size());
+
+            // 如果不使用过滤器，需要手动过滤出规则文档
+            ruleDocuments = ruleDocuments.stream()
+                    .filter(doc -> {
+                        Map<String, Object> metadata = doc.getMetadata();
+                        return metadata != null &&
+                                ("TASK_RULE".equals(metadata.get("type")) ||
+                                        (metadata.get("type") != null && metadata.get("type").toString().contains("TASK_RULE")));
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("手动过滤后找到{}个规则文档", ruleDocuments.size());
+        }
+
+        // 返回规则JSON字符串列表
+        return ruleDocuments.stream()
+                .map(Document::getText)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 删除指定规则
+     *
+     * @param ruleId 规则ID
+     */
+    @Override
+    public void deleteRule(String ruleId) {
+        // 删除指定ID的规则文档
+        vectorStore.delete(Collections.singletonList(ruleId));
+        log.info("规则删除成功: {}", ruleId);
+    }
+}
+```
+
+
+
+## [FuctionCall & MCP]
+
+**src/main/java/com/yam/myaiagent/controller/AiController.java‎**
+
+在 AiController.java 文件中，我发现了一个与 MCP 相关的方法：
+
+```java
+/**
+ * Java面试MCP服务调用
+ *
+ * @param message 用户消息
+ * @param chatId 会话ID
+ * @return 回复内容
+ */
+@GetMapping("/java_interview/mcp")
+public String doChatWithJavaInterviewMcp(String message, String chatId) {
+    return javaInterviewApp.doChatWithMcp(message, chatId);
+}
+```
+
+这表明项目中确实有 MCP 调用的逻辑。让我检查一下 JavaInterviewApp 类，看看具体的实现。
+
+我在 AiController.java 中发现了一个与 MCP 相关的方法：
+
+
+
+**src/main/java/com/yam/myaiagent/app/JavaInterviewApp.java‎**
+
+在 JavaInterviewApp.java 文件中，我找到了 MCP 服务调用的实现：
+
+```java
+// MCP服务调用
+@Resource
+private ToolCallbackProvider toolCallbackProvider;
+
+/**
+ * Java面试功能（调用MCP服务）
+ *
+ * @param message 用户消息
+ * @param chatId 会话ID
+ * @return 回复内容
+ */
+public String doChatWithMcp(String message, String chatId) {
+    ChatResponse chatResponse = chatClient
+            .prompt()
+            .system(SYSTEM_PROMPT + """
+                    
+                    现在可以通过MCP服务获取更多Java技术资源：
+                    • 获取最新的Java框架信息
+                    • 查询开源项目和代码示例
+                    • 获取技术社区的热门讨论
+                    
+                    请充分利用这些资源，为面试者提供最新、最准确的技术指导。
+                    """)
+            .user(message)
+            .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                    .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+            .advisors(new MyLoggerAdvisor())
+            .tools(toolCallbackProvider)
+            .call()
+            .chatResponse();
+    String content = chatResponse.getResult().getOutput().getText();
+    log.info("Java面试MCP服务调用结果: {}", content);
+    return content;
+}
+```
+
+**这里使用了 `toolCallbackProvider` 来提供 MCP 服务调用的能力。**
+
+
+
+**src/main/java/com/yam/myaiagent/taskdecompose/VectorStoreTaskDecomposer.java‎**
+
+VectorStoreTaskDecomposer.java 文件是一个基于向量存储的任务拆解器实现，它使用向量数据库存储和检索任务拆解规则。这个类使用了 Spring AI 的 VectorStore 和 EmbeddingModel 接口，但它本身并不是直接与大模型进行 function call 或 MCP 调用的实现。
+
+
+
+**src/main/java/com/yam/myaiagent/service/impl/KnowledgeBaseServiceImpl.java‎**
+
+KnowledgeBaseServiceImpl.java 文件中使用了 Spring AI 框架与大模型进行交互，但没有直接的 function call 或 MCP 调用的实现。它主要使用了 ChatClient 和 QuestionAnswerAdvisor 来实现与大模型的交互和 RAG 检索增强。
+
+
+
+**src/main/resources/application.yml‎**
+
+在 application.yml 文件中，我发现了与 MCP 相关的配置，但它们被注释掉了：
+
+```yaml
+#    mcp:
+#      client:
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8127
+##              timeout: 60000  # 设置超时时间为 60 秒
+#        stdio:
+#          servers-configuration: classpath:mcp-servers.json
+```
+
+这表明项目中确实有 MCP 相关的配置，但目前是被注释掉的。
+
+让我总结一下我的发现：
+
+基于我的分析，我可以确认项目中确实存在大模型 function call 和 MCP 调用的逻辑。以下是我的发现：
+
+### 大模型 function call 实现
+
+1. 在 [`ToolCallAgent.java`](https://file+.sourcegraphstatic.com/main-resource-nonce?-819242113#) 中实现了大模型的 function call 功能：
+   - 使用了 Spring AI 框架的 `ToolCallingManager` 来管理工具调用
+   - 实现了 `think()` 和 `act()` 方法来处理工具调用的流程
+   - 使用了 `DashScopeChatOptions` 配置，表明使用了阿里云的 DashScope 大模型服务
+2. 在 [`ToolRegistration.java`](https://file+.sourcegraphstatic.com/main-resource-nonce?-819242113#) 中注册了各种工具，这些工具可以被大模型调用：
+   - 文件操作工具
+   - 网络搜索工具
+   - 网页抓取工具
+   - 资源下载工具
+   - 终端操作工具
+   - PDF生成工具
+   - Markdown生成工具
+   - 天气搜索工具
+   - 终止工具
+
+### MCP 调用实现
+
+1. 在 [`mcp-servers.json`](https://file+.sourcegraphstatic.com/main-resource-nonce?-819242113#) 中配置了 MCP 服务器：
+
+   - amap-maps - 高德地图 MCP 服务器
+   - my-image-search-mcp-server - 自定义的图像搜索 MCP 服务器
+
+2. 在 [`ImageSearchTool.java`](https://file+.sourcegraphstatic.com/main-resource-nonce?-819242113#) 中实现了 MCP 工具：
+
+   - 使用 `@Tool` 注解标记，用于从 Pexels API 搜索图片
+   - 这是一个典型的 MCP 工具实现
+
+3. 在 [`JavaInterviewApp.java`](https://file+.sourcegraphstatic.com/main-resource-nonce?-819242113#) 中实现了 MCP 服务调用：
+
+   ```java
+   /**
+    * Java面试MCP服务调用
+    *
+    * @param message 用户消息
+    * @param chatId 会话ID
+    * @return 回复内容
+    */
+   @GetMapping("/java_interview/mcp")
+   public String doChatWithJavaInterviewMcp(String message, String chatId) {
+       return javaInterviewApp.doChatWithMcp(message, chatId);
+   }
+   
+   
+   public class JavaInterviewApp {
+     ......
+   
+     @Resource
+     private ToolCallbackProvider toolCallbackProvider;
+   
+     public String doChatWithMcp(String message, String chatId) {
+         ChatResponse chatResponse = chatClient
+                 .prompt()
+                 .system(SYSTEM_PROMPT + """
+   
+                         现在可以通过MCP服务获取更多Java技术资源：
+                         • 获取最新的Java框架信息
+                         • 查询开源项目和代码示例
+                         • 获取技术社区的热门讨论
+   
+                         请充分利用这些资源，为面试者提供最新、最准确的技术指导。
+                         """)
+                 .user(message)
+                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                 .advisors(new MyLoggerAdvisor())
+                 .tools(toolCallbackProvider)
+                 .call()
+                 .chatResponse();
+         String content = chatResponse.getResult().getOutput().getText();
+         log.info("Java面试MCP服务调用结果: {}", content);
+         return content;
+     }
+   ```
+
+4. 在 [`application.yml`](https://file+.sourcegraphstatic.com/main-resource-nonce?-819242113#) 中有 MCP 相关的配置（虽然被注释掉了）：
+
+   ```yaml
+   #    mcp:
+   #      client:
+   #        sse:
+   #          connections:
+   #            server1:
+   #              url: http://localhost:8127
+   ##              timeout: 60000  # 设置超时时间为 60 秒
+   #        stdio:
+   #          servers-configuration: classpath:mcp-servers.json
+   ```
+
+综上所述，项目中确实存在大模型 function call 和 MCP 调用的逻辑，主要通过 Spring AI 框架实现。
+
+
+
+**项目中确实存在大模型 function call 和 MCP 调用的逻辑。**
+
+**大模型 function call 实现主要通过：**
+
+1. ToolCallAgent.java - 实现了大模型的 function call 功能，使用 Spring AI 框架的 ToolCallingManager
+2. ToolRegistration.java - 注册了各种可被大模型调用的工具
+
+**MCP 调用实现主要通过：**
+
+1. mcp-servers.json - 配置了 MCP 服务器（amap-maps 和 my-image-search-mcp-server）
+2. ImageSearchTool.java - 实现了 MCP 工具，使用 @Tool 注解标记
+3. JavaInterviewApp.java - 实现了 MCP 服务调用，使用 toolCallbackProvider
+4. application.yml - 包含 MCP 相关配置（虽然当前被注释）
+
+项目使用 Spring AI 框架与大模型进行交互，并通过 MCP 服务器扩展功能。
+
+
+
+### toolCallbackProvider 在代码中的作用与 MCP 调用机制
+
+在提供的代码中，`toolCallbackProvider` 是一个 Spring AI 框架中的 `ToolCallbackProvider` 类型的组件，它在 `doChatWithMcp` 方法中起到了连接大语言模型与外部工具服务的桥梁作用。
+
+
+
+**1. toolCallbackProvider 的作用**
+
+`toolCallbackProvider` 主要负责：
+
+- **工具注册与管理**：管理可供大语言模型调用的外部工具集合
+- **工具调用路由**：接收模型生成的工具调用请求，并路由到对应的工具实现
+- **结果处理**：收集工具执行结果并返回给模型，使模型能够基于工具执行结果继续对话
+
+
+
+**2. 配置方式**
+
+从项目代码中可以看到，MCP (Model Context Protocol) 工具的配置主要通过以下方式：
+
+- **MCP 服务器配置**：在 `mcp-servers.json` 文件中定义了可用的 MCP 服务器，包括：
+  - `amap-maps`：高德地图 MCP 服务
+  - `my-image-search-mcp-server`：图片搜索 MCP 服务
+- **工具实现**：每个 MCP 服务器提供特定的工具实现，如 `ImageSearchTool` 类通过 `@Tool` 注解标记工具方法，使其可被 MCP 框架识别
+- **注入使用**：在 `JavaInterviewApp` 类中通过 `@Resource` 注解注入 `toolCallbackProvider`，然后在 `doChatWithMcp` 方法中使用
+
+
+
+**3. MCP 调用过程**
+
+当执行 `doChatWithMcp` 方法时，MCP 调用过程如下：
+
+1. **构建请求**：通过 `chatClient.prompt()` 构建聊天请求，设置系统提示词和用户消息
+2. **配置记忆**：通过 `advisors` 方法配置对话记忆，使用 `CHAT_MEMORY_CONVERSATION_ID_KEY` 和 `CHAT_MEMORY_RETRIEVE_SIZE_KEY` 参数
+3. **添加日志记录**：通过 `advisors(new MyLoggerAdvisor())` 添加日志记录功能
+4. **注册工具**：通过 `tools(toolCallbackProvider)` 注册 MCP 工具，使模型能够调用外部服务
+5. **执行调用**：通过 `call().chatResponse()` 执行实际的 API 调用，获取模型响应
+6. **处理结果**：从响应中提取文本内容并记录日志
+
+
+
+**4. 具体调用了什么**
+
+根据项目配置，系统可能调用的 MCP 工具包括：
+
+- **图片搜索工具**：通过 `my-image-search-mcp-server` 提供的 `ImageSearchTool.searchImage()` 方法，可以根据关键词搜索图片
+- **地图服务工具**：通过 `amap-maps` 服务提供的地图相关功能
+
+这些工具通过 MCP 协议与大语言模型集成，使模型能够在对话过程中根据需要调用这些外部服务，从而增强模型的能力，为用户提供更丰富的信息和服务。
+
+
+
+### toolCallbackProvider作用
+
+**[JD-AI] : 在我提供的代码中，toolCallbackProvider起到了什么作用？意思是除了我指定的工具外，使用了toolCallbackProvider 可以让大模型自主调用其他工具或MCP？ 还是只能调用我指定的**
+
+
+
+**toolCallbackProvider 的作用与工具调用机制**
+
+在您提供的代码中，`toolCallbackProvider` 是一个 **集中管理工具回调的提供者**，它的作用是：
+
+
+
+**作用与工具调用范围**
+
+`toolCallbackProvider` 只能调用**已经注册和配置好的工具**，而不能自主调用任何未注册的工具。具体来说：
+
+1. **工具集中管理**：`toolCallbackProvider` 是一个集中管理工具回调的容器，它包含了所有已注册的 `ToolCallback` 实例
+2. **工具注册限制**：大模型只能调用通过 `toolCallbackProvider` 注册的工具，不能自行调用未注册的工具
+3. **MCP 服务调用**：在您的代码中，`toolCallbackProvider` 被注入并用于 MCP (Model Context Protocol) 服务调用，它会根据 `mcp-servers.json` 中配置的 MCP 服务器来提供相应的工具
+
+
+
+**工具注册与配置流程**
+
+在您的项目中，工具调用的配置流程是：
+
+1. **MCP 服务器配置**：在 `mcp-servers.json` 中定义了可用的 MCP 服务器（如 `amap-maps` 和 `my-image-search-mcp-server`）
+2. **工具实现与注册**：每个 MCP 服务器提供特定的工具实现（如 `ImageSearchTool`），这些工具通过 `@Tool` 注解标记
+3. **工具提供者注入**：`toolCallbackProvider` 被注入到 `JavaInterviewApp` 类中，用于提供已注册的工具
+4. **工具调用限制**：当执行 `doChatWithMcp` 方法时，大模型只能调用 `toolCallbackProvider` 中已注册的工具，不能自行调用其他工具
+
+
+
+**总结**
+
+`toolCallbackProvider` 是一个工具回调提供者，它**只提供已经注册和配置好的工具**，大模型不能通过它自主调用未注册的工具。在您的代码中，它被用于 MCP 服务调用，使大模型能够调用在 `mcp-servers.json` 中配置的 MCP 服务器提供的工具。
+
+
+
+**[JD-AI] : 之前提供的代码看注释是JAVA面试相关的，但是toolCallbackProvider刚才说了注册工具是高德和图片，分析之间的关系，为什么在这里使用toolCallbackProvider**
+
+在您提供的Java面试应用代码中，`toolCallbackProvider` 的使用看似与Java面试主题不直接相关，但实际上是为了**增强面试辅助功能**而设计的。以下是详细解析：
+
+**为什么在Java面试场景使用toolCallbackProvider**
+
+`toolCallbackProvider` 在 `doChatWithMcp` 方法中的作用是**连接大语言模型与外部工具服务**，使模型能够在Java面试过程中调用额外的资源和功能。从代码中的系统提示词可以看出：
+
+```java
+.system(SYSTEM_PROMPT + """
+        
+        现在可以通过MCP服务获取更多Java技术资源：
+        • 获取最新的Java框架信息
+        • 查询开源项目和代码示例
+        • 获取技术社区的热门讨论
+        
+        请充分利用这些资源，为面试者提供最新、最准确的技术指导。
+        """)
+```
+
+这表明虽然主题是Java面试，但需要**实时获取最新的技术资源**来辅助面试过程。
+
+
+
+**高德地图和图片搜索工具的关系**
+
+从 `mcp-servers.json` 配置文件中可以看到，系统配置了两个MCP服务器：
+
+- `amap-maps`：高德地图服务
+- `my-image-search-mcp-server`：图片搜索服务
+
+这些工具虽然看起来与Java面试不直接相关，但实际上是为了**丰富面试体验和提供多媒体辅助**而设计的：
+
+1. **图片搜索工具**：可以在讲解Java概念时**搜索相关的图表、架构图或示意图**，使抽象概念可视化
+2. **高德地图工具**：可能用于**展示与地理位置相关的Java应用案例**，或者在讨论分布式系统、微服务部署等话题时提供地理分布的可视化
+
+
+
+**MCP调用过程**
+
+当执行 `doChatWithMcp` 方法时，MCP调用过程如下：
+
+1. **构建请求**：通过 `chatClient.prompt()` 构建聊天请求，设置系统提示词和用户消息
+2. **配置记忆**：通过 `advisors` 方法配置对话记忆，使用 `CHAT_MEMORY_CONVERSATION_ID_KEY` 和 `CHAT_MEMORY_RETRIEVE_SIZE_KEY` 参数
+3. **添加日志记录**：通过 `advisors(new MyLoggerAdvisor())` 添加日志记录功能
+4. **注册工具**：通过 `tools(toolCallbackProvider)` 注册MCP工具，使模型能够调用外部服务
+5. **执行调用**：通过 `call().chatResponse()` 执行实际的API调用，获取模型响应
+6. **处理结果**：从响应中提取文本内容并记录日志
+
+
+
+**实际调用内容**
+
+在Java面试场景中，`toolCallbackProvider` 实际调用的是在 `mcp-servers.json` 中配置的两个MCP服务器提供的工具：
+
+- **图片搜索工具**：可以搜索Java相关的图片资源，如类图、流程图、架构图等
+- **高德地图工具**：可以在讨论分布式系统、云服务等话题时提供地理位置可视化
+
+这种设计体现了现代AI辅助面试系统的**多模态交互能力**，不仅限于文本问答，还能提供丰富的视觉辅助，使Java面试过程更加生动和直观。
+
+
+
+**[JD-AI] : 什么关键词能触发 toolCallbackProvider 调用**
+
+
+
+
+
+
+
+
+
+# [代码生成]★★
+
+/Users/zhengdan3/workSpaces/work-AI-DEMO/my-ai-agent
+
+## 上传Markdown文档到知识库
+
+将该文档内容上传【大模型】-优化后的提问模板.mkd，写到了向量数据库中
+
+```java
+/**
+ * 知识库控制器类
+ * 该类负责处理知识库相关的REST API请求，提供知识库的增删改查等操作接口。
+ * 所有接口都映射到"/api/knowledge"路径下。
+ */
+@RestController
+@RequestMapping("/api/knowledge")
+public class KnowledgeBaseController {
+
+
+    @Resource
+    private KnowledgeBaseService knowledgeBaseService;
+
+    /**
+     * 上传Markdown文档到知识库
+     * （加载新文档并添加到向量存储 postgresSQL存储向量化数据）
+     */
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file) {
+        knowledgeBaseService.uploadMarkdownDocument(file);
+        return ResponseEntity.ok("文档上传成功");
+    }
+```
+
+
+
+**使用向量数据库PostgreSQL存储该文档**
+
+![image-20251019142645214](/Users/zhengdan3/我的文件/【Stu笔记】/【【大模型】】/ai-images/image-20251019142645214.png)
+
+
+
+**KnowledgeBaseServiceImpl对用户查询进行重写优化 getAnswerNew, 重写前: 建表, doQueryRewrite重写后: 创建表结构**
+2025-10-19T14:15:54.422+08:00  INFO 9528 --- [my-ai-agent] [nio-8123-exec-2] c.yam.myaiagent.advisor.MyLoggerAdvisor  : AI Request: 创建表结构
+
+Context information is below, surrounded by ---------------------
+
+
+
+**[通义千问] ：为什么提问“建表”生成了若干代码，调用了 @PostMapping("/qaNew")**
+
+```java
+ /**
+   * 基于知识库进行问答
+   */
+  @PostMapping("/qaNew")
+  public ResponseEntity<QAResponse> askQuestionNew(@RequestBody QARequest request) {
+      QAResponse response = knowledgeBaseService.getAnswerNew(request.getQuestion(), request.getModelType());
+      return ResponseEntity.ok(response);
+  }
+
+```
+
+
+
+**的功能，加上之前上传过【大模型】-优化后的提问模板.mkd 到向量数据库中，然后问题时输入建表，然后给我生成了java代码，包括controller，表结构，实体类的，如何实现的以及背后原理?**
+
+
+
+<img src="/Users/zhengdan3/我的文件/【Stu笔记】/【【大模型】】/ai-images/image-20251019152512484.png" alt="image-20251019152512484" style="zoom: 33%;" />
+
+
+
+**现在我已经收集了足够的信息来回答用户的问题。让我总结一下基于知识库进行问答的功能实现原理和背后的技术：**
+
+My：提问时只输入“建表”，然后给我生成了java代码，包括controller，表结构，实体类的原理，其中一点是“【大模型】-优化后的提问模板.mkd”描述了要生成的内容，如上图所示。
+
+
+
+1. 系统架构：
+   - 使用了Spring AI框架和RAG（检索增强生成）技术
+   - **使用PostgreSQL作为向量数据库存储文档向量**
+   - 使用大模型（如阿里云的通义千问）进行查询重写和回答生成
+2. 工作流程：
+   - 用户上传文档（如"【大模型】-优化后的提问模板.mkd"）到系统
+   - 文档被处理并存储到向量数据库中
+   - 用户提问时（如"建表"），系统进行以下处理： a. 查询重写：将"建表"重写为"创建表结构" b. 向量检索：从向量数据库中检索相关内容 c. 大模型生成：将检索到的内容和用户问题一起发送给大模型，生成回答
+3. 关键组件：
+   - KnowledgeBaseController：处理HTTP请求
+   - KnowledgeBaseService：业务逻辑接口
+   - KnowledgeBaseServiceImpl：实现业务逻辑
+   - QueryRewriter：查询重写组件
+   - 向量存储：存储文档向量
+   - ChatClient：与大模型交互
+4. 生成Java代码的过程：
+   - 用户输入"建表"
+   - 系统重写为"创建表结构"
+   - 系统从向量数据库中检索到"【大模型】-优化后的提问模板.mkd"中的相关内容
+   - 大模型基于检索到的内容（包含表结构定义和代码生成要求）生成完整的Java代码，包括实体类、Controller、Service和Mapper
+
+
+
+
+
+## 基于知识库的问答功能实现原理
+
+您提到的功能是通过RAG（检索增强生成）技术实现的，整个流程如下：
+
+**核心工作流程**
+
+1. **文档上传与向量化**
+   - 通过`uploadMarkdownDocument`方法将"【大模型】-优化后的提问模板.mkd"上传到系统
+   - 文档被处理并存储到PostgreSQL向量数据库中
+2. **问答处理流程**
+   - 用户输入"建表"作为问题
+   - 系统通过`QueryRewriter`将查询重写为"创建表结构"
+   - 使用`QuestionAnswerAdvisor`从向量数据库中检索相关内容
+   - 将检索到的内容与用户问题一起发送给大模型生成回答
+
+
+
+**关键技术组件**
+
+- **Controller层**：`KnowledgeBaseController`处理HTTP请求，调用`askQuestionNew`方法
+- **Service层**：`KnowledgeBaseServiceImpl`实现业务逻辑，包含`getAnswerNew`方法
+- **查询重写**：`QueryRewriter`使用大模型优化用户查询
+- **向量检索**：`pgVectorVectorStore`从PostgreSQL中检索相关文档
+- **大模型调用**：通过`ChatClient`和`IChatModelStrategy`动态选择并调用不同的大模型
+
+
+
+**代码生成原理**
+
+当用户输入"建表"时：
+
+1. 查询被重写为"创建表结构"
+2. 系统从向量数据库中检索到提问模板文档中的表结构定义和代码生成要求
+3. 大模型根据检索到的内容（包含MySQL表结构和生成要求）生成完整的Java代码
+4. 生成的代码包括实体类、Controller、Service接口及实现、Mapper接口及XML文件
+
+
+
+**技术亮点**
+
+- **多模型支持**：通过`modelStrategyMap`支持不同大模型（alibaba、deepseek等）
+- **查询优化**：使用`RewriteQueryTransformer`提高检索质量
+- **上下文增强**：通过`QuestionAnswerAdvisor`将检索到的文档内容作为上下文提供给大模型
+- **内存对话**：使用`MessageChatMemoryAdvisor`维护对话历史
+
+这种实现方式结合了向量检索和大模型生成能力，使系统能够基于已有知识库生成高质量的代码，而不仅仅依赖大模型的预训练知识。
+
+
+
+## 生成规则文件
+
+### 绩效奖励规则 ★★★
+
+为MeritRewardV5.groovy脚本生成 "ruleId": "performance-reward-rule-001",格式相同的文件，用于AI智能分析问题，提取groovy脚本中计算amount值的相关环节，例如SQL查询语句，包括将Mybatis对应的转义成SQL，以及计算过程
+
+
+
+智能提问
+
+http://dev.jdl.com:8123/api/swagger-ui/index.html#/knowledge-base-controller/enhancedSmartQA
+
+```json
+{
+  "question": "查询绩效奖励数据，source in (2) 且 business_day in ('2023-06-11', '2023-06-12', '2023-06-13')， 且 erp = bjmiaoyanchao, 对应的 erp_business_day in ('2024-12-29')",
+  "modelType": "openai",
+  "analysisInstruction": "分析绩效奖励数据的计算过程和波动，汇总日期总数据并求均值"
+}
+```
+
+
+
+```json
+{
+  "ruleId": "performance-reward-rule-001",
+  "ruleName": "绩效奖励成本项数据波动分析规则",
+  "description": "用于分析绩效奖励成本项数据波动的任务拆解规则",
+  "matchPatterns": [
+    "绩效奖励.*波动",
+    "绩效奖励.*数据.*分析",
+    "performance.*reward.*data"
+  ],
+  "taskTemplates": [
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 1,
+      "descriptionTemplate": "查询最近3天的绩效奖励用户数据，按运行状态、业务日期和来源分组统计",
+      "queryTemplate": "SELECT run_status_ext1, business_day, source, count(run_status_ext1), sum(expense_cost) sum, min(create_time) minCt, max(create_time) maxCt, max(ts) FROM performance_reward_user WHERE business_day in ({{business_day}}) and source in ({{source}}) GROUP BY run_status_ext1, business_day, source order by business_day",
+      "parameterMappings": {
+        "source": "source\\s+in\\s+\\(([^\\)]+)\\)",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 2,
+      "descriptionTemplate": "查询指定用户的信息，使用前一天的业务日期",
+      "queryTemplate": "select * from user_info where erp = {{erp}} and business_day in ({{business_day}})",
+      "parameterMappings": {
+        "erp": "erp\\s*=\\s*(?:['\"])?([^'\"\\s]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": [0]
+    }
+  ]
+}
+```
+
+
+
+### 人员数量校验规则
+
+ [【人力成本运维】-人员数量差异-251023.mkd](../../src/main/resources/document/【人力成本运维】-人员数量差异-251023.mkd) 根据MD文件和建表语句生成AI规则
+
+```sql
+CREATE TABLE `user_info` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `data_source` varchar(16) NOT NULL DEFAULT '' COMMENT '数据来源',
+  `erp` varchar(50) NOT NULL DEFAULT '' COMMENT 'erp',
+  `user_code` varchar(50) NOT NULL DEFAULT '' COMMENT '用户编码（账号系统唯一标识）',
+  `business_day` varchar(10) NOT NULL DEFAULT '' COMMENT '快照日期（yyyy-MM-dd）',
+  `user_id` varchar(50) NOT NULL DEFAULT '' COMMENT '对应通道user_code',
+  
+  `work_state` int(10) NOT NULL DEFAULT '0' COMMENT 'HR状态 101:正常在岗 102:试用期 103:实习期 104:劳务用工 105:临时工 301:辞职 302:辞退 304:其他人员',
+  `status` int(10) NOT NULL DEFAULT '0' COMMENT '用户状态',
+  `quit_action_date` date DEFAULT NULL COMMENT '离职生效日期',
+  `quit_time` date DEFAULT NULL COMMENT '离职日期',
+  `entry_time` date DEFAULT NULL COMMENT '入职日期',
+  `up_create_time` datetime DEFAULT NULL COMMENT '上游系统创建时间',
+  
+  PRIMARY KEY (`id`),
+  KEY `idx_business_day_user_id_up_create_time` (`business_day`,`user_id`,`up_create_time`),
+  KEY `idx_business_day_run_state_run_time` (`business_day`,`run_state`,`run_time`),
+  KEY `idx_erp_business_day` (`erp`,`business_day`),
+  KEY `idx_user_id_business_day` (`user_id`,`business_day`),
+  KEY `idx_user_code_business_day` (`user_code`,`business_day`),
+  KEY `idx_business_day_ps_code` (`business_day`,`ps_code`),
+  KEY `idx_business_day_status_full_ps_code` (`business_day`,`full_ps_code`),
+  KEY `idx_create_time` (`create_time`),
+  KEY `idx_business_day_ps_code_level_nature_position_data_source` (`business_day`,`ps_code`,`level_code`,`nature`,`position_name`,`data_source`),
+  KEY `idx_business_day_ps_code_data_source_settle_code` (`business_day`,`ps_code`,`data_source`,`settle_company_code`),
+  KEY `user_info_business_day_IDX` (`business_day`,`organization_business`) USING BTREE,
+  KEY `idx_user_info_optimize` (`is_delete`,`business_day`,`run_state`),
+  KEY `idx_user_info_level_code_spec_IDX` (`level_code_spec`,`level_name_spec`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='人员基本信息表';
+```
+
+
+
+根据上述内容和建表语句生成文件performance-reward-rule.json格式相同的文件用于适用AI智能分析问题关于分析人员信息数据情况。
+
+生成内容包含例如SQL查询语句，人员情况分析，包括总量数据和ERP维度查询。
+
+SQL语句中，除了isdelete=0这样的where查询外，其他查询条件抽取为变量参数，对参数的处理也参考performance-reward-rule.json 里面的parameterMappings，一个是适配用户在与大模型对话时输入参数并不规范，比如字符串带单引号或没带单引号，最终生产的SQL需要符合SQL语法规范
+
+#### 全量规则
+
+```json
+{
+  "ruleId": "user-info-analysis-rule-001",
+  "ruleName": "人员信息数据波动分析规则",
+  "description": "用于分析人员信息数据波动、离职时间过滤和数据源变化的任务拆解规则",
+  "matchPatterns": [
+    "人员.*数据.*波动",
+    "人员.*数量.*差异",
+    "离职.*过滤",
+    "数据源.*变化",
+    "user.*info.*analysis"
+  ],
+  "taskTemplates": [
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 1,
+      "descriptionTemplate": "查询不同业务日期的人员数据量，分析数据波动情况",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count, MAX(ts) AS max_ts, MIN(ts) AS min_ts FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} AND data_source = {{data_source}} GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|source\\s*in\\s*\\(([^\\)]+)\\)",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 2,
+      "descriptionTemplate": "比较非国际部门不同日期人员数据量差异",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} AND data_source = {{data_source}} AND NOT (full_ps_code_name LIKE '京东集团-京东物流-美洲区%' OR full_ps_code_name LIKE '京东集团-京东物流-欧洲区%' OR full_ps_code_name LIKE '京东集团-京东物流-中东区%' OR full_ps_code_name LIKE '京东集团-京东物流-亚太区%') GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|source\\s*in\\s*\\(([^\\)]+)\\)",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
+      },
+      "dependencyIndices": [0]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 3,
+      "descriptionTemplate": "查询特定ERP在不同业务日期的数据情况",
+      "queryTemplate": "SELECT business_day, quit_action_date, quit_time, entry_time, t.* FROM user_info t WHERE business_day >= {{start_date}} AND erp = {{erp}} ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "erp": "erp\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
+      },
+      "dependencyIndices": [0]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 4,
+      "descriptionTemplate": "分析数据源变化情况",
+      "queryTemplate": "SELECT business_day, data_source, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, data_source ORDER BY business_day, data_source",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 5,
+      "descriptionTemplate": "查找数据源发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN data_source ELSE NULL END) AS day1_source, MIN(CASE WHEN business_day = {{day2}} THEN data_source ELSE NULL END) AS day2_source FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_source != day2_source OR (day1_source IS NULL) != (day2_source IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [4]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 6,
+      "descriptionTemplate": "分析离职时间分布",
+      "queryTemplate": "SELECT business_day, CASE WHEN quit_time IS NULL THEN 'NULL' WHEN quit_time < {{period_start}} THEN 'BEFORE_PERIOD' WHEN quit_time >= {{period_start}} AND quit_time < {{period_end}} THEN 'CURRENT_PERIOD' ELSE 'FUTURE_PERIOD' END AS quit_time_category, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, quit_time_category ORDER BY business_day, quit_time_category",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "period_start": "quit_time\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|quit_time\\s*<\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "period_end": "quit_time\\s*<\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|quit_time\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 7,
+      "descriptionTemplate": "查找离职时间发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN quit_time ELSE NULL END) AS day1_quit, MIN(CASE WHEN business_day = {{day2}} THEN quit_time ELSE NULL END) AS day2_quit FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING (day1_quit IS NULL AND day2_quit IS NOT NULL) OR (day1_quit IS NOT NULL AND day2_quit IS NULL) OR (day1_quit != day2_quit)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [6]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 8,
+      "descriptionTemplate": "分析人员状态分布",
+      "queryTemplate": "SELECT business_day, status, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, status ORDER BY business_day, status",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 9,
+      "descriptionTemplate": "查找状态发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN status ELSE NULL END) AS day1_status, MIN(CASE WHEN business_day = {{day2}} THEN status ELSE NULL END) AS day2_status FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_status != day2_status OR (day1_status IS NULL) != (day2_status IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [8]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 10,
+      "descriptionTemplate": "分析部门层级分布",
+      "queryTemplate": "SELECT business_day, SUBSTRING_INDEX(full_ps_code, '.', 3) AS dept_level3, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, dept_level3 ORDER BY business_day, dept_level3",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 11,
+      "descriptionTemplate": "查找部门发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN full_ps_code ELSE NULL END) AS day1_dept, MIN(CASE WHEN business_day = {{day2}} THEN full_ps_code ELSE NULL END) AS day2_dept FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_dept != day2_dept OR (day1_dept IS NULL) != (day2_dept IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [10]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 12,
+      "descriptionTemplate": "分析用工性质分布",
+      "queryTemplate": "SELECT business_day, nature, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} GROUP BY business_day, nature ORDER BY business_day, nature",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 13,
+      "descriptionTemplate": "查找用工性质发生变化的人员",
+      "queryTemplate": "SELECT erp, MIN(CASE WHEN business_day = {{day1}} THEN nature ELSE NULL END) AS day1_nature, MIN(CASE WHEN business_day = {{day2}} THEN nature ELSE NULL END) AS day2_nature FROM user_info WHERE is_delete = 0 AND business_day IN ({{day1}}, {{day2}}) AND erp IS NOT NULL GROUP BY erp HAVING day1_nature != day2_nature OR (day1_nature IS NULL) != (day2_nature IS NULL)",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)"
+      },
+      "dependencyIndices": [12]
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 14,
+      "descriptionTemplate": "查询特定日期范围内离职时间在指定日期之前的人员数量",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count FROM user_info t WHERE is_delete = 0 AND data_source = {{data_source}} AND business_day >= {{start_date}} AND quit_time <= {{quit_date}} GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "quit_date": "quit_time\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 15,
+      "descriptionTemplate": "查询特定日期范围内离职时间在指定日期之后的人员数量",
+      "queryTemplate": "SELECT business_day, COUNT(1) AS user_count FROM user_info t WHERE is_delete = 0 AND data_source = {{data_source}} AND business_day >= {{start_date}} AND quit_time >= {{quit_date}} GROUP BY business_day ORDER BY business_day",
+      "parameterMappings": {
+        "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "quit_date": "quit_time\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    },
+    {
+      "taskType": "SQL_QUERY",
+      "priority": 16,
+      "descriptionTemplate": "查询某一天存在但次日不存在的人员数量",
+      "queryTemplate": "SELECT COUNT(1) FROM (SELECT * FROM user_info WHERE is_delete = 0 AND business_day = {{day1}} AND data_source = {{data_source}} AND erp NOT IN (SELECT erp FROM user_info WHERE is_delete = 0 AND business_day = {{day2}} AND data_source = {{data_source}})) a",
+      "parameterMappings": {
+        "day1": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\(([^,\\)]+)",
+        "day2": "business_day\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|business_day\\s+IN\\s+\\([^,]+,\\s*([^\\)]+)",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?"
+      },
+      "dependencyIndices": []
+    }
+  ]
+}
+```
+
+
+
+#### 文档太大了报错
+
+```shell
+org.springframework.ai.retry.NonTransientAiException: 400 - {"request_id":"c6feeaaa-faf4-4b63-a9ff-8b595d47fa1d","code":"InvalidParameter","message":"Inference error: Range of input length should be [1, 2048]"}
+	at org.springframework.ai.autoconfigure.retry.SpringAiRetryAutoConfiguration$2.handleError(SpringAiRetryAutoConfiguration.java:100) ~[spring-ai-spring-boot-autoconfigure-1.0.0-M6.jar:1.0.0-M6]
+	at org.springframework.web.client.ResponseErrorHandler.handleError(ResponseErrorHandler.java:58) ~[spring-web-6.2.5.jar:6.2.5]
+	at org.springframework.web.client.StatusHandler.lambda$fromErrorHandler$1(StatusHandler.java:71) ~[spring-web-6.2.5.jar:6.2.5]
+	at org.springframework.web.client.StatusHandler.handle(StatusHandler.java:146) ~[spring-web-6.2.5.jar:6.2.5]
+	at org.springframework.web.client.DefaultRestClient$DefaultResponseSpec.applyStatusHandlers(DefaultRestClient.java:826) ~[spring-web-6.2.5.jar:6.2.5]
+	at org.springframework.web.client.DefaultRestClient$DefaultResponseSpec.lambda$readBody$4(DefaultRestClient.java:815) ~[spring-web-6.2.5.jar:6.2.5]
+	at org.springframework.web.client.DefaultRestClient.readWithMessageConverters(DefaultRestClient.java:215) ~[spring-web-6.2.5.jar:6.2.5]
+	at org.springframework.web.client.DefaultRestClient$DefaultResponseSpec.readBody(DefaultRestClient.java:814) ~[spring-web-6.2.5.jar:6.2.5]
+```
+
+
+
+
+
+
+
+# [功能调用]
+
+## 增强版智能问答处理流程
+
+http://dev.jdl.com:8123/api/swagger-ui/index.html#/knowledge-base-controller/enhancedSmartQA
+
+```java
+/**
+ * 增强版智能问答处理流程
+ * 该接口提供完整的智能问答处理流程，包括任务拆解、执行和结果汇总，并支持向量数据库存储
+ *
+ * 处理流程：
+ * 1. 先使用knowledgeBaseService.decomposeTask拆解任务
+ * 2. 根据不同的任务类型调用function call工具或MCP来分步骤解决问题
+ * 3. 将分步的结果汇总进行问题分析
+ * 4. 可选：将任务拆解结果存入向量数据库，用于后续相似问题的快速检索
+ *
+ * @param request 包含问题的请求
+ * @return 包含回答和执行结果的响应
+ */
+@PostMapping("/enhancedSmartQA")
+public ResponseEntity<QAResponse> enhancedSmartQA(@RequestBody QARequest request) {
+  
+```
+
+
+
+```json
+{
+  "question": "分析人员数据波动情况，data_source = 1 且 business_day in ('2025-08-25', '2025-08-26', '2025-08-27')，查询离职时间在2025-08-21之后的人员数量变化，并分析erp =wangpengde 的详细信息",
+  "modelType": "openai",
+  "analysisInstruction": "分析不同业务日期的人员数量变化趋势，计算日环比增长率，重点关注离职人员比例和部门分布情况，汇总关键指标并生成数据洞察"
+}
+```
+
+
+
+
+
+# [待完成功能] ★★
+
+- 内存或其他模式的向量存储实现(例如ES和Redis也可以，参考 https://docs.spring.io/spring-ai/reference/api/vectordbs.html)
+- 完善任务和规则处理功能
+- MCP的调用
+- 多场景应用（人力成本、绩效...)
+- **配套的前端实现：规则上传、结果展示..**.
+
+
+
+
+
+# [文档梳理点]
+
+- 自然语义对话和大模型结合，基于规则和任务理解找到对应的方法进行处理
+- 多model使用
+- 多数据源
+- 多场景应用
+
+### 项目架构与文档梳理
+
+https://joyspace.jd.com/pages/ClP8VsDoQGRfs1mA9F5q
+
+
+
+
+
+# [相关知识点]
+
+## 检索增强生成 ★★
+
+`.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))` 这一行代码在大模型对话系统中扮演了**检索增强生成**（Retrieval-Augmented Generation, RAG）的关键角色。下面从作用、原理、技术栈和相关知识点几个方面进行重点解读：
+
+
+
+**一、作用：实现检索增强生成（RAG）**
+
+ 核心目标：
+在大模型（LLM）生成回答前，**先从外部知识库**（如企业文档、FAQ、数据库等）。
+
+ 为什么需要？
+- **大模型知识有限**：LLM 的训练数据截止于某个时间点，无法获取最新或私有信息。
+- **幻觉问题**：LLM 可能“编造”答案，尤其在面对专业或特定领域问题时。
+- **提升准确性与可信度**：通过引入真实、权威的上下文，使回答更可靠。
+
+
+
+**二、技术原理：RAG 工作流程**
+
+1. **用户提问** → `message`
+2. **查询重写**（可选）→ `rewrittenMessage`（提升检索效果）
+3. **向量化查询**：将 `rewrittenMessage` 通过嵌入模型（如 text-embedding-ada-002）转换为向量
+4. **向量检索**：在 `pgVectorVectorStore`（基于 PostgreSQL + pgvector 插件的向量数据库）中查找与查询向量最相似的 Top-K 文档片段
+5. **上下文注入**：将检索到的相关文档作为上下文（context）拼接到 prompt 中
+6. **大模型生成**：LLM 基于“问题 + 检索到的上下文”生成最终回答
+
+> `QuestionAnswerAdvisor` 就是负责第 3–5 步的“顾问”（Advisor），它拦截对话流程，在调用 LLM 前动态注入检索结果。
+
+
+
+**三、关键组件解析**
+
+ 1. `QuestionAnswerAdvisor`
+- 是一个自定义的 **Spring AI Advisor**（或类似框架中的拦截器）
+- 在 prompt 构建阶段介入，执行：
+  - 向量检索
+  - 构造 RAG prompt（如：“基于以下资料回答问题：{retrieved_docs}。问题：{query}”）
+- 通常封装了与向量数据库交互的逻辑
+
+ 2. `pgVectorVectorStore`
+- 基于 **PostgreSQL** 的向量存储扩展 [pgvector](https://github.com/pgvector/pgvector)
+- 支持高效相似性搜索（如余弦相似度、内积、欧氏距离）
+- 优点：与关系型数据共存、事务支持、易于部署维护
+- 存储内容通常是：文档分块 + 嵌入向量 + 元数据（如来源、时间）
+
+
+
+**四、相关知识点扩展**
+
+| 概念                                         | 说明                                                         |
+| -- |  |
+| **Embedding**                                | 将文本转换为高维向量，语义相近的文本向量距离更近             |
+| **Chunking**                                 | 将长文档切分为小段（chunks），便于向量化和检索               |
+| **Similarity Search**                        | 在向量空间中查找最接近查询向量的 Top-K 向量                  |
+| **Prompt Engineering for RAG**               | 设计 prompt 模板，引导 LLM 优先使用检索内容作答              |
+| **HyDE**（Hypothetical Document Embeddings） | 先让 LLM 生成假设答案，再用其向量检索，提升召回率（高级技巧） |
+| **Re-ranking**                               | 对初检结果用 Cross-Encoder 等模型二次排序，提升精度          |
+
+
+
+**五、实际效果示例**
+
+**用户问**：  
+
+> “我们公司最新的请假政策是什么？”
+
+**系统行为**：
+1. 查询重写为：“查询公司最新的员工请假政策”
+2. 向量检索命中 HR 手册中“2025年员工休假制度”片段
+3. LLM 接收到上下文：
+   ```
+   相关资料：
+   - 根据《2025年员工手册》第3章，年假为15天，病假需提供医院证明...
+   问题：我们公司最新的请假政策是什么？
+   ```
+4. LLM 基于资料生成准确回答，而非“根据我的训练数据……”
+
+
+
+**六、总结**
+
+`.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))` 的本质是：
+
+> **让大模型“先查资料再回答”**，通过向量数据库实现动态知识注入，解决 LLM 的知识滞后与幻觉问题，是构建企业级智能问答系统的核心技术之一。
+
+这种模式结合了 **传统信息检索**（向量搜索） 与 **生成式 AI**（LLM） 的优势，是当前 RAG 架构的标准实践。
+
+
+
+## RAG检索增强
+
+大模型中的 RAG（Retrieval-Augmented Generation，检索增强生成） 是一种结合信息检索与语言生成的技术，旨在提升大语言模型（LLM）在回答问题时的准确性、时效性和可解释性，尤其用于缓解大模型常见的“幻觉”（hallucination）问题。
+
+**一、RAG 的核心思想**
+“先查资料，再写答案”
+
+RAG 不让大模型仅凭内部参数“凭空编造”，而是：
+1. 检索：根据用户问题，从外部知识库（如企业文档、数据库、网页等）中查找最相关的信息；
+
+2. 增强：将检索到的内容作为上下文（context）拼接到提示词（prompt）中；
+
+3. 生成：大模型基于原始问题 + 检索结果，生成更可靠、有依据的回答。
+
+   
+
+**二、RAG 的典型工作流程**
+
+mermaid
+graph LR
+A[用户提问] --> B(Retriever: 检索模块)
+B --> C{外部知识库<br/>（向量数据库/图数据库等）}
+C --> D[Top-K 相关文档片段]
+D --> E[构建 Prompt：<br/>“根据以下资料回答问题：...”]
+E --> F[LLM 生成答案]
+F --> G[返回给用户]
+关键组件：
+Embedding 模型：将问题和文档转为向量（如 text-embedding-ada-002、BGE、m3e 等）。
+向量数据库：存储文档向量，支持高效相似性检索（如 Pinecone、Weaviate、Milvus、PGVector、Qdrant）。
+大语言模型（LLM）：负责最终生成（如 GPT-4、Qwen、DeepSeek、Llama 3 等）。
+
+
+
+**三、RAG 的优势**
+
+优势 说明
+------ ------
+✅ 减少幻觉 回答基于真实文档，避免“一本正经胡说八道”
+✅ 知识可更新 只需更新知识库，无需重新训练模型
+✅ 领域定制强 可接入企业私有数据（产品手册、合同、客服记录等）
+✅ 可解释性好 可展示引用来源（“根据XX文档第3段…”）
+✅ 成本低 相比微调，RAG 实现快、维护简单
+
+
+
+**四、RAG 的局限与挑战**
+
+挑战 说明
+------ ------
+❌ 检索不准 若检索模块召回错误/不相关文档，LLM 会“基于错误前提推理”
+❌ 上下文长度限制 LLM 有 token 限制（如 32K），无法塞入太多文档
+❌ 多跳推理弱 难以处理需多次检索、跨文档推理的复杂问题
+❌ 信息合成难 LLM 可能忽略检索内容，或错误整合多个片段
+❌ 静态检索 传统 RAG 只检索一次，无法在生成过程中动态补充信息
+
+
+
+**五、RAG 的进阶演进**
+
+为克服上述问题，近年出现多种 RAG 增强方案：
+
+方案 特点
+------ ------
+Self-RAG 引入“反思”机制，模型自主判断是否需要检索、是否可信
+GraphRAG / LightRAG 利用知识图谱结构，捕捉实体关系，提升复杂查询能力
+Insight-RAG 先解析问题核心“洞察点”，再精准挖掘深层信息
+Agent + RAG 用智能体（Agent）规划多轮检索、工具调用、自我修正
+Hybrid Search 结合关键词（BM25）+ 向量检索，提升召回率
+例如：LightRAG（2024） 通过构建图结构索引，在 Legal、CS 等复杂数据集上显著优于传统 RAG。
+
+
+
+**六、RAG vs 微调（Fine-tuning）**
+
+维度 RAG 微调
+------ ----- ------
+知识更新 实时（改数据库即可） 慢（需重新训练）
+幻觉控制 强（强制引用） 弱（依赖训练数据）
+适用场景 事实型问答、客服、文档问答 风格模仿、复杂推理、术语理解
+成本 低（无需训练） 高（需标注数据、算力）
+推荐策略 先 RAG，再微调，或混合使用
+实战建议：80% 场景用 RAG 足够；20% 深度专业场景考虑微调或 RAG+微调混合。
+
+
+
+**七、典型应用场景**
+📚 企业知识库问答（如 HR 政策、产品手册）
+💬 智能客服（接入最新商品/退换货规则）
+📰 新闻/金融摘要（基于最新报道生成分析）
+⚖️ 法律/医疗辅助（引用法规条文、诊疗指南）
+🎓 教育答疑（基于教材/题库生成解析）
+
+
+
+**八、国内大模型与 RAG**
+百度文心一言：依托搜索基因，RAG 能力突出（“理解-检索-生成”三阶段优化）。
+DeepSeek、Qwen、Kimi：均支持 RAG 接入私有知识库。
+开源方案：Dify、LangChain-Chatchat、FastGPT 等提供 RAG 低代码平台。
+
+总结
+RAG = 给大模型配一本“实时更新的参考书”。
+它不是万能药，但却是当前最实用、最经济、最可控的大模型落地技术之一。
+
+如果你正在构建企业级 AI 应用，RAG 应作为首选方案进行验证。随着 LightRAG、Insight-RAG 等新技术的出现，RAG 正在从“简单检索”迈向“深度理解与推理”的新阶段。
+
+如需具体实现示例（如 Spring AI + PGVector + Qwen 的 RAG 架构），可继续提问！
+
+
+
+
+
+# [相关资料]
+
+## SpringAI-官方文档
+
+https://docs.spring.io/spring-ai/reference/api/vectordbs/elasticsearch.html
+
+### VectorStore 实现
+
+这些是该接口的可用实现`VectorStore`：
+
+- [Azure Vector Search](https://docs.spring.io/spring-ai/reference/api/vectordbs/azure.html) - The [Azure](https://learn.microsoft.com/en-us/azure/search/vector-search-overview) vector store.
+- [Apache Cassandra](https://docs.spring.io/spring-ai/reference/api/vectordbs/apache-cassandra.html) - The [Apache Cassandra](https://cassandra.apache.org/doc/latest/cassandra/vector-search/overview.html) vector store.
+- [Chroma Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/chroma.html) - The [Chroma](https://www.trychroma.com/) vector store.
+- [Elasticsearch Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/elasticsearch.html) - The [Elasticsearch](https://www.elastic.co/) vector store.
+- [GemFire Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/gemfire.html) - The [GemFire](https://tanzu.vmware.com/content/blog/vmware-gemfire-vector-database-extension) vector store.
+- [MariaDB Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/mariadb.html) - The [MariaDB](https://mariadb.com/) vector store.
+- [Milvus Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/milvus.html) - The [Milvus](https://milvus.io/) vector store.
+- [MongoDB Atlas Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/mongodb.html) - The [MongoDB Atlas](https://www.mongodb.com/atlas/database) vector store.
+- [Neo4j Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/neo4j.html) - The [Neo4j](https://neo4j.com/) vector store.
+- [OpenSearch Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/opensearch.html) - The [OpenSearch](https://opensearch.org/platform/search/vector-database.html) vector store.
+- [Oracle Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/oracle.html) - The [Oracle Database](https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/overview-ai-vector-search.html) vector store.
+- [PgVector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/pgvector.html) - The [PostgreSQL/PGVector](https://github.com/pgvector/pgvector) vector store.
+- [Pinecone Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/pinecone.html) - [PineCone](https://www.pinecone.io/) vector store.
+- [Qdrant Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/qdrant.html) - [Qdrant](https://www.qdrant.tech/) vector store.
+- [Redis Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/redis.html) - The [Redis](https://redis.io/) vector store.
+- [SAP Hana Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/hana.html) - The [SAP HANA](https://news.sap.com/2024/04/sap-hana-cloud-vector-engine-ai-with-business-context/) vector store.
+- [Typesense Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/typesense.html) - The [Typesense](https://typesense.org/docs/0.24.0/api/vector-search.html) vector store.
+- [Weaviate Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/weaviate.html) - The [Weaviate](https://weaviate.io/) vector store.
+- [SimpleVectorStore](https://github.com/spring-projects/spring-ai/blob/main/spring-ai-vector-store/src/main/java/org/springframework/ai/vectorstore/SimpleVectorStore.java) - A simple implementation of persistent vector storage, good for educational purposes.
+
+
+
+- [Azure 矢量搜索](https://docs.spring.io/spring-ai/reference/api/vectordbs/azure.html)- [Azure](https://learn.microsoft.com/en-us/azure/search/vector-search-overview)矢量存储。
+- [Apache Cassandra](https://docs.spring.io/spring-ai/reference/api/vectordbs/apache-cassandra.html) - [Apache Cassandra](https://cassandra.apache.org/doc/latest/cassandra/vector-search/overview.html)矢量存储。
+- [Chroma 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/chroma.html)- [Chroma](https://www.trychroma.com/)矢量存储。
+- [Elasticsearch 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/elasticsearch.html)- [Elasticsearch](https://www.elastic.co/)矢量存储。
+- [GemFire 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/gemfire.html)- [GemFire](https://tanzu.vmware.com/content/blog/vmware-gemfire-vector-database-extension)矢量商店。
+- [MariaDB 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/mariadb.html)- [MariaDB](https://mariadb.com/)矢量存储。
+- [Milvus 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/milvus.html)- [Milvus](https://milvus.io/)矢量商店.
+- [MongoDB Atlas 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/mongodb.html)- [MongoDB Atlas](https://www.mongodb.com/atlas/database)矢量存储。
+- [Neo4j 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/neo4j.html)- [Neo4j](https://neo4j.com/)矢量存储。
+- [OpenSearch 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/opensearch.html)- [OpenSearch](https://opensearch.org/platform/search/vector-database.html)矢量存储。
+- [Oracle Vector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/oracle.html) - [Oracle 数据库](https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/overview-ai-vector-search.html)矢量存储。
+- [PgVector Store](https://docs.spring.io/spring-ai/reference/api/vectordbs/pgvector.html) - [PostgreSQL/PGVector](https://github.com/pgvector/pgvector)矢量存储。
+- [Pinecone 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/pinecone.html)- [PineCone](https://www.pinecone.io/)矢量商店。
+- [Qdrant 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/qdrant.html)- [Qdrant](https://www.qdrant.tech/)矢量存储。
+- [Redis 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/redis.html)- [Redis](https://redis.io/)矢量存储。
+- [SAP Hana 矢量存储](https://docs.spring.io/spring-ai/reference/api/vectordbs/hana.html)- [SAP HANA](https://news.sap.com/2024/04/sap-hana-cloud-vector-engine-ai-with-business-context/)矢量存储。
+- [Typesense 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/typesense.html)- [Typesense](https://typesense.org/docs/0.24.0/api/vector-search.html)矢量商店。
+- [Weaviate 矢量商店](https://docs.spring.io/spring-ai/reference/api/vectordbs/weaviate.html)- [Weaviate](https://weaviate.io/)矢量商店。
+- [SimpleVectorStore](https://github.com/spring-projects/spring-ai/blob/main/spring-ai-vector-store/src/main/java/org/springframework/ai/vectorstore/SimpleVectorStore.java) - 持久向量存储的简单实现，适合教育目的。
+
+未来版本可能会支持更多实现。
+
+如果您有一个需要 Spring AI 支持的矢量数据库，请在 GitHub 上打开一个问题，或者更好的是，提交一个带有实现的拉取请求。
+
+有关每种`VectorStore`实现方式的信息可在本章的小节中找到。
+
+
+
+
+
+
+
+
+
+
+

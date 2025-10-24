@@ -175,14 +175,50 @@ public class KnowledgeBaseController {
      */
     @PostMapping("/enhancedSmartQA")
     public ResponseEntity<QAResponse> enhancedSmartQA(@RequestBody QARequest request) {
-        log.info("KnowledgeBaseController.enhancedSmartQA开始执行, 问题: {}, 模型类型: {}, 分析指令: {}, 是否存储到向量库: {}",
-                request.getQuestion(), request.getModelType(), request.getAnalysisInstruction(), request.isSaveToVectorStore());
+        log.info("【调试增强】KnowledgeBaseController.enhancedSmartQA开始执行");
+        log.info("【调试增强】请求详情 - 问题: {}", request.getQuestion());
+        log.info("【调试增强】请求详情 - 模型类型: {}", request.getModelType());
+        log.info("【调试增强】请求详情 - 分析指令: {}", request.getAnalysisInstruction());
+        log.info("【调试增强】请求详情 - 是否存储到向量库: {}", request.isSaveToVectorStore());
+        
+        // 分析问题中的关键SQL条件
+        String question = request.getQuestion();
+        if (question.contains("source") || question.contains("business_day") || question.contains("erp")) {
+            log.info("【调试增强】检测到SQL相关关键词:");
+            if (question.contains("source")) log.info("【调试增强】 - 包含'source'关键词");
+            if (question.contains("business_day")) log.info("【调试增强】 - 包含'business_day'关键词");
+            if (question.contains("erp")) log.info("【调试增强】 - 包含'erp'关键词");
+            
+            // 检测IN子句
+            if (question.contains(" in ") || question.contains(" IN ")) {
+                log.info("【调试增强】检测到IN子句表达式");
+                // 尝试提取IN子句内容
+                int inIndex = question.toLowerCase().indexOf(" in ");
+                if (inIndex > 0) {
+                    int openParenIndex = question.indexOf("(", inIndex);
+                    int closeParenIndex = question.indexOf(")", openParenIndex);
+                    if (openParenIndex > 0 && closeParenIndex > openParenIndex) {
+                        String inClauseContent = question.substring(openParenIndex + 1, closeParenIndex);
+                        log.info("【调试增强】提取到IN子句内容: {}", inClauseContent);
+                    }
+                }
+            }
+        }
         
         // 使用新的对象参数版本的方法，一次性完成任务拆解、执行和结果汇总
-        log.info("调用decomposeAndExecuteTasks(QARequest)方法，完成任务拆解、执行和结果汇总");
+        log.info("【调试增强】调用decomposeAndExecuteTasks(QARequest)方法，完成任务拆解、执行和结果汇总");
+        long startTime = System.currentTimeMillis();
         QAResponse response = knowledgeBaseService.decomposeAndExecuteTasks(request);
+        long endTime = System.currentTimeMillis();
         
-        log.info("KnowledgeBaseController.enhancedSmartQA执行完成");
+        log.info("【调试增强】任务处理耗时: {}ms", (endTime - startTime));
+        log.info("【调试增强】响应状态: {}", response != null ? "成功" : "失败");
+        if (response != null) {
+            log.info("【调试增强】响应内容长度: {}",
+                    response.getAnswer() != null ? response.getAnswer().length() : 0);
+        }
+        
+        log.info("【调试增强】KnowledgeBaseController.enhancedSmartQA执行完成");
         return ResponseEntity.ok(response);
     }
     

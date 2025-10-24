@@ -16,4 +16,7 @@ public class QAResponse {
     
 //    private List<String> references;
 //    private Double confidence;
+
+    private String errorMessage;
+
 }

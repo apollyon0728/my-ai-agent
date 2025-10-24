@@ -112,6 +112,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
 
     /**
      * [重要] 查找与问题匹配的规则
+     * 支持分块存储的规则查询和合并
      *
      * @param question 用户问题
      * @return 匹配的规则列表
@@ -123,6 +124,16 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}, 查询前向量存储文档数量: {}",
                 question, SIMILARITY_THRESHOLD, Thread.currentThread().getId(), initialDocCount);
 
+        // 详细记录用户问题的关键部分，帮助调试规则匹配
+        log.info("【规则匹配调试】用户问题: {}", question);
+        // 提取可能的关键词，帮助分析为什么规则匹配失败
+        String[] keywordPatterns = {"source", "business_day", "erp", "in", "=", ">=", "<="};
+        for (String pattern : keywordPatterns) {
+            if (question.contains(pattern)) {
+                log.info("【规则匹配调试】检测到关键词: {}", pattern);
+            }
+        }
+
         // 尝试不同格式的过滤表达式
         log.info("尝试使用不同格式的过滤表达式");
 
@@ -133,7 +144,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         try {
             SearchRequest searchRequest = SearchRequest.builder()
                     .query(question)
-                    .topK(5)
+                    .topK(10) // 增加topK以获取更多可能的块
                     .similarityThreshold(SIMILARITY_THRESHOLD)
                     .filterExpression(filterExpr1)
                     .build();
@@ -149,12 +160,9 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
                 log.info("第一个文档ID: {}, 元数据: {}", firstDoc.getId(), firstDoc.getMetadata());
             }
 
-            // 解析文档内容为TaskRule对象
-            List<TaskRule> rules = similarDocuments.stream()
-                    .map(this::parseRuleFromDocument)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
+            // 处理分块规则
+            List<TaskRule> rules = processDocumentsWithChunks(similarDocuments);
+            
             if (!rules.isEmpty()) {
                 log.info("使用过滤表达式格式1成功找到{}个规则", rules.size());
                 return rules;
@@ -172,7 +180,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         try {
             SearchRequest searchRequest = SearchRequest.builder()
                     .query(question)
-                    .topK(5)
+                    .topK(10) // 增加topK以获取更多可能的块
                     .similarityThreshold(SIMILARITY_THRESHOLD)
                     .filterExpression(filterExpr2)
                     .build();
@@ -182,12 +190,9 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             log.info("格式2-查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
                     similarDocuments.size(), getVectorStoreDocumentCount());
 
-            // 解析文档内容为TaskRule对象
-            List<TaskRule> rules = similarDocuments.stream()
-                    .map(this::parseRuleFromDocument)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
+            // 处理分块规则
+            List<TaskRule> rules = processDocumentsWithChunks(similarDocuments);
+            
             if (!rules.isEmpty()) {
                 log.info("使用过滤表达式格式2成功找到{}个规则", rules.size());
                 return rules;
@@ -202,7 +207,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         log.info("findMatchingRules 尝试不使用过滤器");
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(question)
-                .topK(5)
+                .topK(10) // 增加topK以获取更多可能的块
                 .similarityThreshold(SIMILARITY_THRESHOLD)
                 .build();
 
@@ -211,14 +216,101 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         log.info("查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
                 Objects.requireNonNull(similarDocuments).size(), getVectorStoreDocumentCount());
 
-        // 解析文档内容为TaskRule对象
-        List<TaskRule> rules = similarDocuments.stream()
-                .map(this::parseRuleFromDocument)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
+        // 处理分块规则
+        List<TaskRule> rules = processDocumentsWithChunks(similarDocuments);
+        
         log.info("不使用过滤器找到{}个规则", rules.size());
         return rules;
+    }
+    
+    /**
+     * 处理可能包含分块的文档列表
+     * 将属于同一规则的块合并，并解析为TaskRule对象
+     *
+     * @param documents 文档列表
+     * @return 解析后的TaskRule对象列表
+     */
+    private List<TaskRule> processDocumentsWithChunks(List<Document> documents) {
+        // 用于存储完整规则的Map
+        Map<String, StringBuilder> completeRuleMap = new HashMap<>();
+        // 用于存储规则块数量的Map
+        Map<String, Integer> ruleChunkCountMap = new HashMap<>();
+        // 用于存储已收集的块索引的Map
+        Map<String, Set<Integer>> collectedChunksMap = new HashMap<>();
+        
+        // 首先处理非分块的规则
+        List<TaskRule> nonChunkedRules = new ArrayList<>();
+        
+        for (Document doc : documents) {
+            Map<String, Object> metadata = doc.getMetadata();
+            Boolean isChunked = metadata != null ? (Boolean) metadata.get("is_chunked") : false;
+            
+            if (isChunked == null || !isChunked) {
+                // 非分块规则，直接解析
+                TaskRule rule = parseRuleFromDocument(doc);
+                if (rule != null) {
+                    nonChunkedRules.add(rule);
+                }
+                continue;
+            }
+            
+            // 处理分块规则
+            String parentRuleId = (String) metadata.get("parent_rule_id");
+            Integer chunkIndex = (Integer) metadata.get("chunk_index");
+            Integer totalChunks = (Integer) metadata.get("total_chunks");
+            
+            if (parentRuleId == null || chunkIndex == null || totalChunks == null) {
+                log.warn("分块规则元数据不完整，跳过: {}", doc.getId());
+                continue;
+            }
+            
+            // 初始化规则块收集器
+            if (!completeRuleMap.containsKey(parentRuleId)) {
+                completeRuleMap.put(parentRuleId, new StringBuilder());
+                ruleChunkCountMap.put(parentRuleId, totalChunks);
+                collectedChunksMap.put(parentRuleId, new HashSet<>());
+            }
+            
+            // 添加块内容
+            Set<Integer> collectedChunks = collectedChunksMap.get(parentRuleId);
+            if (!collectedChunks.contains(chunkIndex)) {
+                completeRuleMap.get(parentRuleId).append(doc.getText());
+                collectedChunks.add(chunkIndex);
+                log.info("收集规则 {} 的块 {}/{}", parentRuleId, chunkIndex + 1, totalChunks);
+            }
+        }
+        
+        // 处理收集到的分块规则
+        List<TaskRule> chunkedRules = new ArrayList<>();
+        for (Map.Entry<String, StringBuilder> entry : completeRuleMap.entrySet()) {
+            String ruleId = entry.getKey();
+            StringBuilder ruleJson = entry.getValue();
+            int collectedCount = collectedChunksMap.get(ruleId).size();
+            int totalCount = ruleChunkCountMap.get(ruleId);
+            
+            if (collectedCount == totalCount) {
+                // 所有块都已收集，解析完整规则
+                log.info("规则 {} 的所有块已收集完成 ({}/{}), 尝试解析", ruleId, collectedCount, totalCount);
+                try {
+                    TaskRule rule = objectMapper.readValue(ruleJson.toString(), TaskRule.class);
+                    if (rule != null) {
+                        chunkedRules.add(rule);
+                        log.info("成功解析分块规则: {}", ruleId);
+                    }
+                } catch (JsonProcessingException e) {
+                    log.error("解析分块规则失败: {}, 错误: {}", ruleId, e.getMessage());
+                }
+            } else {
+                log.warn("规则 {} 的块收集不完整 ({}/{}), 跳过解析", ruleId, collectedCount, totalCount);
+            }
+        }
+        
+        // 合并非分块规则和分块规则
+        List<TaskRule> allRules = new ArrayList<>(nonChunkedRules);
+        allRules.addAll(chunkedRules);
+        
+        log.info("共解析 {} 个非分块规则和 {} 个分块规则", nonChunkedRules.size(), chunkedRules.size());
+        return allRules;
     }
 
     /**
@@ -305,47 +397,157 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             return parameters;
         }
 
+        log.info("【参数提取调试】开始从问题中提取参数，问题: {}", question);
+        log.info("【参数提取调试】参数映射: {}", parameterMappings);
+        
+        // 预处理问题，将中文连接词替换为标准SQL连接词，以便更好地匹配
+        String processedQuestion = question
+                .replaceAll("(?i)\\s+且\\s+", " AND ")
+                .replaceAll("(?i)\\s+或\\s+", " OR ")
+                .replaceAll("(?i)\\s+非\\s+", " NOT ");
+        
+        log.info("【参数提取调试】预处理后的问题: {}", processedQuestion);
+
         // 遍历参数映射
         for (Map.Entry<String, String> entry : parameterMappings.entrySet()) {
             String paramName = entry.getKey();
             String extractRule = entry.getValue();
 
+            log.info("【参数提取调试】尝试提取参数: {}, 使用规则: {}", paramName, extractRule);
+
             // 使用正则表达式提取参数
             Pattern pattern = Pattern.compile(extractRule);
-            Matcher matcher = pattern.matcher(question);
+            Matcher matcher = pattern.matcher(processedQuestion);
 
             if (matcher.find()) {
+                log.info("【参数提取调试】找到匹配: {}", matcher.group());
                 String extractedValue;
                 
-                // 如果有捕获组，使用第一个捕获组的值
+                // 如果有捕获组，使用第一个非null的捕获组的值
                 if (matcher.groupCount() > 0) {
-                    extractedValue = matcher.group(1);
+                    extractedValue = null;
+                    for (int i = 1; i <= matcher.groupCount(); i++) {
+                        if (matcher.group(i) != null) {
+                            extractedValue = matcher.group(i);
+                            log.info("【参数提取调试】使用捕获组 {} 值: {}", i, extractedValue);
+                            break;
+                        }
+                    }
+                    
+                    // 如果所有捕获组都为null，使用整个匹配
+                    if (extractedValue == null) {
+                        extractedValue = matcher.group();
+                        log.info("【参数提取调试】所有捕获组为null，使用整个匹配值: {}", extractedValue);
+                    }
+                    
+                    // 记录所有捕获组，帮助调试复杂正则表达式
+                    for (int i = 1; i <= matcher.groupCount(); i++) {
+                        log.info("【参数提取调试】捕获组 {}: {}", i, matcher.group(i));
+                    }
                 } else {
                     // 否则使用整个匹配的值
                     extractedValue = matcher.group();
+                    log.info("【参数提取调试】使用整个匹配值: {}", extractedValue);
+                }
+                
+                // 处理提取的值，移除多余的引号和空格
+                extractedValue = extractedValue.trim();
+                if (extractedValue.startsWith("'") && extractedValue.endsWith("'")) {
+                    extractedValue = extractedValue.substring(1, extractedValue.length() - 1);
+                    log.info("【参数提取调试】移除单引号后: {}", extractedValue);
                 }
                 
                 // 检查参数安全性
                 if (!SqlParameterUtils.isSqlParameterSafe(extractedValue)) {
-                    log.warn("检测到不安全的SQL参数值: {}", extractedValue);
+                    log.warn("【参数提取调试】检测到不安全的SQL参数值: {}", extractedValue);
                     continue;
                 }
                 
                 // 处理特殊参数类型
                 if (SqlParameterUtils.isInClauseParameter(paramName, extractedValue)) {
                     // 对于IN子句参数，进行特殊处理
-                    log.info("检测到IN子句参数: {}={}", paramName, extractedValue);
+                    log.info("【参数提取调试】检测到IN子句参数: {}={}", paramName, extractedValue);
+                    
+                    // 详细记录IN子句参数的内容和格式
+                    if (extractedValue.contains(",")) {
+                        String[] values = extractedValue.split(",");
+                        log.info("【参数提取调试】IN子句包含{}个值: {}", values.length, Arrays.toString(values));
+                        
+                        // 处理每个值，移除多余的引号和空格
+                        for (int i = 0; i < values.length; i++) {
+                            values[i] = values[i].trim();
+                            if (values[i].startsWith("'") && values[i].endsWith("'")) {
+                                values[i] = values[i].substring(1, values[i].length() - 1);
+                            }
+                        }
+                        
+                        // 重新组合处理后的值
+                        extractedValue = String.join(",", values);
+                        log.info("【参数提取调试】处理后的IN子句值: {}", extractedValue);
+                    }
+                    
                     parameters.put(paramName, extractedValue);
                 } else {
                     // 对于普通参数，直接存储
                     parameters.put(paramName, extractedValue);
                 }
                 
-                log.debug("提取参数: {}={}", paramName, extractedValue);
+                log.info("【参数提取调试】成功提取参数: {}={}", paramName, extractedValue);
+            } else {
+                log.warn("【参数提取调试】未能提取参数: {}, 规则: {}", paramName, extractRule);
             }
         }
-
+        
+        // 尝试从问题中提取特殊格式的参数
+        extractSpecialParameters(processedQuestion, parameters);
+        
         return parameters;
+    }
+    
+    /**
+     * 从问题中提取特殊格式的参数，如IN子句和多条件
+     *
+     * @param question 用户问题
+     * @param parameters 已提取的参数
+     */
+    private void extractSpecialParameters(String question, Map<String, Object> parameters) {
+        log.info("【特殊参数提取】开始提取特殊格式参数");
+        
+        // 提取source in (x) 格式的参数
+        Pattern sourceInPattern = Pattern.compile("source\\s+in\\s+\\(([^\\)]+)\\)", Pattern.CASE_INSENSITIVE);
+        Matcher sourceInMatcher = sourceInPattern.matcher(question);
+        if (sourceInMatcher.find()) {
+            String sourceValue = sourceInMatcher.group(1).trim();
+            log.info("【特殊参数提取】找到source in子句: {}", sourceValue);
+            parameters.put("data_source", sourceValue);
+        }
+        
+        // 提取business_day in ('x', 'y', 'z') 格式的参数
+        Pattern businessDayInPattern = Pattern.compile("business_day\\s+in\\s+\\(([^\\)]+)\\)", Pattern.CASE_INSENSITIVE);
+        Matcher businessDayInMatcher = businessDayInPattern.matcher(question);
+        if (businessDayInMatcher.find()) {
+            String businessDayValue = businessDayInMatcher.group(1).trim();
+            log.info("【特殊参数提取】找到business_day in子句: {}", businessDayValue);
+            parameters.put("business_day", businessDayValue);
+        }
+        
+        // 提取erp = x 格式的参数
+        Pattern erpPattern = Pattern.compile("erp\\s*=\\s*([^\\s,\\)]+)", Pattern.CASE_INSENSITIVE);
+        Matcher erpMatcher = erpPattern.matcher(question);
+        if (erpMatcher.find()) {
+            String erpValue = erpMatcher.group(1).trim();
+            log.info("【特殊参数提取】找到erp参数: {}", erpValue);
+            parameters.put("erp", erpValue);
+        }
+        
+        // 提取erp_business_day in ('x') 格式的参数
+        Pattern erpBusinessDayPattern = Pattern.compile("erp_business_day\\s+in\\s+\\(([^\\)]+)\\)", Pattern.CASE_INSENSITIVE);
+        Matcher erpBusinessDayMatcher = erpBusinessDayPattern.matcher(question);
+        if (erpBusinessDayMatcher.find()) {
+            String erpBusinessDayValue = erpBusinessDayMatcher.group(1).trim();
+            log.info("【特殊参数提取】找到erp_business_day in子句: {}", erpBusinessDayValue);
+            parameters.put("erp_business_day", erpBusinessDayValue);
+        }
     }
 
     /**
@@ -360,6 +562,9 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             return null;
         }
 
+        log.info("【模板处理调试】开始处理模板: {}", template);
+        log.info("【模板处理调试】可用参数: {}", parameters);
+
         String result = template;
 
         // 替换参数占位符
@@ -368,22 +573,33 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
             Object paramValue = entry.getValue();
             String placeholder = "\\{\\{" + paramName + "\\}\\}";
             
+            log.info("【模板处理调试】处理参数: {}={}, 占位符: {}", paramName, paramValue, placeholder);
+            
             // 根据参数类型进行格式化
             String formattedValue;
             if (SqlParameterUtils.isInClauseParameter(paramName, paramValue)) {
                 // 处理IN子句参数
                 formattedValue = SqlParameterUtils.processInClauseParameter(paramValue.toString());
-                log.info("格式化IN子句参数: {}={}", paramName, formattedValue);
+                log.info("【模板处理调试】格式化IN子句参数: {}={}", paramName, formattedValue);
             } else {
                 // 处理普通参数
                 formattedValue = SqlParameterUtils.formatParameterValue(paramValue);
-                log.debug("格式化参数: {}={}", paramName, formattedValue);
+                log.info("【模板处理调试】格式化普通参数: {}={}", paramName, formattedValue);
             }
             
             // 替换占位符
+            String beforeReplace = result;
             result = result.replaceAll(placeholder, formattedValue);
+            
+            // 检查替换是否成功
+            if (beforeReplace.equals(result)) {
+                log.warn("【模板处理调试】占位符替换失败: {}", placeholder);
+            } else {
+                log.info("【模板处理调试】占位符替换成功: {} -> {}", placeholder, formattedValue);
+            }
         }
 
+        log.info("【模板处理调试】处理后的模板: {}", result);
         return result;
     }
 

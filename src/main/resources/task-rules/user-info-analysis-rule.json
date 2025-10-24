@@ -17,9 +17,9 @@
       "queryTemplate": "SELECT business_day, COUNT(1) AS user_count, MAX(ts) AS max_ts, MIN(ts) AS min_ts FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} AND data_source = {{data_source}} GROUP BY business_day ORDER BY business_day",
       "parameterMappings": {
         "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
-        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|source\\s*in\\s*\\(([^\\)]+)\\)",
         "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
-        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
       },
       "dependencyIndices": []
     },
@@ -30,9 +30,9 @@
       "queryTemplate": "SELECT business_day, COUNT(1) AS user_count FROM user_info WHERE is_delete = 0 AND business_day >= {{start_date}} AND data_source = {{data_source}} AND NOT (full_ps_code_name LIKE '京东集团-京东物流-美洲区%' OR full_ps_code_name LIKE '京东集团-京东物流-欧洲区%' OR full_ps_code_name LIKE '京东集团-京东物流-中东区%' OR full_ps_code_name LIKE '京东集团-京东物流-亚太区%') GROUP BY business_day ORDER BY business_day",
       "parameterMappings": {
         "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
-        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
+        "data_source": "data_source\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?|source\\s*in\\s*\\(([^\\)]+)\\)",
         "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
-        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
       },
       "dependencyIndices": [0]
     },
@@ -45,7 +45,7 @@
         "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
         "erp": "erp\\s*=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
         "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
-        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
       },
       "dependencyIndices": [0]
     },
@@ -57,7 +57,7 @@
       "parameterMappings": {
         "start_date": "business_day\\s*>=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
         "end_date": "business_day\\s*<=\\s*(?:['\"])?([^'\"\\s\\)]+)(?:['\"])?",
-        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)"
+        "business_day": "business_day\\s+in\\s+\\(([^\\)]+)\\)|business_day\\s+in\\s+\\((?:'[^']*'(?:,\\s*'[^']*')*|\"[^\"]*\"(?:,\\s*\"[^\"]*\")*)\\)"
       },
       "dependencyIndices": []
     },

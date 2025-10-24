@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -141,29 +142,61 @@ public class SqlParameterUtils {
      */
     public static String formatListParameter(String listValue) {
         if (StringUtils.isEmpty(listValue)) {
+            log.debug("【列表格式化】值为空，返回默认值 ''");
             return "''";
         }
 
-        // 分割列表值
-        String[] items = listValue.split(",");
+        log.info("【列表格式化】开始格式化列表参数: '{}'", listValue);
+
+        // 分割列表值，处理可能的引号问题
+        String[] items;
+        if (listValue.contains("'")) {
+            // 使用正则表达式处理带引号的列表
+            List<String> extractedItems = new ArrayList<>();
+            Pattern pattern = Pattern.compile("'([^']*)'|([^,]+)");
+            Matcher matcher = pattern.matcher(listValue);
+            
+            while (matcher.find()) {
+                // 优先使用引号内的内容，如果没有则使用非逗号内容
+                String item = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+                if (item != null && !item.trim().isEmpty()) {
+                    extractedItems.add(item.trim());
+                }
+            }
+            
+            items = extractedItems.toArray(new String[0]);
+        } else {
+            // 普通分割
+            items = listValue.split(",");
+        }
+        
+        log.info("【列表格式化】分割后得到{}个项", items.length);
         List<String> formattedItems = new ArrayList<>();
         
         // 处理每个项
-        for (String item : items) {
+        for (int i = 0; i < items.length; i++) {
+            String item = items[i];
             String trimmedItem = item.trim();
+            log.debug("【列表格式化】处理第{}项: '{}'", i+1, trimmedItem);
+            
             // 移除可能存在的多余引号
             if (trimmedItem.startsWith("'") && trimmedItem.endsWith("'")) {
                 // 已经有单引号，直接使用
                 formattedItems.add(trimmedItem);
+                log.debug("【列表格式化】项{}已有引号，保持不变: '{}'", i+1, trimmedItem);
             } else {
                 // 没有单引号，根据类型添加
                 ParameterType itemType = identifyParameterType(trimmedItem);
-                formattedItems.add(formatParameterValue(trimmedItem, itemType));
+                String formattedItem = formatParameterValue(trimmedItem, itemType);
+                formattedItems.add(formattedItem);
+                log.debug("【列表格式化】项{}格式化后: '{}' (类型: {})", i+1, formattedItem, itemType);
             }
         }
         
         // 组合成IN子句参数
-        return String.join(",", formattedItems);
+        String result = String.join(",", formattedItems);
+        log.info("【列表格式化】最终格式化结果: '{}'", result);
+        return result;
     }
 
     /**
@@ -219,17 +252,44 @@ public class SqlParameterUtils {
      */
     public static String processInClauseParameter(String value) {
         if (StringUtils.isEmpty(value)) {
+            log.debug("【IN子句处理】值为空，返回默认值 ''");
             return "''";
         }
+
+        log.info("【IN子句处理】开始处理IN子句参数: '{}'", value);
 
         // 移除括号
         String cleanValue = value.trim();
         if (cleanValue.startsWith("(") && cleanValue.endsWith(")")) {
             cleanValue = cleanValue.substring(1, cleanValue.length() - 1);
+            log.info("【IN子句处理】移除括号后: '{}'", cleanValue);
+        }
+        
+        // 处理可能的引号问题
+        if (cleanValue.contains("'")) {
+            log.info("【IN子句处理】检测到包含单引号的IN子句");
+            
+            // 使用正则表达式匹配所有被单引号包围的值
+            List<String> quotedValues = new ArrayList<>();
+            Pattern pattern = Pattern.compile("'([^']*)'");
+            Matcher matcher = pattern.matcher(cleanValue);
+            
+            while (matcher.find()) {
+                quotedValues.add(matcher.group(1));
+            }
+            
+            if (!quotedValues.isEmpty()) {
+                log.info("【IN子句处理】提取到{}个带引号的值: {}", quotedValues.size(), quotedValues);
+                // 将提取的值重新组合，不带引号
+                cleanValue = String.join(",", quotedValues);
+                log.info("【IN子句处理】重新组合后的值: '{}'", cleanValue);
+            }
         }
         
         // 分割并处理每个项
-        return formatListParameter(cleanValue);
+        String result = formatListParameter(cleanValue);
+        log.info("【IN子句处理】处理后的IN子句参数: '{}'", result);
+        return result;
     }
 
     /**
@@ -241,17 +301,29 @@ public class SqlParameterUtils {
      */
     public static boolean isInClauseParameter(String paramName, Object value) {
         if (value == null) {
+            log.debug("【IN子句检测】值为null，不是IN子句参数");
             return false;
         }
         
         // 通过参数名判断
         if (paramName != null && paramName.toLowerCase().contains("in")) {
+            log.info("【IN子句检测】参数名 '{}' 包含'in'，判定为IN子句参数", paramName);
             return true;
         }
         
         // 通过值判断
         String strValue = value.toString().trim();
-        return LIST_PATTERN.matcher(strValue).matches() || 
-               (strValue.startsWith("(") && strValue.endsWith(")") && strValue.contains(","));
+        boolean isListPattern = LIST_PATTERN.matcher(strValue).matches();
+        boolean isParenthesisPattern = (strValue.startsWith("(") && strValue.endsWith(")") && strValue.contains(","));
+        
+        if (isListPattern) {
+            log.info("【IN子句检测】值 '{}' 匹配LIST_PATTERN，判定为IN子句参数", strValue);
+        }
+        
+        if (isParenthesisPattern) {
+            log.info("【IN子句检测】值 '{}' 匹配括号模式，判定为IN子句参数", strValue);
+        }
+        
+        return isListPattern || isParenthesisPattern;
     }
 }

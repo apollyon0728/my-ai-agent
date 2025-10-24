@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.yupi</groupId>
-    <artifactId>my-ai-agent</artifactId>
+    <artifactId>JDHR-AI</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>my-ai-agent</name>
     <description>my-ai-agent</description>

@@ -31,11 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
@@ -168,22 +164,23 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
         // FIXME 查询重写（主要作用是通过预定义的转换器优化或改写用户的查询语句）
         String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+        log.info("getAnswer AI推理输入长度: {}, 内容: {}", rewrittenMessage != null ? rewrittenMessage.length() : "null", rewrittenMessage);
 
         // 构建聊天请求并获取响应
         ChatResponse chatResponse = chatClient
                 .prompt()
                 // 使用改写后的查询
-                .user(rewrittenMessage)
+                .user(Objects.requireNonNull(rewrittenMessage))
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 // 开启日志，便于观察效果
                 .advisors(new MyLoggerAdvisor())
-                // FIXME 应用 RAG 检索增强服务（基于 PgVector 向量存储，知识库查询？）
+                // FIXME 应用 RAG 检索增强服务（基于 PgVector 向量存储，知识库查询）
                 .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .call()
                 .chatResponse();
 
-        String content = chatResponse.getResult().getOutput().getText();
+        String content = Objects.requireNonNull(chatResponse).getResult().getOutput().getText();
         log.info("content: {}", content);
 
         QAResponse qaResponse = new QAResponse();
@@ -207,6 +204,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         // FIXME 对用户查询进行重写优化
         String rewrittenMessage = queryRewriter.doQueryRewrite(message);
         log.info("KnowledgeBaseServiceImpl对用户查询进行重写优化 getAnswerNew, 重写前: {}, doQueryRewrite重写后: {}", message, rewrittenMessage);
+        log.info("AI推理输入长度: {}, 内容: {}", rewrittenMessage != null ? rewrittenMessage.length() : "null", rewrittenMessage);
 
         // 根据模型类型获取对应的策略，如果不存在则使用默认的alibaba策略
         IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
@@ -566,10 +564,13 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         
         // 从请求对象中提取参数
         String question = request.getQuestion();
+        // 获取请求中的模型类型
         String modelType = request.getModelType();
+        // 获取请求中的分析指令
         String analysisInstruction = request.getAnalysisInstruction();
+        // 获取是否保存到向量存储的标志位
         boolean saveToVectorStore = request.isSaveToVectorStore();
-        
+
         // 调用三参数版本的方法执行任务
         QAResponse response = decomposeAndExecuteTasks(question, modelType, analysisInstruction);
         

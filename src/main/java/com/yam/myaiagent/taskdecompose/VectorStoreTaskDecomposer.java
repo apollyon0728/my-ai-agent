@@ -243,7 +243,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
         
         for (Document doc : documents) {
             Map<String, Object> metadata = doc.getMetadata();
-            Boolean isChunked = metadata != null ? (Boolean) metadata.get("is_chunked") : false;
+            Boolean isChunked = (Boolean) metadata.get("is_chunked");
             
             if (isChunked == null || !isChunked) {
                 // 非分块规则，直接解析

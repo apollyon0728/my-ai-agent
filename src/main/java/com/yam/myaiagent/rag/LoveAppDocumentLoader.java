@@ -81,6 +81,12 @@ public class LoveAppDocumentLoader {
     }
 
 
+        /**
+     * 根据文件路径加载Markdown文档
+     *
+     * @param filePath Markdown文件的完整路径
+     * @return 包含解析后文档的列表，如果加载失败或文件不存在则返回空列表
+     */
     public List<Document> loadMarkdownByPath(String filePath) {
         List<Document> allDocuments = new ArrayList<>();
         try {
@@ -90,7 +96,9 @@ public class LoveAppDocumentLoader {
                 return allDocuments;
             }
             String filename = file.getName();
+            // 从文件名中提取状态信息（文件名倒数第4-6个字符）
             String status = filename.length() >= 6 ? filename.substring(filename.length() - 6, filename.length() - 4) : "";
+            // 配置Markdown文档读取器，设置解析选项和元数据
             MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                     .withHorizontalRuleCreateDocument(true)
                     .withIncludeCodeBlock(false)
@@ -107,4 +115,5 @@ public class LoveAppDocumentLoader {
         }
         return allDocuments;
     }
+
 }

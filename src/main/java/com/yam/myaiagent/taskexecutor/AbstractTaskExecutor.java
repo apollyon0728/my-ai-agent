@@ -92,37 +92,45 @@ public abstract class AbstractTaskExecutor implements TaskExecutor {
     @Override
     public List<DecomposedTask> executeAll(List<DecomposedTask> tasks) {
         log.info("开始执行任务列表，共{}个任务", tasks.size());
-        
+        long startTime = System.nanoTime();
+
         // 按优先级排序
         List<DecomposedTask> sortedTasks = new ArrayList<>(tasks);
         sortedTasks.sort(Comparator.comparingInt(DecomposedTask::getPriority));
-        
-        // 已执行的任务列表
-        List<DecomposedTask> executedTasks = new ArrayList<>();
-        
-        // 待执行的任务队列
+
+        // 已执行和跳过的任务列表（线程安全）
+        Queue<DecomposedTask> executedTasks = new java.util.concurrent.ConcurrentLinkedQueue<>();
+        Queue<DecomposedTask> skippedTasks = new java.util.concurrent.ConcurrentLinkedQueue<>();
         Queue<DecomposedTask> pendingTasks = new LinkedList<>(sortedTasks);
-        
-        // 跳过的任务列表（由于依赖任务失败）
-        List<DecomposedTask> skippedTasks = new ArrayList<>();
-        
-        // 循环执行任务，直到所有任务都被执行或跳过
+
+        // 任务结果future
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        // 使用外部线程池
+        java.util.concurrent.ExecutorService threadPool = ThreadPoolManager.getExecutor();
+
         while (!pendingTasks.isEmpty()) {
             DecomposedTask task = pendingTasks.poll();
-            
+            if (task == null) break;
+
             // 检查任务是否可以执行
-            if (canExecute(task, executedTasks)) {
-                // 执行任务
-                DecomposedTask executedTask = execute(task);
-                executedTasks.add(executedTask);
-                
-                // 如果任务执行失败，将依赖它的任务标记为跳过
-                if (executedTask.getStatus() == DecomposedTask.ExecutionStatus.FAILED) {
-                    markDependentTasksAsSkipped(pendingTasks, executedTask.getTaskId());
-                }
+            if (canExecute(task, new ArrayList<>(executedTasks))) {
+                // 异步执行任务
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    DecomposedTask executedTask = execute(task);
+                    executedTasks.add(executedTask);
+
+                    // 如果任务执行失败，将依赖它的任务标记为跳过（需线程安全处理）
+                    if (executedTask.getStatus() == DecomposedTask.ExecutionStatus.FAILED) {
+                        synchronized (pendingTasks) {
+                            markDependentTasksAsSkipped(pendingTasks, executedTask.getTaskId());
+                        }
+                    }
+                }, threadPool);
+                futures.add(future);
             } else {
                 // 检查是否由于依赖任务失败而无法执行
-                if (hasDependencyFailed(task, executedTasks)) {
+                if (hasDependencyFailed(task, new ArrayList<>(executedTasks))) {
                     task.setStatus(DecomposedTask.ExecutionStatus.SKIPPED);
                     task.setErrorMessage("依赖任务执行失败");
                     skippedTasks.add(task);
@@ -132,16 +140,25 @@ public abstract class AbstractTaskExecutor implements TaskExecutor {
                 }
             }
         }
-        
+
+        // 等待所有异步任务完成
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
         // 将跳过的任务添加到结果列表
         executedTasks.addAll(skippedTasks);
-        
-        log.info("任务列表执行完成，成功: {}, 失败: {}, 跳过: {}", 
+
+        long endTime = System.nanoTime();
+        long durationMillis = (endTime - startTime) / 1_000_000;
+
+        int totalCount = executedTasks.size();
+        log.info("多线程任务执行结束，总数量: {}，总耗时: {}ms", totalCount, durationMillis);
+
+        log.info("任务列表执行完成，成功: {}, 失败: {}, 跳过: {}",
                 executedTasks.stream().filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED).count(),
                 executedTasks.stream().filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.FAILED).count(),
                 executedTasks.stream().filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.SKIPPED).count());
-        
-        return executedTasks;
+
+        return new ArrayList<>(executedTasks);
     }
     
     /**
@@ -220,7 +237,7 @@ public abstract class AbstractTaskExecutor implements TaskExecutor {
         List<DecomposedTask> tasksToSkip = pendingTasks.stream()
                 .filter(task -> task.getDependencies() != null && 
                         Arrays.asList(task.getDependencies()).contains(failedTaskId))
-                .collect(Collectors.toList());
+                .toList();
         
         for (DecomposedTask task : tasksToSkip) {
             task.setStatus(DecomposedTask.ExecutionStatus.SKIPPED);

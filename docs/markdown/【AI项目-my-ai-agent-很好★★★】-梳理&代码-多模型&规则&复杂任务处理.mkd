@@ -4046,7 +4046,7 @@ public QAResponse getAnswer(String message) {
 
 ------
 
- 🔍 一、代码逐行解读
+ **🔍 一、代码逐行解读**
 
  ✅ 方式一：`RetrievalAugmentationAdvisor`（阿里云 DashScope）
 
@@ -4082,7 +4082,7 @@ public Advisor loveAppRagCloudAdvisor() {
 
 ------
 
- ✅ 方式二：`QuestionAnswerAdvisor`（本地 PGVector）
+ **✅ 方式二：`QuestionAnswerAdvisor`（本地 PGVector）**
 
 ```java
 .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
@@ -4114,7 +4114,7 @@ public Advisor loveAppRagCloudAdvisor() {
 
 ------
 
- 🆚 三、核心能力对比
+ **🆚 三、核心能力对比**
 
 | 能力维度           | DashScope `RetrievalAugmentationAdvisor` | PGVector `QuestionAnswerAdvisor`         |
 | ------------------ | ---------------------------------------- | ---------------------------------------- |
@@ -4128,7 +4128,7 @@ public Advisor loveAppRagCloudAdvisor() {
 
 ------
 
- 🧩 四、Spring AI 抽象设计思想
+ **🧩 四、Spring AI 抽象设计思想**
 
 Spring AI 通过 **统一接口** 屏蔽底层差异：
 
@@ -4152,7 +4152,7 @@ public interface VectorStore {
 
 ------
 
- 🛠️ 五、增强建议：结合两者优势
+ **🛠️ 五、增强建议：结合两者优势**
 
 你可以构建 **分层 RAG 策略**：
 
@@ -4182,7 +4182,7 @@ public class HybridRagAdvisor implements Advisor {
 
 ------
 
- ✅ 总结：如何选择？
+ **✅ 总结：如何选择？**
 
 | 你的需求                    | 推荐方案                                              |
 | --------------------------- | ----------------------------------------------------- |
@@ -4201,8 +4201,6 @@ public class HybridRagAdvisor implements Advisor {
 - `DashScopeDocumentRetriever` 的完整封装示例；
 - 混合 RAG 的路由 Advisor 实现；
 - 本地 Ollama + BGE + PGVector 的全开源方案。
-
-是否需要？
 
 
 

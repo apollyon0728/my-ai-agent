@@ -46,7 +46,7 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     private static final String RULE_PREFIX = "TASK_RULE:";
 
     // 相似度阈值，用于匹配规则 - 降低阈值以提高匹配率
-    private static final double SIMILARITY_THRESHOLD = 0.6;
+    private static final double SIMILARITY_THRESHOLD = 0.5;
 
     // 缓存最近使用的规则ID，避免重复添加
     private final Map<String, Long> recentRuleCache = new ConcurrentHashMap<>();

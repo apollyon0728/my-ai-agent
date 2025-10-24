@@ -2171,25 +2171,6 @@ public interface TaskDecomposer {
 ### 基于向量存储的任务拆解器实现
 
 ```java
-package com.yam.myaiagent.taskdecompose;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 /**
  * 基于向量存储的任务拆解器实现
  * 使用向量数据库存储和检索任务拆解规则
@@ -2692,6 +2673,166 @@ public class VectorStoreTaskDecomposer implements TaskDecomposer {
     }
 }
 ```
+
+
+
+### 规则查找
+
+VectorStoreTaskDecomposer implements TaskDecomposer {
+
+```java
+private List<TaskRule> findMatchingRules(String question) {
+        // 使用向量搜索查找相似的规则
+        // 使用Builder模式创建SearchRequest对象
+        long initialDocCount = getVectorStoreDocumentCount();
+        log.info("构建SearchRequest，查询: {}, 相似度阈值: {}, 当前线程ID: {}, 查询前向量存储文档数量: {}",
+                question, SIMILARITY_THRESHOLD, Thread.currentThread().getId(), initialDocCount);
+
+        // 详细记录用户问题的关键部分，帮助调试规则匹配
+        log.info("【规则匹配调试】用户问题: {}", question);
+        // 提取可能的关键词，帮助分析为什么规则匹配失败
+        String[] keywordPatterns = {"source", "business_day", "erp", "in", "=", ">=", "<="};
+        for (String pattern : keywordPatterns) {
+            if (question.contains(pattern)) {
+                log.info("【规则匹配调试】检测到关键词: {}", pattern);
+            }
+        }
+
+        // 尝试不同格式的过滤表达式
+        log.info("尝试使用不同格式的过滤表达式");
+
+        // FIXME 方式1: 使用 metadata.type = 'TASK_RULE' 格式
+        String filterExpr1 = "metadata.type == 'TASK_RULE'";
+        log.info("尝试过滤表达式格式1: {}", filterExpr1);
+
+        try {
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query(question)
+                    .topK(10) // 增加topK以获取更多可能的块
+                    .similarityThreshold(SIMILARITY_THRESHOLD)
+                    .filterExpression(filterExpr1)
+                    .build();
+
+            log.info("成功创建SearchRequest对象(格式1)");
+            List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            log.info("格式1-查询结果: 找到{}个文档, 查询后向量存储文档数量: {}",
+                    Objects.requireNonNull(similarDocuments).size(), getVectorStoreDocumentCount());
+```
+
+
+
+
+
+## 拆解并执行任务结果汇总★★★
+
+拆解并执行任务，然后汇总结果（增强版）
+
+```java
+/**
+ * 拆解并执行任务，然后汇总结果（增强版）
+ * 支持用户指定分析处理指令
+ *
+ * @param question 用户问题
+ * @param modelType 模型类型
+ * @param analysisInstruction 用户指定的分析处理指令
+ * @return 包含回答和执行结果的响应
+ */
+@Override
+public QAResponse decomposeAndExecuteTasks(String question, String modelType, String analysisInstruction) {
+    log.info("KnowledgeBaseServiceImpl.decomposeAndExecuteTasks(增强版)开始执行, 问题: {}, 模型类型: {}, 分析指令: {}",
+            question, modelType, analysisInstruction);
+
+    // 1. 拆解任务 - 使用knowledgeBaseService.decomposeTask拆解任务
+    log.info("decomposeAndExecuteTasks 步骤1: 任务拆解 - 将复杂问题拆解为多个子任务");
+    List<DecomposedTask> tasks = decomposeTask(question);
+    if (tasks.isEmpty()) {
+        log.warn("decomposeAndExecuteTasks 任务拆解结果为空，直接使用普通问答");
+        return getAnswerNew(question, modelType);
+    }
+
+    // 记录任务类型分布
+    Map<DecomposedTask.TaskType, Long> taskTypeCount = tasks.stream()
+            .collect(Collectors.groupingBy(task -> task.getTaskType(), Collectors.counting()));
+    log.info("decomposeAndExecuteTasks 任务类型分布: {}", taskTypeCount);
+
+    // 2. 执行任务 - 根据任务类型选择合适的执行器（MCP或Function Call）
+    log.info("decomposeAndExecuteTasks 步骤2: 任务执行 - 根据任务类型选择合适的执行器（MCP或Function Call）");
+    List<DecomposedTask> executedTasks = executeTasks(tasks);
+
+    // 统计执行结果
+    long completedCount = executedTasks.stream()
+            .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.COMPLETED).count();
+    long failedCount = executedTasks.stream()
+            .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.FAILED).count();
+    long skippedCount = executedTasks.stream()
+            .filter(t -> t.getStatus() == DecomposedTask.ExecutionStatus.SKIPPED).count();
+    log.info("decomposeAndExecuteTasks 任务执行结果统计: 成功={}, 失败={}, 跳过={}", completedCount, failedCount, skippedCount);
+
+    // 3. 汇总结果 - 将所有任务的执行结果汇总，生成最终回答
+    log.info("decomposeAndExecuteTasks 步骤3: 结果汇总 - 将所有任务的执行结果汇总，生成最终回答");
+
+    // 构建汇总提示词
+    StringBuilder summaryPrompt = new StringBuilder();
+    summaryPrompt.append("用户问题：").append(question).append("\n\n");
+    summaryPrompt.append("任务执行结果：\n");
+
+    // 按任务类型分组展示结果
+    Map<DecomposedTask.TaskType, List<DecomposedTask>> tasksByType = executedTasks.stream()
+            .collect(Collectors.groupingBy(task -> task.getTaskType()));
+
+    // 先展示MCP工具调用结果
+    if (tasksByType.containsKey(DecomposedTask.TaskType.MCP_TOOL)) {
+        summaryPrompt.append("\n## MCP工具调用结果\n");
+        appendTaskResults(summaryPrompt, tasksByType.get(DecomposedTask.TaskType.MCP_TOOL));
+    }
+
+    // 再展示Function Call工具调用结果
+    if (tasksByType.containsKey(DecomposedTask.TaskType.FUNCTION_CALL)) {
+        summaryPrompt.append("\n## Function Call工具调用结果\n");
+        appendTaskResults(summaryPrompt, tasksByType.get(DecomposedTask.TaskType.FUNCTION_CALL));
+    }
+
+    // 展示其他类型任务结果
+    for (Map.Entry<DecomposedTask.TaskType, List<DecomposedTask>> entry : tasksByType.entrySet()) {
+        if (entry.getKey() != DecomposedTask.TaskType.MCP_TOOL &&
+            entry.getKey() != DecomposedTask.TaskType.FUNCTION_CALL) {
+            summaryPrompt.append("\n## ").append(entry.getKey()).append("结果\n");
+            appendTaskResults(summaryPrompt, entry.getValue());
+        }
+    }
+
+    // FIXME 使用用户指定的分析处理指令
+    String customPrompt = generateCustomPromptFromQuestion(question, analysisInstruction);
+    summaryPrompt.append(customPrompt);
+
+    // FIXME 4. 使用模型生成最终回答 （选择执行的模型，默认为阿里云模型）
+    String chatId = UUID.randomUUID().toString();
+    IChatModelStrategy strategy = modelStrategyMap.getOrDefault(modelType, modelStrategyMap.get("alibaba"));
+    ChatClient dynamicChatClient = strategy.getChatClient();
+
+    log.info("decomposeAndExecuteTasks 使用{}模型生成最终回答", modelType);
+    ChatResponse chatResponse = dynamicChatClient
+            .prompt()
+            .user(summaryPrompt.toString())
+            .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                    .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+            .advisors(new MyLoggerAdvisor())
+            .call()
+            .chatResponse();
+
+    String content = chatResponse != null ? chatResponse.getResult().getOutput().getText() : null;
+    log.info("decomposeAndExecuteTasks 汇总分析结果生成完成，长度: {}", content != null ? content.length() : 0);
+
+    // 5. 构建响应
+    QAResponse qaResponse = new QAResponse();
+    qaResponse.setAnswer(content);
+    qaResponse.setTasks(executedTasks);
+
+    return qaResponse;
+}
+```
+
+
 
 
 
@@ -3651,9 +3792,9 @@ org.springframework.ai.retry.NonTransientAiException: 400 - {"request_id":"c6fee
 
 ```json
 {
-  "question": "分析人员数据波动情况， business_day in ('2025-08-25', '2025-08-26', '2025-08-27') start_date = '2025-08-25' end_date= '2025-08-27'，查询离职时间在2025-08-21之后的人员数量变化，并分析erp =wangpengde 的详细信息",
+  "question": "分析人员数据波动情况， business_day in ('2025-08-25', '2025-08-26', '2025-08-27') start_date = '2025-08-25' end_date= '2025-08-27'",
   "modelType": "openai",
-  "analysisInstruction": "分析不同业务日期的人员数量变化趋势，计算日环比增长率，重点关注离职人员比例和部门分布情况，汇总关键指标并生成数据洞察"
+  "analysisInstruction": "分析不同业务日期的人员数量变化趋势，计算日环比增长率，重点关注离职人员比例和部门分布情况，汇总关键指标并生成数据洞察 ，查询离职时间在2025-08-21之后的人员数量变化，并分析erp =wangpengde 的详细信息"
 }
 ```
 
@@ -3698,7 +3839,7 @@ public ResponseEntity<QAResponse> enhancedSmartQA(@RequestBody QARequest request
 
 
 
-# [待完成功能] ★★
+# [待完成功能] ★★★★
 
 - 内存或其他模式的向量存储实现(例如ES和Redis也可以，参考 https://docs.spring.io/spring-ai/reference/api/vectordbs.html)
 - 完善任务和规则处理功能
@@ -3706,7 +3847,13 @@ public ResponseEntity<QAResponse> enhancedSmartQA(@RequestBody QARequest request
 - 多场景应用（人力成本、绩效...)
 - **配套的前端实现：规则上传、结果展示..**.
 - **多任务并发处理，例如多次数据库查询**
-- 问题和入参在提问时拆分
+- 不同业务切换数据源
+- **`问题和入参在提问时拆分`**
+- 大文档分块上传和分快查询处理
+- 相似度调参抽取DUCC
+- 记忆存储，多轮对话
+- 向量数据查询优化
+- 读取大量数据例如数据库返回结果时内存占用和优化
 
 
 

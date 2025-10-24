@@ -37,7 +37,7 @@ public class MyLoggerAdvisor implements CallAroundAdvisor, StreamAroundAdvisor {
     @Override
     public AdvisedResponse aroundCall(@NotNull AdvisedRequest advisedRequest, CallAroundAdvisorChain chain) {
 
-        advisedRequest = before(advisedRequest);
+        before(advisedRequest);
 
         AdvisedResponse advisedResponse = chain.nextAroundCall(advisedRequest);
 
